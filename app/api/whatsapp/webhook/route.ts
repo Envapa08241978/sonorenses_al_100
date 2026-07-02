@@ -202,7 +202,7 @@ export async function POST(request: Request) {
 
                 // Token & credentials
                 const token = process.env.WHATSAPP_TOKEN;
-                const phoneId = process.env.WHATSAPP_PHONE_ID;
+                const phoneId = process.env.WHATSAPP_PHONE_ID || process.env.WHATSAPP_PHONE_NUMBER_ID;
 
                 if (token && phoneId) {
                     let cleanTo = from.replace(/\D/g, '');
