@@ -12,20 +12,26 @@ const firebaseConfig = {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase only once
-let app: FirebaseApp;
-let db: Firestore;
-let storage: FirebaseStorage;
-let auth: Auth;
+// Initialize Firebase only once safely
+let app: FirebaseApp | undefined;
+let db: Firestore | undefined;
+let storage: FirebaseStorage | undefined;
+let auth: Auth | undefined;
 
-if (!getApps().length) {
-    app = initializeApp(firebaseConfig);
-} else {
+if (typeof window !== 'undefined' && !getApps().length) {
+    if (firebaseConfig.apiKey) {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        storage = getStorage(app);
+        auth = getAuth(app);
+    } else {
+        console.error("Firebase config is missing. Please add environment variables.");
+    }
+} else if (getApps().length > 0) {
     app = getApps()[0];
+    db = getFirestore(app);
+    storage = getStorage(app);
+    auth = getAuth(app);
 }
-
-db = getFirestore(app);
-storage = getStorage(app);
-auth = getAuth(app);
 
 export { app, db, storage, auth };
