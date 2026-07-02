@@ -1,0 +1,20 @@
+{
+  "short_name": "HAC Senador",
+  "name": "Heriberto Aguilar Castillo - Senador de la República",
+  "icons": [
+    {
+      "src": "heriberto-logo.jpg",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "heriberto-logo.jpg",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#A60321",
+  "background_color": "#ffffff"
+}

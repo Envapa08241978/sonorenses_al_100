@@ -1,0 +1,613 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700;900&family=Dancing+Script:wght@700&display=swap');
+
+/* ── DOMINADAS PAGE SCOPE ── */
+.dominadas-page {
+  font-family: 'Montserrat', sans-serif;
+  background: #1a1a1a;
+  color: #fff;
+  min-height: 100vh;
+}
+
+/* ── HERO ── */
+.dominadas-page .hero {
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+  aspect-ratio: 1 / 1;
+  background: url('/torneo-hmo.png') center center / contain no-repeat;
+}
+
+/* ── INFO SECTION ── */
+.dominadas-page .info {
+  width: 100%;
+  padding: 30px 40px;
+  background: linear-gradient(160deg, #1c0a05 0%, #5c1010 30%, #8d2a1e 55%, #5c1010 80%, #1c0a05 100%);
+  position: relative;
+}
+
+.dominadas-page .info::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='1' height='1' fill='rgba(0,0,0,0.15)'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* ── OBJETIVO ── */
+.dominadas-page .objetivo-wrapper {
+  max-width: 1100px;
+  margin: 0 auto 24px auto;
+  text-align: center;
+  padding-bottom: 20px;
+  border-bottom: 2px solid rgba(220,185,110,.3);
+  position: relative;
+}
+
+.dominadas-page .objetivo-wrapper::before {
+  content: '⬥';
+  color: #d4b06a;
+  font-size: 18px;
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.dominadas-page .objetivo-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: clamp(11px, 1.2vw, 14px);
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #f0d89a;
+  line-height: 1.6;
+  text-transform: uppercase;
+}
+
+/* ── COLUMNS ── */
+.dominadas-page .container {
+  max-width: 1100px;
+  margin: auto;
+  position: relative;
+}
+
+.dominadas-page .columns {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr 1fr;
+  gap: 0;
+}
+
+.dominadas-page .col {
+  padding: 0 28px;
+  border-right: 1px solid rgba(212,176,106,.2);
+}
+
+.dominadas-page .col:first-child { padding-left: 0; }
+.dominadas-page .col:last-child { border: none; padding-right: 0; }
+
+/* ── SECTION TITLE ── */
+.dominadas-page h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  color: #d4b06a;
+  letter-spacing: 2px;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  position: relative;
+  display: block;
+}
+
+.dominadas-page h2::after {
+  content: '';
+  display: block;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, #d4b06a, transparent);
+  margin-top: 4px;
+}
+
+.dominadas-page h3 {
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #fff;
+  letter-spacing: 1.5px;
+  margin-top: 14px;
+  margin-bottom: 3px;
+  background: rgba(212,176,106,.15);
+  display: inline-block;
+  padding: 2px 8px;
+  border-left: 3px solid #d4b06a;
+}
+
+.dominadas-page p,
+.dominadas-page li {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: rgba(255,255,255,.85);
+}
+
+.dominadas-page ul {
+  padding-left: 0;
+  margin-bottom: 14px;
+  list-style: none;
+}
+
+.dominadas-page li {
+  padding: 4px 0 4px 16px;
+  position: relative;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.dominadas-page li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: #d4b06a;
+  font-size: 10px;
+  top: 5px;
+}
+
+.dominadas-page .section { margin-bottom: 28px; }
+
+.dominadas-page .small {
+  font-size: 10px;
+  font-weight: 800;
+  color: #d4b06a;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* ── PREMIACIÓN ── */
+.dominadas-page .premio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding: 7px 10px;
+  background: rgba(212,176,106,.07);
+  border-radius: 3px;
+  border-left: 3px solid transparent;
+}
+
+.dominadas-page .premio-1 { border-left-color: #d4b06a; }
+.dominadas-page .premio-2 { border-left-color: #b0b0b0; }
+.dominadas-page .premio-3 { border-left-color: #cd7f32; }
+
+.dominadas-page .premio-rank {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  line-height: 1;
+  min-width: 30px;
+}
+
+.dominadas-page .premio-1 .premio-rank { color: #d4b06a; }
+.dominadas-page .premio-2 .premio-rank { color: #c8c8c8; }
+.dominadas-page .premio-3 .premio-rank { color: #cd7f32; }
+
+.dominadas-page .premio-text {
+  font-size: 13px;
+  color: rgba(255,255,255,.85);
+}
+
+/* ── SEDES ── */
+.dominadas-page .sede-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(212,176,106,.12);
+}
+
+.dominadas-page .sede-item:last-of-type { border-bottom: none; }
+
+.dominadas-page .sede-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d4b06a;
+  flex-shrink: 0;
+}
+
+.dominadas-page .sede-name { font-weight: 700; color: #fff; font-size: 13.5px; }
+.dominadas-page .sede-time { color: #d4b06a; font-size: 12px; font-weight: 600; margin-left: auto; }
+
+/* ── DISPOSICIONES ── */
+.dominadas-page .disp-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 5px 0;
+}
+
+.dominadas-page .disp-icon { color: #d4b06a; font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── CTA ── */
+.dominadas-page .cta-box {
+  margin-top: 32px;
+  padding: 22px 18px;
+  background: linear-gradient(135deg, rgba(212,176,106,.12), rgba(212,176,106,.06));
+  border: 1px solid rgba(212,176,106,.35);
+  border-radius: 4px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.dominadas-page .cta-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(212,176,106,.1) 0%, transparent 70%);
+}
+
+.dominadas-page .cta-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(24px, 3vw, 36px);
+  letter-spacing: 3px;
+  color: #d4b06a;
+  line-height: 1.2;
+  position: relative;
+}
+
+.dominadas-page .cta-sub {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.5);
+  margin-top: 8px;
+  position: relative;
+}
+
+/* ── FECHA BADGE ── */
+.dominadas-page .fecha-badge {
+  display: inline-block;
+  background: rgba(141,42,30,.6);
+  border: 1px solid rgba(212,176,106,.35);
+  padding: 4px 14px;
+  border-radius: 3px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: 3px;
+  color: #f0d89a;
+  margin-top: 10px;
+  position: relative;
+}
+
+/* ── DOWNLOAD LINKS ── */
+.dominadas-page .download-links {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dominadas-page .download-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(212,176,106,.2), rgba(212,176,106,.1));
+  border: 1px solid rgba(212,176,106,.5);
+  border-radius: 4px;
+  padding: 10px 16px;
+  color: #d4b06a;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dominadas-page .download-link:hover {
+  background: linear-gradient(135deg, rgba(212,176,106,.35), rgba(212,176,106,.2));
+  border-color: #d4b06a;
+}
+
+.dominadas-page .download-link .dl-icon {
+  font-size: 18px;
+}
+
+/* ── STEPS ── */
+.dominadas-page .step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(212,176,106,.15);
+}
+
+.dominadas-page .step-item:last-child {
+  border-bottom: none;
+}
+
+.dominadas-page .step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  background: #d4b06a;
+  border-radius: 50%;
+  color: #1a1a1a;
+  font-weight: 900;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.dominadas-page .step-text {
+  font-size: 13.5px;
+  color: rgba(255,255,255,.85);
+  line-height: 1.6;
+}
+
+/* ── FORMULARIO ── */
+.dominadas-page .form-section {
+  width: 100%;
+  padding: 50px 40px;
+  background: #ffffff;
+  border-top: none;
+}
+
+.dominadas-page .form-section h2 {
+  text-align: center;
+  display: block;
+  color: #8d2a1e;
+}
+
+.dominadas-page .form-section .form-subtitle {
+  text-align: center;
+  color: #666;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.dominadas-page .form-placeholder {
+  text-align: center;
+  padding: 40px;
+  color: #aaa;
+  font-size: 13px;
+  letter-spacing: 2px;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+}
+
+/* ── FORM FIELDS ── */
+.dominadas-form {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.dominadas-form .form-group {
+  margin-bottom: 20px;
+}
+
+.dominadas-form label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #5c1010;
+  margin-bottom: 6px;
+}
+
+.dominadas-form input,
+.dominadas-form select {
+  width: 100%;
+  padding: 12px 16px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  color: #333;
+  background: #f9f7f4;
+  border: 2px solid #e0d8cf;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.dominadas-form input:focus,
+.dominadas-form select:focus {
+  border-color: #8d2a1e;
+  box-shadow: 0 0 0 3px rgba(141, 42, 30, 0.12);
+}
+
+.dominadas-form input::placeholder {
+  color: #bbb;
+  font-size: 13px;
+}
+
+.dominadas-form select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238d2a1e' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+}
+
+/* ── SUBMIT BUTTON ── */
+.dominadas-form .form-submit {
+  width: 100%;
+  padding: 14px 24px;
+  margin-top: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, #8d2a1e, #5c1010);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.dominadas-form .form-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(141, 42, 30, 0.35);
+}
+
+.dominadas-form .form-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.dominadas-form .form-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ── LOADING ── */
+.dominadas-form .btn-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.dominadas-form .spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: dom-spin 0.6s linear infinite;
+}
+
+@keyframes dom-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── ERROR ── */
+.dominadas-form .form-error {
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  color: #991b1b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ── SUCCESS STATE ── */
+.dominadas-form-success {
+  max-width: 560px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 30px 20px;
+}
+
+.dominadas-form-success .success-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.dominadas-form-success .success-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  color: #16a34a;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+.dominadas-form-success .success-text {
+  font-size: 15px;
+  color: #444;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.dominadas-form-success .success-reminder {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.8;
+  background: #f9f7f4;
+  padding: 16px 20px;
+  border-radius: 8px;
+  border: 1px solid #e0d8cf;
+  margin-bottom: 24px;
+}
+
+.dominadas-form-success .success-btn {
+  padding: 12px 28px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #8d2a1e;
+  background: transparent;
+  border: 2px solid #8d2a1e;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.dominadas-form-success .success-btn:hover {
+  background: #8d2a1e;
+  color: #fff;
+}
+
+/* ── RESPONSIVE — TABLET ── */
+@media (max-width: 1024px) {
+  .dominadas-page .columns {
+    grid-template-columns: 1fr 1fr;
+  }
+  .dominadas-page .col:nth-child(2) {
+    border-right: none;
+  }
+  .dominadas-page .col:last-child {
+    grid-column: 1 / -1;
+    border: none;
+    border-top: 1px solid rgba(212,176,106,.15);
+    padding-top: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+}
+
+/* ── RESPONSIVE — MOBILE ── */
+@media (max-width: 767px) {
+  .dominadas-page .columns {
+    grid-template-columns: 1fr;
+  }
+  .dominadas-page .col {
+    border: none;
+    border-bottom: 1px solid rgba(212,176,106,.15);
+    padding: 20px 0;
+  }
+  .dominadas-page .col:last-child {
+    grid-column: unset;
+    display: block;
+    border: none;
+    padding-top: 0;
+  }
+  .dominadas-page .info {
+    padding: 24px 16px;
+  }
+  .dominadas-page .form-section {
+    padding: 36px 16px;
+  }
+  .dominadas-page .objetivo-wrapper {
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+  }
+  .dominadas-page h2 {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 900px) {
+  .dominadas-page .form-section { padding: 36px 20px; }
+}
+
