@@ -12,11 +12,10 @@ const firebaseConfig = {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase only once safely
-let app: FirebaseApp | undefined;
-let db: Firestore | undefined;
-let storage: FirebaseStorage | undefined;
-let auth: Auth | undefined;
+let app: FirebaseApp = {} as FirebaseApp;
+let db: Firestore = {} as Firestore;
+let storage: FirebaseStorage = {} as FirebaseStorage;
+let auth: Auth = {} as Auth;
 
 if (typeof window !== 'undefined' && !getApps().length) {
     if (firebaseConfig.apiKey) {
@@ -32,6 +31,19 @@ if (typeof window !== 'undefined' && !getApps().length) {
     db = getFirestore(app);
     storage = getStorage(app);
     auth = getAuth(app);
+} else if (typeof window === 'undefined') {
+    // SSR fallback to prevent build errors
+    if (firebaseConfig.apiKey && !getApps().length) {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        storage = getStorage(app);
+        auth = getAuth(app);
+    } else if (getApps().length > 0) {
+        app = getApps()[0];
+        db = getFirestore(app);
+        storage = getStorage(app);
+        auth = getAuth(app);
+    }
 }
 
 export { app, db, storage, auth };
