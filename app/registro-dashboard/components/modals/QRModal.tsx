@@ -43,7 +43,7 @@ export default function QRModal({ contact, config, onClose }: QRModalProps) {
                     {/* Botón WhatsApp */}
                     <button onClick={() => {
                         const link = `${window.location.origin}/registro?ref=${contact.id}`;
-                        const msg = encodeURIComponent(`¡Hola! Te invito a registrarte en nuestra plataforma ciudadana para transformar Sonora. 🗳️✨\n\nEs muy fácil, solo entra a este link:\n${link}\n\nO si prefieres, escanea mi código QR. ¡Tu participación es muy importante! 💪`);
+                        const msg = encodeURIComponent(`¡Hola! Te invito a registrarte en nuestra plataforma ciudadana para transformar Sonora. 🗳️✨\n\nEs muy fácil, solo entra a este link:\n${link}\n\n¡Tu participación es muy importante! 💪`);
                         window.open(`https://wa.me/?text=${msg}`, '_blank');
                     }} className="w-full py-4 rounded-3xl bg-green-600 text-white font-black text-xs uppercase tracking-widest hover:bg-green-700 transition-all shadow-lg flex items-center justify-center gap-3">
                         <span className="text-xl">💬</span> Enviar por WhatsApp
