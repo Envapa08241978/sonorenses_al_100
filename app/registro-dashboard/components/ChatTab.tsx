@@ -119,7 +119,7 @@ export default function ChatTab({
                 <div className="p-3 bg-white border-b border-gray-100 flex items-center gap-3">
                     <div className="relative flex-shrink-0">
                         <img 
-                            src="/logo-sonorenses.png" 
+                            src="/javier_lamarque.jpg" 
                             alt="Candidato Javier Lamarque" 
                             className="w-10 h-10 rounded-full object-cover border-2 border-red-500 shadow-md"
                             onError={(e) => {
@@ -434,7 +434,7 @@ export default function ChatTab({
                         <div className="relative p-1.5 bg-white rounded-full shadow-xl border-2 border-dashed border-red-200">
                             <div className="w-32 h-32 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center border-4 border-white shadow-inner">
                                 <img 
-                                    src="/logo-sonorenses.png" 
+                                    src="/javier_lamarque.jpg" 
                                     alt="Candidato Javier Lamarque" 
                                     className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
                                     onError={(e) => {

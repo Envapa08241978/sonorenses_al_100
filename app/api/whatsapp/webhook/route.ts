@@ -255,7 +255,7 @@ export async function POST(request: Request) {
 
                             const payload = {
                                 messaging_product: 'whatsapp',
-                                to: cleanTo,
+                                to: from,
                                 type: 'text',
                                 text: { body: confirmationText }
                             };
@@ -302,7 +302,7 @@ export async function POST(request: Request) {
 
                             const payload = {
                                 messaging_product: 'whatsapp',
-                                to: cleanTo,
+                                to: from,
                                 type: 'interactive',
                                 interactive: {
                                     type: 'button',
@@ -434,7 +434,7 @@ export async function POST(request: Request) {
 
                             const payload = {
                                 messaging_product: 'whatsapp',
-                                to: cleanTo,
+                                to: from,
                                 type: 'text',
                                 text: { body: replyText }
                             };
@@ -509,7 +509,7 @@ export async function POST(request: Request) {
                         if (consentReply) {
                             const payload = {
                                 messaging_product: 'whatsapp',
-                                to: cleanTo,
+                                to: from,
                                 type: 'text',
                                 text: { body: consentReply }
                             };
@@ -1957,7 +1957,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                         if (replyText) {
                             const payload = {
                                 messaging_product: 'whatsapp',
-                                to: cleanTo,
+                                to: from,
                                 type: 'text',
                                 text: { body: replyText }
                             };
