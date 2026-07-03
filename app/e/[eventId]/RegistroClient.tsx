@@ -126,7 +126,6 @@ function CitizenEventPageInner(props: { eventId?: string }) {
     const [isSubmittingRSVP, setIsSubmittingRSVP] = useState(false)
     const [rsvpSuccess, setRsvpSuccess] = useState(false)
     const [generatedFolio, setGeneratedFolio] = useState<string>('')
-    const [whatsappLink, setWhatsappLink] = useState<string>('')
     
     // Auto-fill from contact id
     const contactId = searchParams.get('c')
@@ -558,13 +557,8 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                 }
                 
                 const msg = encodeURIComponent(rawMsg);
-                setWhatsappLink(`https://wa.me/52${politicianPhone}?text=${msg}`);
-                // Intentamos abrirlo automáticamente (puede ser bloqueado)
-                setTimeout(() => {
-                    window.open(`https://wa.me/52${politicianPhone}?text=${msg}`, '_blank');
-                }, 500);
-            } else {
-                console.error("No hay número de teléfono configurado en config.phone");
+                // Redirigir automáticamente usando window.location.href para evitar bloqueadores de popups
+                window.location.href = `https://wa.me/526622244979?text=${msg}`;
             }
         } catch (err) {
             console.error('RSVP error:', err)
@@ -848,22 +842,12 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                         <p className="text-gray-500 font-medium mb-6">
                             {knownContact 
                                 ? 'Tu asistencia ha sido confirmada.' 
-                                : 'Tu registro ha sido guardado.'}
+                                : 'Tu registro como Enlace Comunitario ha sido validado. Abriendo WhatsApp para confirmar...'}
                         </p>
-                        
-                        {whatsappLink ? (
-                            <a href={whatsappLink} target="_blank" rel="noopener noreferrer"
-                                className="block w-full py-4 rounded-xl text-sm font-black text-white shadow-lg transition-all active:scale-95 bg-green-500 hover:bg-green-600 mb-3"
-                                onClick={() => setRsvpSuccess(false)}>
-                                ABRIR WHATSAPP PARA FINALIZAR 💬
-                            </a>
-                        ) : (
-                            <p className="text-xs text-red-500 font-bold mb-4">Falta configurar el número de WhatsApp en el panel.</p>
-                        )}
-                        
-                        {generatedFolio && (
-                            <p className="text-xs text-gray-400 font-bold bg-gray-50 py-2 rounded-lg">Guarda tu folio para un acceso rápido el día del evento.</p>
-                        )}
+                        {generatedFolio 
+                            ? <p className="text-xs text-gray-400 font-bold bg-gray-50 py-2 rounded-lg">Guarda tu folio para un acceso rápido el día del evento.</p>
+                            : <p className="text-xs text-gray-400 font-bold bg-gray-50 py-2 rounded-lg">Completa tu registro enviando el mensaje en WhatsApp.</p>
+                        }
                     </div>
                 </div>
             )}
