@@ -88,7 +88,7 @@ export default function Home() {
                         <div className="bg-white p-8 rounded-3xl shadow-xl inline-block border-2 border-guinda-100">
                             <div className="w-64 h-64 flex items-center justify-center rounded-xl mb-6 mx-auto">
                                 <QRCodeSVG
-                                    value="https://wa.me/5210000000000?text=Hola,%20quiero%20registrarme"
+                                    value="https://www.sonorensesal100.com/registro"
                                     size={256}
                                     bgColor={"#ffffff"}
                                     fgColor={"#000000"}
