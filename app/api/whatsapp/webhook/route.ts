@@ -255,7 +255,7 @@ export async function POST(request: Request) {
 
                             const payload = {
                                 messaging_product: 'whatsapp',
-                                to: from,
+                                to: cleanTo,
                                 type: 'text',
                                 text: { body: confirmationText }
                             };
@@ -273,7 +273,7 @@ export async function POST(request: Request) {
                                 if (response.ok) {
                                     const replyDoc = {
                                         body: confirmationText,
-                                        to: from,
+                                        to: cleanTo,
                                         type: 'text',
                                         direction: 'outbound',
                                         timestamp: serverTimestamp()
@@ -302,7 +302,7 @@ export async function POST(request: Request) {
 
                             const payload = {
                                 messaging_product: 'whatsapp',
-                                to: from,
+                                to: cleanTo,
                                 type: 'interactive',
                                 interactive: {
                                     type: 'button',
@@ -335,7 +335,7 @@ export async function POST(request: Request) {
                                 if (response.ok) {
                                     const replyDoc = {
                                         body: replyText + '\n\n[Botón: Sí, acepto ✅] [Botón: No, gracias]',
-                                        to: from,
+                                        to: cleanTo,
                                         type: 'text',
                                         direction: 'outbound',
                                         timestamp: serverTimestamp()
@@ -434,7 +434,7 @@ export async function POST(request: Request) {
 
                             const payload = {
                                 messaging_product: 'whatsapp',
-                                to: from,
+                                to: cleanTo,
                                 type: 'text',
                                 text: { body: replyText }
                             };
@@ -452,7 +452,7 @@ export async function POST(request: Request) {
                                 if (response.ok) {
                                     const replyDoc = {
                                         body: replyText,
-                                        to: from,
+                                        to: cleanTo,
                                         type: 'text',
                                         direction: 'outbound',
                                         timestamp: serverTimestamp()
@@ -509,7 +509,7 @@ export async function POST(request: Request) {
                         if (consentReply) {
                             const payload = {
                                 messaging_product: 'whatsapp',
-                                to: from,
+                                to: cleanTo,
                                 type: 'text',
                                 text: { body: consentReply }
                             };
@@ -527,7 +527,7 @@ export async function POST(request: Request) {
                                 if (response.ok) {
                                     const replyDoc = {
                                         body: consentReply,
-                                        to: from,
+                                        to: cleanTo,
                                         type: 'text',
                                         direction: 'outbound',
                                         timestamp: serverTimestamp()
@@ -1957,7 +1957,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                         if (replyText) {
                             const payload = {
                                 messaging_product: 'whatsapp',
-                                to: from,
+                                to: cleanTo,
                                 type: 'text',
                                 text: { body: replyText }
                             };
@@ -1975,7 +1975,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                 if (response.ok) {
                                     const replyDoc = {
                                         body: replyText,
-                                        to: from,
+                                        to: cleanTo,
                                         type: 'text',
                                         direction: 'outbound',
                                         timestamp: serverTimestamp()
