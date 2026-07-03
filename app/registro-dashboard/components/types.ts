@@ -55,11 +55,11 @@ export interface BrigadistaItem {
 export const LEVEL_STYLES: Record<number, { bg: string, border: string, text: string, label: string }> = {
     8: { bg: '#A60321', border: '#800000', text: '#FFFFFF', label: 'Coordinador Estatal' },
     7: { bg: '#800020', border: '#600010', text: '#FFFFFF', label: 'Coordinador Distrital Federal' },
-    6: { bg: '#1e3a8a', border: '#1e3a8a', text: '#FFFFFF', label: 'Coordinador Municipal' },
-    5: { bg: '#2563eb', border: '#1d4ed8', text: '#FFFFFF', label: 'Coordinador de Brigada' },
-    4: { bg: '#059669', border: '#047857', text: '#FFFFFF', label: 'Brigadista' },
-    3: { bg: '#10b981', border: '#059669', text: '#FFFFFF', label: 'Coordinador Seccional' },
-    2: { bg: '#34d399', border: '#10b981', text: '#064e3b', label: 'Protagonista Movilizador' },
+    6: { bg: '#1e3a8a', border: '#1e3a8a', text: '#FFFFFF', label: 'Coordinador General' },
+    5: { bg: '#2563eb', border: '#1d4ed8', text: '#FFFFFF', label: 'Coordinador Distrital' },
+    4: { bg: '#059669', border: '#047857', text: '#FFFFFF', label: 'Coordinador Territorial' },
+    3: { bg: '#10b981', border: '#059669', text: '#FFFFFF', label: 'Brigadista' },
+    2: { bg: '#34d399', border: '#10b981', text: '#064e3b', label: 'Movilizador' },
     1: { bg: '#f1f5f9', border: '#e2e8f0', text: '#64748b', label: 'Voto' },
 };
 
