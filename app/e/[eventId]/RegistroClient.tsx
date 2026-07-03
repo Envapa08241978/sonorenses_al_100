@@ -117,6 +117,7 @@ function CitizenEventPageInner(props: { eventId?: string }) {
     const [showRSVP, setShowRSVP] = useState(false)
     const [rsvpName, setRsvpName] = useState('')
     const [rsvpPhone, setRsvpPhone] = useState('')
+    const [rsvpCiudad, setRsvpCiudad] = useState('')
     const [rsvpCalle, setRsvpCalle] = useState('')
     const [rsvpNumExt, setRsvpNumExt] = useState('')
     const [rsvpSeccional, setRsvpSeccional] = useState('')
@@ -412,6 +413,7 @@ function CitizenEventPageInner(props: { eventId?: string }) {
 
                     await updateDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', existingDoc.id), {
                         name: rsvpName.trim(), 
+                        ciudad: rsvpCiudad.trim(),
                         calle: rsvpCalle.trim(),
                         numExt: rsvpNumExt.trim(),
                         seccional: rsvpSeccional.trim(),
@@ -427,6 +429,7 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                     const newDoc = await addDoc(collection(db, 'campaigns', 'main_campaign', 'contacts'), {
                         name: rsvpName.trim(),
                         phone: cleanPhone,
+                        ciudad: rsvpCiudad.trim(),
                         calle: rsvpCalle.trim(),
                         numExt: rsvpNumExt.trim(),
                         seccional: rsvpSeccional.trim(),
@@ -481,6 +484,7 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                             name: finalName,
                             phone: cleanPhone,
                             folio: newFolio,
+                            ciudad: rsvpCiudad.trim(),
                             calle: rsvpCalle.trim(),
                             numExt: rsvpNumExt.trim(),
                             seccional: rsvpSeccional.trim(),
@@ -504,6 +508,7 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                             contactId: contactDocId,
                             name: finalName,
                             phone: cleanPhone,
+                            ciudad: rsvpCiudad.trim(),
                             calle: rsvpCalle.trim(),
                             numExt: rsvpNumExt.trim(),
                             seccional: rsvpSeccional.trim(),
@@ -526,6 +531,7 @@ function CitizenEventPageInner(props: { eventId?: string }) {
             setShowRSVP(false)
             setRsvpName('')
             setRsvpPhone('')
+            setRsvpCiudad('')
             setRsvpCalle('')
             setRsvpNumExt('')
             setRsvpSeccional('')
@@ -921,6 +927,13 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                                                     placeholder="10 dígitos" inputMode="numeric" maxLength={10}
                                                     className="flex-1 px-3 py-2 rounded-xl text-sm font-bold border border-gray-200 bg-gray-50 outline-none focus:border-red-400 focus:bg-white transition-colors text-gray-800 tracking-wider" />
                                             </div>
+                                        </div>
+    
+                                        <div>
+                                            <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">Ciudad</label>
+                                            <input type="text" value={rsvpCiudad} onChange={(e) => setRsvpCiudad(e.target.value)}
+                                                placeholder="Ej. Hermosillo"
+                                                className="w-full px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 bg-gray-50 outline-none focus:border-red-400 focus:bg-white transition-colors text-gray-800" />
                                         </div>
     
                                         <div>
