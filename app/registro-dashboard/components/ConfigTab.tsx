@@ -31,7 +31,7 @@ export default function ConfigTab({
                 ) : (
                     <div className="flex gap-4">
                         <button onClick={() => setIsEditingConfig(false)} className="px-6 py-3 text-slate-400 font-black text-xs uppercase">Cancelar</button>
-                        <button onClick={saveConfig} className="px-8 py-3 bg-theme text-white font-black text-xs rounded-2xl shadow-xl shadow-red-100">Guardar Cambios</button>
+                        <button onClick={saveConfig} className="px-8 py-3 bg-slate-900 text-white font-black text-xs rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all">Guardar Cambios</button>
                     </div>
                 )}
             </div>
