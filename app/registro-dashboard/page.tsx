@@ -658,7 +658,7 @@ export default function RegistroDashboard() {
                         />
 
                         {/* Navigation Tabs */}
-                        <div className="flex gap-2 mb-10 overflow-x-auto pb-4 no-scrollbar">
+                        <div className="flex gap-2 md:gap-3 mb-6 md:mb-10 overflow-x-auto pb-4 no-scrollbar">
                             {([
                                 { id: 'contacts' as const, label: '👥 Directorio', icon: '👤' },
                                 { id: 'chat' as const, label: '💬 Mensajes', icon: '💬' },
@@ -667,8 +667,8 @@ export default function RegistroDashboard() {
                                 { id: 'broadcast' as const, label: '📢 Difusion', icon: '📣' },
                                 { id: 'config' as const, label: '⚙️ Configuración', icon: '⚙️' }
                             ]).map(tab => (
-                                <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`px-6 py-4 rounded-[24px] text-xs font-black transition-all shadow-md flex items-center gap-3 whitespace-nowrap ${activeTab === tab.id ? 'text-white translate-y-[-2px] shadow-red-200' : 'bg-white text-gray-400 hover:bg-gray-50'}`} style={{ background: activeTab === tab.id ? accent : '' }}>
-                                    <span className="text-lg">{tab.icon}</span> {tab.label.toUpperCase()}
+                                <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`px-4 py-3 md:px-6 md:py-4 rounded-[20px] md:rounded-[24px] text-[10px] md:text-xs font-black transition-all shadow-md flex items-center gap-2 md:gap-3 whitespace-nowrap ${activeTab === tab.id ? 'text-white translate-y-[-2px] shadow-red-200' : 'bg-white text-gray-400 hover:bg-gray-50'}`} style={{ background: activeTab === tab.id ? accent : '' }}>
+                                    <span className="text-base md:text-lg">{tab.icon}</span> {tab.label.toUpperCase()}
                                 </button>
                             ))}
                         </div>

@@ -15,40 +15,40 @@ interface StatsPanelProps {
 
 export default function StatsPanel({ contacts, events, accent, filterLevels, setFilterLevels, setFilterLevelExact, setActiveTab }: StatsPanelProps) {
     return (
-        <div className="space-y-6 mb-10">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm relative overflow-hidden group hover:shadow-lg transition-all duration-300">
-                    <div className="absolute -right-4 -top-4 w-20 h-20 bg-red-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500" />
-                    <p className="text-4xl font-black text-theme relative z-10">{contacts.length}</p>
-                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-2 relative z-10">Directorio Total</p>
+        <div className="space-y-4 md:space-y-6 mb-6 md:mb-10">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                <div className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+                    <div className="absolute -right-4 -top-4 w-16 h-16 md:w-20 md:h-20 bg-red-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500" />
+                    <p className="text-3xl md:text-4xl font-black text-theme relative z-10">{contacts.length}</p>
+                    <p className="text-[9px] md:text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1 md:mt-2 relative z-10">Directorio Total</p>
                 </div>
-                <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm group hover:shadow-lg transition-all cursor-pointer" onClick={() => setActiveTab('map')}>
-                    <div className="flex items-center gap-3">
-                        <span className="text-3xl">🗺️</span>
+                <div className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm group hover:shadow-lg transition-all cursor-pointer" onClick={() => setActiveTab('map')}>
+                    <div className="flex items-center gap-2 md:gap-3">
+                        <span className="text-2xl md:text-3xl">🗺️</span>
                         <div>
-                            <p className="text-xl font-bold text-gray-800">Mapa</p>
-                            <p className="text-[10px] text-gray-400 font-black uppercase">Analisis en Vivo</p>
+                            <p className="text-lg md:text-xl font-bold text-gray-800 leading-tight">Mapa</p>
+                            <p className="text-[9px] md:text-[10px] text-gray-400 font-black uppercase">Analisis en Vivo</p>
                         </div>
                     </div>
                 </div>
-                <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm">
-                    <p className="text-4xl font-black text-theme">{events.length}</p>
-                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-2">Eventos Activos</p>
+                <div className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm">
+                    <p className="text-3xl md:text-4xl font-black text-theme">{events.length}</p>
+                    <p className="text-[9px] md:text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1 md:mt-2">Eventos Activos</p>
                 </div>
-                <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm flex items-center justify-center gap-4 group" onClick={() => setActiveTab('config')}>
-                    <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-2xl group-hover:bg-theme group-hover:text-white transition-all">⚙️</div>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-tight">Configuracion<br/>de identidad</p>
+                <div className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm flex items-center justify-center gap-2 md:gap-4 group" onClick={() => setActiveTab('config')}>
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gray-50 flex items-center justify-center text-xl md:text-2xl group-hover:bg-theme group-hover:text-white transition-all">⚙️</div>
+                    <p className="text-[8px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-tight">Configuración</p>
                 </div>
             </div>
 
             {/* Desglose por Nivel */}
-            <div className="p-5 rounded-[32px] shadow-2xl relative overflow-hidden" style={{ background: '#91182e' }}>
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 blur-[100px]" />
-                <h3 className="text-white font-black text-xs uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
-                    <span className="text-lg">📊</span> Estructura de Red — Desglose por Nivel
+            <div className="p-4 md:p-5 rounded-[24px] md:rounded-[32px] shadow-2xl relative overflow-hidden" style={{ background: '#91182e' }}>
+                <div className="absolute top-0 right-0 w-40 h-40 md:w-64 md:h-64 bg-white opacity-5 blur-[100px]" />
+                <h3 className="text-white font-black text-[10px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] mb-3 md:mb-4 flex items-center gap-2">
+                    <span className="text-base md:text-lg">📊</span> Estructura de Red
                 </h3>
-                <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map(level => {
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+                    {[1, 2, 3, 4, 5, 6].map(level => {
                         const count = contacts.filter(c => (c.level || 1) === level).length;
                         const levelLabel = LEVEL_ROLES[level] || `Nivel ${level}`;
                         const isActive = filterLevels.length === 1 && filterLevels[0] === level;
