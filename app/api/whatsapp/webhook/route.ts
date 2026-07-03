@@ -593,7 +593,7 @@ export async function POST(request: Request) {
                         };
 
                         // Use Gemini intent classification in conversational states
-                        let calculatedIntent = 'CHARLA_GENERAL';
+                        let calculatedIntent = 'charla_general';
 
                         const isConversationalState = botState === 'idle' || botState === 'saludado' || botState === 'esperando_motivo' || !botState;
                         const isUpdateIntent = contactData && (
@@ -1873,7 +1873,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                                 } else {
                                                     await setDoc(chatRef, { datosConfirmados: true }, { merge: true });
                                                     
-                                                    if (calculatedIntent === 'apoyo_saludo' || calculatedIntent === 'charla_general') {
+                                                    if (true /* allow any intent to be handled by Gemini if it fell through */) {
                                                         const firstName = contactData.name.split(' ')[0];
                                                         const geminiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
                                                         if (geminiKey) {
@@ -1906,7 +1906,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                                     }
                                                 }
                                             } else {
-                                                if (calculatedIntent === 'apoyo_saludo' || calculatedIntent === 'charla_general') {
+                                                if (true /* allow any intent to be handled by Gemini if it fell through */) {
                                                     const firstName = contactData.name.split(' ')[0];
                                                     const geminiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
                                                     if (geminiKey) {
