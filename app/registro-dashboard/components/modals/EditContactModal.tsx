@@ -38,13 +38,27 @@ export default function EditContactModal({ contact, setContact, handleSaveEdit, 
                             <input value={contact.cp || ''} onChange={e => setContact({...contact, cp: e.target.value})} className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:border-red-400 outline-none transition-all font-bold" />
                         </div>
                     </div>
-                    <div>
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 mb-2 block">Calle y Numero</label>
-                        <input value={contact.calle || ''} onChange={e => setContact({...contact, calle: e.target.value})} className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:border-red-400 outline-none transition-all font-bold" />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="md:col-span-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 mb-2 block">Calle</label>
+                            <input value={contact.calle || ''} onChange={e => setContact({...contact, calle: e.target.value})} className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:border-red-400 outline-none transition-all font-bold" />
+                        </div>
+                        <div>
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 mb-2 block">Núm Ext</label>
+                            <input value={contact.numExt || ''} onChange={e => setContact({...contact, numExt: e.target.value})} className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:border-red-400 outline-none transition-all font-bold" />
+                        </div>
+                        <div>
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 mb-2 block">Núm Int</label>
+                            <input value={contact.numInt || ''} onChange={e => setContact({...contact, numInt: e.target.value})} className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:border-red-400 outline-none transition-all font-bold" />
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 mb-2 block">Colonia</label>
+                            <input value={contact.colonia || ''} onChange={e => setContact({...contact, colonia: e.target.value})} className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:border-red-400 outline-none transition-all font-bold" />
+                        </div>
                     </div>
                     <div>
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 mb-2 block">Colonia</label>
-                        <input value={contact.colonia || ''} onChange={e => setContact({...contact, colonia: e.target.value})} className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:border-red-400 outline-none transition-all font-bold" />
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 mb-2 block">Municipio / Ciudad</label>
+                        <input value={contact.municipio || ''} onChange={e => setContact({...contact, municipio: e.target.value})} className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:border-red-400 outline-none transition-all font-bold" />
                     </div>
                     <div>
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 mb-2 block">Tipo de Red</label>
