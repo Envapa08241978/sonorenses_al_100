@@ -77,6 +77,33 @@ export default function Home() {
                         </div>
                     </div>
                 </section>
+                {/* Redes Sociales Section */}
+                <section className="py-20 bg-white border-t border-gray-100">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-10">
+                            <h2 className="text-sm font-bold text-dorado uppercase tracking-widest mb-2">Últimas Actualizaciones</h2>
+                            <h3 className="text-3xl font-black text-gray-900">Actividad en Redes Sociales</h3>
+                            <p className="text-gray-600 mt-3">Sigue el trabajo de Javier Lamarque de cerca.</p>
+                        </div>
+                        
+                        <div className="flex justify-center">
+                            <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 p-2">
+                                {/* Facebook Page Plugin iframe */}
+                                <iframe 
+                                    src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fjavierlamarquecano&tabs=timeline&width=400&height=600&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId" 
+                                    width="400" 
+                                    height="600" 
+                                    style={{ border: 'none', overflow: 'hidden', width: '100%' }} 
+                                    scrolling="no" 
+                                    frameBorder="0" 
+                                    allowFullScreen={true} 
+                                    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                                    className="rounded-xl"
+                                ></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
                 {/* QR Code Registration Section */}
                 <section className="py-20 bg-slate-50 border-t border-gray-200">
