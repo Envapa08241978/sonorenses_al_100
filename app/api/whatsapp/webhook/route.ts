@@ -572,6 +572,18 @@ export async function POST(request: Request) {
                             }
                         }
 
+
+                        let newsAndSocials = '';
+                        try {
+                            const profileRef = doc(db, 'campaigns', 'main_campaign', 'config', 'profile');
+                            const profileSnap = await getDoc(profileRef);
+                            if (profileSnap.exists()) {
+                                newsAndSocials = profileSnap.data().newsAndSocials || '';
+                            }
+                        } catch (err) {
+                            console.error('Error fetching config in webhook:', err);
+                        }
+
                         // Read if this is a newly registered user who has not clicked a consent button yet (grace period)
                         const isNewRegistrationFlow = chatDoc.exists() && chatDoc.data().lastMessage?.includes('botones de consentimiento');
 
@@ -1500,7 +1512,7 @@ Respuesta del ciudadano: "${newInvitedBy}"`;
                                                 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
                                                 const promptText = `Eres el asistente de atención ciudadana del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora. Ten en cuenta que Javier Lamarque ha sido 3 veces Alcalde de Cajeme y tiene una probada experiencia. Estás respondiendo a un ciudadano llamado ${firstName} que tiene preguntas, dudas o comentarios sobre un evento.
 
-Usa la siguiente información oficial para responder a sus dudas de forma clara, amable y precisa:
+Usa la siguiente información oficial para responder a sus dudas de forma clara, amable y precisa:\n\nTen en cuenta esta información oficial adicional (noticias recientes y redes sociales):\n${newsAndSocials}
 ${EVENT_CONTEXT}
 
 Instrucciones de respuesta:
@@ -1546,7 +1558,7 @@ Ten en cuenta los siguientes logros e información clave sobre Javier Lamarque p
 - Es 3 veces Alcalde de Cajeme, lo que demuestra su amplia experiencia y resultados en la administración pública.
 - Es Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora.
 
-Responde de manera sumamente cálida, amable, institucional y natural en español a este mensaje del ciudadano ${firstName}. Si es un saludo, salúdalo de vuelta y pregúntale en qué le puedes ayudar. Si es plática casual ("cómo estás", "qué tal"), responde amablemente. Mantén la respuesta breve (máximo 3 enunciados) y usa emojis apropiados.
+Responde de manera sumamente cálida, amable, institucional y natural en español a este mensaje del ciudadano ${firstName}.\n\nTen en cuenta esta información oficial adicional (noticias recientes y redes sociales):\n${newsAndSocials} Si es un saludo, salúdalo de vuelta y pregúntale en qué le puedes ayudar. Si es plática casual ("cómo estás", "qué tal"), responde amablemente. Mantén la respuesta breve (máximo 3 enunciados) y usa emojis apropiados.
 
 Si el ciudadano hace mención de algún evento o torneo, ten en cuenta la siguiente información oficial:
 ${EVENT_CONTEXT}
@@ -1724,7 +1736,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                                 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
                                                 const promptText = `Eres el asistente de atención ciudadana del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora. Ten en cuenta que Javier Lamarque ha sido 3 veces Alcalde de Cajeme y tiene una probada experiencia. Estás respondiendo a un ciudadano llamado ${firstName} que tiene preguntas, dudas o comentarios sobre un evento.
 
-Usa la siguiente información oficial para responder a sus dudas de forma clara, amable y precisa:
+Usa la siguiente información oficial para responder a sus dudas de forma clara, amable y precisa:\n\nTen en cuenta esta información oficial adicional (noticias recientes y redes sociales):\n${newsAndSocials}
 ${EVENT_CONTEXT}
 
 Instrucciones de respuesta:
@@ -1765,7 +1777,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                             try {
                                                 const genAI = new GoogleGenerativeAI(geminiKey);
                                                 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-                                                const promptText = `Eres el asistente de atención ciudadana del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora. Ten en cuenta que Javier Lamarque ha sido 3 veces Alcalde de Cajeme y tiene una probada experiencia. Estás en medio de una conversación con ${firstName} que te acaba de enviar un mensaje casual o de seguimiento a un saludo previo. Responde de manera natural, cálida y breve (máximo 3 enunciados) en español. Si te pregunta "cómo estás" o algo similar, responde amablemente y pregúntale en qué le puedes ayudar. Usa emojis apropiados.
+                                                const promptText = `Eres el asistente de atención ciudadana del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora. Ten en cuenta que Javier Lamarque ha sido 3 veces Alcalde de Cajeme y tiene una probada experiencia. Estás en medio de una conversación con ${firstName} que te acaba de enviar un mensaje casual o de seguimiento a un saludo previo. Responde de manera natural, cálida y breve (máximo 3 enunciados) en español.\n\nTen en cuenta esta información oficial adicional (noticias recientes y redes sociales):\n${newsAndSocials} Si te pregunta "cómo estás" o algo similar, responde amablemente y pregúntale en qué le puedes ayudar. Usa emojis apropiados.
 
 Si el ciudadano hace mención de algún evento o torneo, ten en cuenta la siguiente información oficial:
 ${EVENT_CONTEXT}
@@ -1819,7 +1831,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                                         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
                                                         const promptText = `Eres el asistente de atención ciudadana del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora. Ten en cuenta que Javier Lamarque ha sido 3 veces Alcalde de Cajeme y tiene una probada experiencia. Estás respondiendo a un ciudadano llamado ${firstName} que tiene preguntas, dudas o comentarios sobre un evento.
 
-Usa la siguiente información oficial para responder a sus dudas de forma clara, amable y precisa:
+Usa la siguiente información oficial para responder a sus dudas de forma clara, amable y precisa:\n\nTen en cuenta esta información oficial adicional (noticias recientes y redes sociales):\n${newsAndSocials}
 ${EVENT_CONTEXT}
 
 Instrucciones de respuesta:
@@ -1886,7 +1898,7 @@ Ten en cuenta los siguientes logros e información clave sobre Javier Lamarque p
 - Es 3 veces Alcalde de Cajeme, lo que demuestra su amplia experiencia y resultados en la administración pública.
 - Es Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora.
 
-Responde de manera sumamente cálida, amable, institucional y natural en español a este mensaje del ciudadano ${firstName}. Si es un saludo de apoyo, agradece su entusiasmo. Si es una duda, responde amablemente y recuérdale que estamos para servirle. Mantén la respuesta breve (máximo 3 enunciados) y usa emojis apropiados.
+Responde de manera sumamente cálida, amable, institucional y natural en español a este mensaje del ciudadano ${firstName}.\n\nTen en cuenta esta información oficial adicional (noticias recientes y redes sociales):\n${newsAndSocials} Si es un saludo de apoyo, agradece su entusiasmo. Si es una duda, responde amablemente y recuérdale que estamos para servirle. Mantén la respuesta breve (máximo 3 enunciados) y usa emojis apropiados.
 
 Si el ciudadano hace mención de algún evento o torneo, ten en cuenta la siguiente información oficial:
 ${EVENT_CONTEXT}
@@ -1919,7 +1931,7 @@ Ten en cuenta los siguientes logros e información clave sobre Javier Lamarque p
 - Es 3 veces Alcalde de Cajeme, lo que demuestra su amplia experiencia y resultados en la administración pública.
 - Es Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora.
 
-Responde de manera sumamente cálida, amable, institucional y natural en español a este mensaje del ciudadano ${firstName}. Si es un saludo de apoyo, agradece su entusiasmo. Si es una duda, responde amablemente y recuérdale que estamos para servirle. Mantén la respuesta breve (máximo 3 enunciados) y usa emojis apropiados.
+Responde de manera sumamente cálida, amable, institucional y natural en español a este mensaje del ciudadano ${firstName}.\n\nTen en cuenta esta información oficial adicional (noticias recientes y redes sociales):\n${newsAndSocials} Si es un saludo de apoyo, agradece su entusiasmo. Si es una duda, responde amablemente y recuérdale que estamos para servirle. Mantén la respuesta breve (máximo 3 enunciados) y usa emojis apropiados.
 
 Si el ciudadano hace mención de algún evento o torneo, ten en cuenta la siguiente información oficial:
 ${EVENT_CONTEXT}

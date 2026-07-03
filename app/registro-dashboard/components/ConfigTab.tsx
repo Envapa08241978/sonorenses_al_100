@@ -50,6 +50,22 @@ export default function ConfigTab({
                     </div>
                 ))}
 
+                {/* Noticias y Redes Sociales */}
+                <div className="pt-8 border-t border-slate-100">
+                    <h4 className="text-lg font-black text-slate-800 mb-6">Información para Inteligencia Artificial</h4>
+                    <div>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2 block">Noticias Recientes y Redes Sociales</label>
+                        <textarea
+                            value={configForm.newsAndSocials || ''}
+                            onChange={e => setConfigForm({...configForm, newsAndSocials: e.target.value})}
+                            disabled={!isEditingConfig}
+                            placeholder="Ej. El Facebook oficial es facebook.com/javierlamarque. Esta semana estuvimos en Cajeme entregando apoyos..."
+                            className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-red-400 outline-none font-bold text-slate-700 transition-all disabled:opacity-60 min-h-[120px]"
+                        />
+                        <p className="text-xs text-slate-400 mt-2 ml-4">Esta información será leída por el Chatbot automáticamente al contestar preguntas en WhatsApp.</p>
+                    </div>
+                </div>
+
                 {/* Diseño Visual */}
                 <div className="pt-8 border-t border-slate-100">
                     <h4 className="text-lg font-black text-slate-800 mb-6">Diseño Visual</h4>
