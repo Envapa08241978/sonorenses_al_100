@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
 import Image from 'next/image'
+import { QRCodeSVG } from 'qrcode.react'
 
 export default function Home() {
     return (
@@ -85,9 +86,22 @@ export default function Home() {
                             Escanea el código QR desde tu celular para registrarte y formar parte de esta gran estructura.
                         </p>
                         <div className="bg-white p-8 rounded-3xl shadow-xl inline-block border-2 border-guinda-100">
-                            <div className="w-64 h-64 bg-gray-100 flex items-center justify-center rounded-xl mb-6 mx-auto">
-                                {/* Placeholder for actual QR code image */}
-                                <span className="text-gray-400 font-medium">[Aquí irá el Código QR]</span>
+                            <div className="w-64 h-64 flex items-center justify-center rounded-xl mb-6 mx-auto">
+                                <QRCodeSVG
+                                    value="https://wa.me/5210000000000?text=Hola,%20quiero%20registrarme"
+                                    size={256}
+                                    bgColor={"#ffffff"}
+                                    fgColor={"#000000"}
+                                    level={"Q"}
+                                    imageSettings={{
+                                        src: "/SONORENSES AL 100_logo.jpg",
+                                        x: undefined,
+                                        y: undefined,
+                                        height: 60,
+                                        width: 60,
+                                        excavate: true,
+                                    }}
+                                />
                             </div>
                             <Link 
                                 href="/registro" 
