@@ -6,7 +6,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const EVENT_CONTEXT = `
 INFORMACIÓN OFICIAL DE LOS EVENTOS VIGENTES:
 1. Torneo Estatal de Dominadas "Dominadas en mi Barrio":
-- Organizado por: Candidato Carlos Javier Lamarque Cano.
+- Organizado por: Aspirante a la Coordinación Estatal Carlos Javier Lamarque Cano.
 - Fecha: Sábado 13 de Junio de 2026.
 - Sedes y Horarios (Guaymas, Sonora):
   * Sede Fátima: Centro Comunitario Fátima a las 11:00 AM (11:00 hrs).
@@ -24,10 +24,10 @@ INFORMACIÓN OFICIAL DE LOS EVENTOS VIGENTES:
 - Premios: Se premiará a los ganadores de cada categoría.
 
 2. Evento de Espectáculo en el Delfinario (Guaymas):
-- Evento familiar: Espectáculo en el Delfinario de Sonora, promovido por el Candidato Carlos Javier Lamarque Cano para la convivencia familiar comunitaria.
+- Evento familiar: Espectáculo en el Delfinario de Sonora, promovido por el Aspirante a la Coordinación Estatal Carlos Javier Lamarque Cano para la convivencia familiar comunitaria.
 
 3. Asamblea Informativa "Así Gobierna la 4T en Sonora" con Javier Lamarque Cano:
-- Organizado por: Candidato Carlos Javier Lamarque Cano.
+- Organizado por: Aspirante a la Coordinación Estatal Carlos Javier Lamarque Cano.
 - Invitado especial: Javier Lamarque Cano (Fundador de Morena y Presidente Municipal de Cajeme).
 - Fecha: Sábado 20 de Junio de 2026.
 - Horario: 10:00 AM.
@@ -295,9 +295,9 @@ export async function POST(request: Request) {
                             let replyText = '';
                             
                             if (isTournamentReg) {
-                                replyText = `¡Hola, ${firstName}! 👋\n\nMuchas gracias por registrarte en el **Torneo de Dominadas "En mi Barrio"** ⚽. Nos da mucho gusto contar con la participación de niños y jóvenes en estas actividades deportivas de convivencia.\n\nTu registro ha sido recibido con éxito.\n\nPara brindarte la mejor atención y asegurar una comunicación fluida sobre horarios, sedes y roles de juego, por favor realiza dos sencillas acciones:\n\n1️⃣ **Guarda este número** en tus contactos como **Actividades del Candidato Javier Lamarque** 📲 para que no te pierdas ninguna actualización del torneo.\n\n2️⃣ **Autorización de Difusión:** ¿Nos das tu consentimiento para enviarte mensajes informativos sobre el torneo y actividades comunitarias del Candidato Javier Lamarque? ✅`;
+                                replyText = `¡Hola, ${firstName}! 👋\n\nMuchas gracias por registrarte en el **Torneo de Dominadas "En mi Barrio"** ⚽. Nos da mucho gusto contar con la participación de niños y jóvenes en estas actividades deportivas de convivencia.\n\nTu registro ha sido recibido con éxito.\n\nPara brindarte la mejor atención y asegurar una comunicación fluida sobre horarios, sedes y roles de juego, por favor realiza dos sencillas acciones:\n\n1️⃣ **Guarda este número** en tus contactos como **Actividades del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque** 📲 para que no te pierdas ninguna actualización del torneo.\n\n2️⃣ **Autorización de Difusión:** ¿Nos das tu consentimiento para enviarte mensajes informativos sobre el torneo y actividades comunitarias del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque? ✅`;
                             } else {
-                                replyText = `¡Hola, ${firstName}! 👋\n\nMuchas gracias por registrarte y sumarte a este gran esfuerzo. Tu participación como Enlace es fundamental para seguir construyendo comunidad y fortaleciendo nuestro movimiento. 🏛️✨\n\nTu registro ha sido recibido con éxito.\n\nPara brindarte la mejor atención y asegurar una comunicación fluida, por favor realiza dos sencillas acciones:\n\n1️⃣ **Guarda este número** en tus contactos como **Enlace del Candidato Javier Lamarque** 📲. Esto te asegurará recibir todas nuestras actualizaciones y evitará que WhatsApp bloquee las notificaciones.\n\n2️⃣ **Autorización de Difusión:** Para compartirte información de interés sobre el movimiento y las actividades del Candidato Javier Lamarque, ¿nos das tu consentimiento para enviarte mensajes informativos y de difusión? ✅`;
+                                replyText = `¡Hola, ${firstName}! 👋\n\nMuchas gracias por registrarte y sumarte a este gran esfuerzo. Tu participación como Enlace es fundamental para seguir construyendo comunidad y fortaleciendo nuestro movimiento. 🏛️✨\n\nTu registro ha sido recibido con éxito.\n\nPara brindarte la mejor atención y asegurar una comunicación fluida, por favor realiza dos sencillas acciones:\n\n1️⃣ **Guarda este número** en tus contactos como **Enlace del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque** 📲. Esto te asegurará recibir todas nuestras actualizaciones y evitará que WhatsApp bloquee las notificaciones.\n\n2️⃣ **Autorización de Difusión:** Para compartirte información de interés sobre el movimiento y las actividades del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque, ¿nos das tu consentimiento para enviarte mensajes informativos y de difusión? ✅`;
                             }
 
                             const payload = {
@@ -469,9 +469,9 @@ export async function POST(request: Request) {
                             }
                         } else if (buttonId === 'consent_yes') {
                             if (isDominadas) {
-                                consentReply = `¡Muchas gracias por tu confianza! ❤️ Tu consentimiento ha sido registrado. A partir de ahora te mantendremos informado(a) sobre el torneo y actividades del Candidato Javier Lamarque. ¡Nos vemos en la cancha! ⚽🏆`;
+                                consentReply = `¡Muchas gracias por tu confianza! ❤️ Tu consentimiento ha sido registrado. A partir de ahora te mantendremos informado(a) sobre el torneo y actividades del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque. ¡Nos vemos en la cancha! ⚽🏆`;
                             } else {
-                                consentReply = `¡Muchas gracias por tu confianza! ❤️ Tu consentimiento ha sido registrado. A partir de ahora te mantendremos informado(a) sobre las actividades del Candidato Javier Lamarque y del movimiento. ¡Sigamos transformando juntos! 🏛️🤝`;
+                                consentReply = `¡Muchas gracias por tu confianza! ❤️ Tu consentimiento ha sido registrado. A partir de ahora te mantendremos informado(a) sobre las actividades del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque y del movimiento. ¡Sigamos transformando juntos! 🏛️🤝`;
                             }
 
                             // Save consent in Firestore contact and chat
@@ -696,7 +696,7 @@ export async function POST(request: Request) {
                                     const genAI = new GoogleGenerativeAI(geminiKey);
                                     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
                                     
-                                    const classificationPrompt = `Analiza el siguiente mensaje de un ciudadano dirigido al bot de WhatsApp del Candidato Javier Lamarque. Clasifica el mensaje en exactamente una de las siguientes categorías en minúsculas: "peticion", "apoyo_saludo", "actualizar_datos", "pregunta_evento" o "charla_general".
+                                    const classificationPrompt = `Analiza el siguiente mensaje de un ciudadano dirigido al bot de WhatsApp del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque. Clasifica el mensaje en exactamente una de las siguientes categorías en minúsculas: "peticion", "apoyo_saludo", "actualizar_datos", "pregunta_evento" o "charla_general".
 
 Definiciones de las categorías:
 - "peticion": El usuario solicita un apoyo social, reporta un problema (luz, agua, baches), requiere medicamentos, silla de ruedas, ayuda con adeudos/recibos, o hace una solicitud/gestión.
@@ -850,14 +850,14 @@ Devuelve estrictamente un objeto JSON con el siguiente formato, sin bloques de c
                                     if (contactData) {
                                         if (activeGestion) {
                                             const statusText = activeGestion.status === 'pendiente' ? 'Pendiente 🔴' : 'En Proceso 🟡';
-                                            replyText = `Veo que actualmente tienes una petición activa en nuestro sistema:\n\n*📋 Folio de Gestión:* ${activeGestion.folio}\n*📌 Estatus:* ${statusText}\n*📝 Petición:* "${activeGestion.petitionText}"\n\n📞 El número de teléfono oficial de Vinculación es: **662 423 6390**\n\n🔗 Puedes escribirles directamente haciendo clic en el siguiente enlace de WhatsApp para dar seguimiento:\nhttps://wa.me/526624236390?text=Hola,%20le%20doy%20seguimiento%20a%20mi%20Folio%20de%20Gesti%C3%B3n%20${activeGestion.folio}\n\n¡Seguimos a tus órdenes! 🏛️✨`;
+                                            replyText = `Veo que actualmente tienes una petición activa en nuestro sistema:\n\n*📋 Folio de Gestión:* ${activeGestion.folio}\n*📌 Estatus:* ${statusText}\n*📝 Petición:* "${activeGestion.petitionText}"\n\n¡Seguimos a tus órdenes! 🏛️✨`;
                                             newBotState = 'idle';
                                         } else {
                                             replyText = `Entendido. Por favor, **escríbeme detalladamente cuál es tu consulta, petición o el apoyo que necesitas** para poder registrarlo y canalizarlo de forma correcta: 📋`;
                                             newBotState = 'esperando_motivo_peticion';
                                         }
                                     } else {
-                                        replyText = `¡Hola! 👋 Te saluda el Asistente Virtual del Candidato Javier Lamarque. Veo que nos escribes desde este número pero aún no lo tenemos registrado en nuestra red ciudadana.\n\n¿Ya te habías registrado anteriormente con otro número de teléfono o eres un nuevo integrante? 🗳️\n\nEscribe:\n1️⃣ **"Ya me registré"** (si usaste otro número)\n2️⃣ **"Soy nuevo"** (si deseas registrarte hoy)`;
+                                        replyText = `¡Hola! 👋 Te saluda el Asistente Virtual del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque. Veo que nos escribes desde este número pero aún no lo tenemos registrado en nuestra red ciudadana.\n\n¿Ya te habías registrado anteriormente con otro número de teléfono o eres un nuevo integrante? 🗳️\n\nEscribe:\n1️⃣ **"Ya me registré"** (si usaste otro número)\n2️⃣ **"Soy nuevo"** (si deseas registrarte hoy)`;
                                         newBotState = 'validando_telefono';
                                     }
                                 } else {
@@ -1283,7 +1283,7 @@ Respuesta del ciudadano: "${userInvitedBy}"`;
                                             newBotState = 'confirmando_datos_existentes';
                                         } else {
                                             extraDataToMerge.datosConfirmados = true;
-                                            replyText = `¡Excelente! He guardado tu dirección completa con éxito. Tu registro en el Directorio del Candidato Javier Lamarque está ahora 100% verificado, completo y al día. 🏛️✨\n\n¿Hay alguna consulta o petición en la que te podamos ayudar el día de hoy?`;
+                                            replyText = `¡Excelente! He guardado tu dirección completa con éxito. Tu registro en el Directorio del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque está ahora 100% verificado, completo y al día. 🏛️✨\n\n¿Hay alguna consulta o petición en la que te podamos ayudar el día de hoy?`;
                                             newBotState = 'idle';
                                         }
                                     }
@@ -1312,7 +1312,7 @@ Respuesta del ciudadano: "${userInvitedBy}"`;
                                         newBotState = 'confirmando_datos_existentes';
                                     } else {
                                         extraDataToMerge.datosConfirmados = true;
-                                        replyText = `¡Excelente! He guardado tu dirección completa con éxito. Tu registro en el Directorio del Candidato Javier Lamarque está ahora 100% verificado, completo y al día. 🏛️✨\n\n¿Hay alguna consulta o petición en la que te podamos ayudar el día de hoy?`;
+                                        replyText = `¡Excelente! He guardado tu dirección completa con éxito. Tu registro en el Directorio del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque está ahora 100% verificado, completo y al día. 🏛️✨\n\n¿Hay alguna consulta o petición en la que te podamos ayudar el día de hoy?`;
                                         newBotState = 'idle';
                                     }
 
@@ -1322,7 +1322,7 @@ Respuesta del ciudadano: "${userInvitedBy}"`;
                                         replyText = `¡Entendido! Vamos a buscar tu registro anterior en nuestra base de datos. 🔍\n\nPor favor, escribe el **número de teléfono de 10 dígitos** con el que te registraste originalmente:`;
                                         newBotState = 'esperando_telefono_anterior';
                                     } else {
-                                        replyText = `¡Bienvenido(a) a nuestro movimiento! 🏛️ Nos encantaría registrarte como Enlace Ciudadano del Candidato Javier Lamarque.\n\nPara comenzar, por favor escribe tu **Nombre Completo** (tal como aparece en tu credencial del INE).\n\n📸 **Tip:** Si lo prefieres, puedes **tomarle una foto de frente a tu credencial del INE** y enviármela por este medio. ¡Yo me encargo de registrar tus datos de forma automática! 😉`;
+                                        replyText = `¡Bienvenido(a) a nuestro movimiento! 🏛️ Nos encantaría registrarte como Enlace Ciudadano del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque.\n\nPara comenzar, por favor escribe tu **Nombre Completo** (tal como aparece en tu credencial del INE).\n\n📸 **Tip:** Si lo prefieres, puedes **tomarle una foto de frente a tu credencial del INE** y enviármela por este medio. ¡Yo me encargo de registrar tus datos de forma automática! 😉`;
                                         newBotState = 'esperando_nombre_nuevo';
                                     }
 
@@ -1479,7 +1479,7 @@ Respuesta del ciudadano: "${newInvitedBy}"`;
                                     });
 
                                     extraDataToMerge.datosConfirmados = true;
-                                    replyText = `¡Felicidades, **${tempName}**! 🎉 He completado tu registro como Enlace Ciudadano en nuestra plataforma oficial. Tu información ha sido guardada de manera segura en el Directorio.\n\nTu participación es sumamente importante para el proyecto de transformación del Candidato Javier Lamarque. 🏛️✨\n\n¿Hay alguna gestión o petición en la que te podamos ayudar hoy?`;
+                                    replyText = `¡Felicidades, **${tempName}**! 🎉 He completado tu registro como Enlace Ciudadano en nuestra plataforma oficial. Tu información ha sido guardada de manera segura en el Directorio.\n\nTu participación es sumamente importante para el proyecto de transformación del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque. 🏛️✨\n\n¿Hay alguna gestión o petición en la que te podamos ayudar hoy?`;
                                     newBotState = 'idle';
 
                                     extraDataToMerge.tempName = '';
@@ -1498,7 +1498,7 @@ Respuesta del ciudadano: "${newInvitedBy}"`;
                                             try {
                                                 const genAI = new GoogleGenerativeAI(geminiKey);
                                                 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-                                                const promptText = `Eres el asistente de atención ciudadana del Candidato Javier Lamarque en Sonora. Estás respondiendo a un ciudadano llamado ${firstName} que tiene preguntas, dudas o comentarios sobre un evento.
+                                                const promptText = `Eres el asistente de atención ciudadana del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora. Ten en cuenta que Javier Lamarque ha sido 3 veces Alcalde de Cajeme y tiene una probada experiencia. Estás respondiendo a un ciudadano llamado ${firstName} que tiene preguntas, dudas o comentarios sobre un evento.
 
 Usa la siguiente información oficial para responder a sus dudas de forma clara, amable y precisa:
 ${EVENT_CONTEXT}
@@ -1520,7 +1520,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                                 if (msgLower.includes('lamarque') || msgLower.includes('obregon') || msgLower.includes('obregón') || msgLower.includes('itson') || msgLower.includes('asamblea') || msgLower.includes('20')) {
                                                     replyText = `¡Hola, ${firstName}! La Asamblea Informativa "Así Gobierna la 4T en Sonora" con el invitado especial Javier Lamarque Cano se llevará a cabo el sábado 20 de junio a las 10:00 AM en la Arena ITSON, en Ciudad Obregón. ¡Te esperamos! 🏛️✨`;
                                                 } else {
-                                                    replyText = `¡Hola, ${firstName}! El gran Torneo de Dominadas de nuestro Candidato Javier Lamarque se llevó a cabo el sábado 13 de junio. Tenemos 3 sedes en Guaymas: Fátima (11:00 AM), Centinela (4:00 PM) y Guaymas Norte (6:00 PM). Los requisitos son copia de acta de nacimiento del menor, copia del INE del tutor y la carta responsiva firmada. ¡Te esperamos! ⚽🏆`;
+                                                    replyText = `¡Hola, ${firstName}! El gran Torneo de Dominadas de nuestro Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque se llevó a cabo el sábado 13 de junio. Tenemos 3 sedes en Guaymas: Fátima (11:00 AM), Centinela (4:00 PM) y Guaymas Norte (6:00 PM). Los requisitos son copia de acta de nacimiento del menor, copia del INE del tutor y la carta responsiva firmada. ¡Te esperamos! ⚽🏆`;
                                                 }
                                                 newBotState = 'idle';
                                             }
@@ -1529,7 +1529,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                             if (msgLower.includes('lamarque') || msgLower.includes('obregon') || msgLower.includes('obregón') || msgLower.includes('itson') || msgLower.includes('asamblea') || msgLower.includes('20')) {
                                                 replyText = `¡Hola, ${firstName}! La Asamblea Informativa "Así Gobierna la 4T en Sonora" con el invitado especial Javier Lamarque Cano se llevará a cabo el sábado 20 de junio a las 10:00 AM en la Arena ITSON, en Ciudad Obregón. ¡Te esperamos! 🏛️✨`;
                                             } else {
-                                                replyText = `¡Hola, ${firstName}! El gran Torneo de Dominadas de nuestro Candidato Javier Lamarque se llevó a cabo el sábado 13 de junio. Tenemos 3 sedes en Guaymas: Fátima (11:00 AM), Centinela (4:00 PM) y Guaymas Norte (6:00 PM). Los requisitos son copia de acta de nacimiento del menor, copia del INE del tutor y la carta responsiva firmada. ¡Te esperamos! ⚽🏆`;
+                                                replyText = `¡Hola, ${firstName}! El gran Torneo de Dominadas de nuestro Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque se llevó a cabo el sábado 13 de junio. Tenemos 3 sedes en Guaymas: Fátima (11:00 AM), Centinela (4:00 PM) y Guaymas Norte (6:00 PM). Los requisitos son copia de acta de nacimiento del menor, copia del INE del tutor y la carta responsiva firmada. ¡Te esperamos! ⚽🏆`;
                                             }
                                             newBotState = 'idle';
                                         }
@@ -1540,7 +1540,13 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                             try {
                                                 const genAI = new GoogleGenerativeAI(geminiKey);
                                                 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-                                                const promptText = `Eres el asistente de atención ciudadana del Candidato Javier Lamarque en Sonora. Responde de manera sumamente cálida, amable, institucional y natural en español a este mensaje del ciudadano ${firstName}. Si es un saludo, salúdalo de vuelta y pregúntale en qué le puedes ayudar. Si es plática casual ("cómo estás", "qué tal"), responde amablemente. Mantén la respuesta breve (máximo 3 enunciados) y usa emojis apropiados.
+                                                const promptText = `Eres el asistente de atención ciudadana del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora.
+
+Ten en cuenta los siguientes logros e información clave sobre Javier Lamarque para responder de manera natural cuando te pregunten sobre él:
+- Es 3 veces Alcalde de Cajeme, lo que demuestra su amplia experiencia y resultados en la administración pública.
+- Es Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora.
+
+Responde de manera sumamente cálida, amable, institucional y natural en español a este mensaje del ciudadano ${firstName}. Si es un saludo, salúdalo de vuelta y pregúntale en qué le puedes ayudar. Si es plática casual ("cómo estás", "qué tal"), responde amablemente. Mantén la respuesta breve (máximo 3 enunciados) y usa emojis apropiados.
 
 Si el ciudadano hace mención de algún evento o torneo, ten en cuenta la siguiente información oficial:
 ${EVENT_CONTEXT}
@@ -1550,11 +1556,11 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                                 replyText = result.response.text().trim();
                                                 newBotState = 'idle';
                                             } catch (err) {
-                                                replyText = `¡Muchísimas gracias por tus palabras y por tu valioso apoyo a nuestro movimiento y al Candidato Javier Lamarque! 🏛️❤️🎉\n\nTu convicción y participación son el motor de esta gran transformación en Sonora. ¡Un fuerte abrazo y sigamos adelante! 💪`;
+                                                replyText = `¡Muchísimas gracias por tus palabras y por tu valioso apoyo a nuestro movimiento y al Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque! 🏛️❤️🎉\n\nTu convicción y participación son el motor de esta gran transformación en Sonora. ¡Un fuerte abrazo y sigamos adelante! 💪`;
                                                 newBotState = 'idle';
                                             }
                                         } else {
-                                            replyText = `¡Muchísimas gracias por tus palabras y por tu valioso apoyo a nuestro movimiento y al Candidato Javier Lamarque! 🏛️❤️🎉\n\nTu convicción y participación son el motor de esta gran transformación en Sonora. ¡Un fuerte abrazo y sigamos adelante! 💪`;
+                                            replyText = `¡Muchísimas gracias por tus palabras y por tu valioso apoyo a nuestro movimiento y al Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque! 🏛️❤️🎉\n\nTu convicción y participación son el motor de esta gran transformación en Sonora. ¡Un fuerte abrazo y sigamos adelante! 💪`;
                                             newBotState = 'idle';
                                         }
                                     } else if (calculatedIntent === 'peticion') {
@@ -1680,7 +1686,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                                     timestamp: serverTimestamp()
                                                 });
 
-                                                replyText = `¡Felicidades! 🎉 He completado tu registro como Enlace Ciudadano en nuestra plataforma oficial. Tu información ha sido guardada de manera segura en el Directorio.\n\nTu participación es sumamente importante para el proyecto de transformación del Candidato Javier Lamarque. 🏛️✨\n\n¿Hay alguna gestión o petición en la que te podamos ayudar hoy?`;
+                                                replyText = `¡Felicidades! 🎉 He completado tu registro como Enlace Ciudadano en nuestra plataforma oficial. Tu información ha sido guardada de manera segura en el Directorio.\n\nTu participación es sumamente importante para el proyecto de transformación del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque. 🏛️✨\n\n¿Hay alguna gestión o petición en la que te podamos ayudar hoy?`;
                                                 newBotState = 'idle';
                                                 
                                                 extraDataToMerge.tempName = '';
@@ -1716,7 +1722,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                             try {
                                                 const genAI = new GoogleGenerativeAI(geminiKey);
                                                 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-                                                const promptText = `Eres el asistente de atención ciudadana del Candidato Javier Lamarque en Sonora. Estás respondiendo a un ciudadano llamado ${firstName} que tiene preguntas, dudas o comentarios sobre un evento.
+                                                const promptText = `Eres el asistente de atención ciudadana del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora. Ten en cuenta que Javier Lamarque ha sido 3 veces Alcalde de Cajeme y tiene una probada experiencia. Estás respondiendo a un ciudadano llamado ${firstName} que tiene preguntas, dudas o comentarios sobre un evento.
 
 Usa la siguiente información oficial para responder a sus dudas de forma clara, amable y precisa:
 ${EVENT_CONTEXT}
@@ -1738,7 +1744,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                                 if (msgLower.includes('lamarque') || msgLower.includes('obregon') || msgLower.includes('obregón') || msgLower.includes('itson') || msgLower.includes('asamblea') || msgLower.includes('20')) {
                                                     replyText = `¡Hola, ${firstName}! La Asamblea Informativa "Así Gobierna la 4T en Sonora" con el invitado especial Javier Lamarque Cano se llevará a cabo el sábado 20 de junio a las 10:00 AM en la Arena ITSON, en Ciudad Obregón. ¡Te esperamos! 🏛️✨`;
                                                 } else {
-                                                    replyText = `¡Hola, ${firstName}! El gran Torneo de Dominadas de nuestro Candidato Javier Lamarque se llevó a cabo el sábado 13 de junio. Tenemos 3 sedes en Guaymas: Fátima (11:00 AM), Centinela (4:00 PM) y Guaymas Norte (6:00 PM). Los requisitos son copia de acta de nacimiento del menor, copia del INE del tutor y la carta responsiva firmada. ¡Te esperamos! ⚽🏆`;
+                                                    replyText = `¡Hola, ${firstName}! El gran Torneo de Dominadas de nuestro Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque se llevó a cabo el sábado 13 de junio. Tenemos 3 sedes en Guaymas: Fátima (11:00 AM), Centinela (4:00 PM) y Guaymas Norte (6:00 PM). Los requisitos son copia de acta de nacimiento del menor, copia del INE del tutor y la carta responsiva firmada. ¡Te esperamos! ⚽🏆`;
                                                 }
                                                 newBotState = 'idle';
                                             }
@@ -1747,7 +1753,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                             if (msgLower.includes('lamarque') || msgLower.includes('obregon') || msgLower.includes('obregón') || msgLower.includes('itson') || msgLower.includes('asamblea') || msgLower.includes('20')) {
                                                 replyText = `¡Hola, ${firstName}! La Asamblea Informativa "Así Gobierna la 4T en Sonora" con el invitado especial Javier Lamarque Cano se llevará a cabo el sábado 20 de junio a las 10:00 AM en la Arena ITSON, en Ciudad Obregón. ¡Te esperamos! 🏛️✨`;
                                             } else {
-                                                replyText = `¡Hola, ${firstName}! El gran Torneo de Dominadas de nuestro Candidato Javier Lamarque se llevó a cabo el sábado 13 de junio. Tenemos 3 sedes en Guaymas: Fátima (11:00 AM), Centinela (4:00 PM) y Guaymas Norte (6:00 PM). Los requisitos son copia de acta de nacimiento del menor, copia del INE del tutor y la carta responsiva firmada. ¡Te esperamos! ⚽🏆`;
+                                                replyText = `¡Hola, ${firstName}! El gran Torneo de Dominadas de nuestro Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque se llevó a cabo el sábado 13 de junio. Tenemos 3 sedes en Guaymas: Fátima (11:00 AM), Centinela (4:00 PM) y Guaymas Norte (6:00 PM). Los requisitos son copia de acta de nacimiento del menor, copia del INE del tutor y la carta responsiva firmada. ¡Te esperamos! ⚽🏆`;
                                             }
                                             newBotState = 'idle';
                                         }
@@ -1759,7 +1765,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                             try {
                                                 const genAI = new GoogleGenerativeAI(geminiKey);
                                                 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-                                                const promptText = `Eres el asistente de atención ciudadana del Candidato Javier Lamarque en Sonora. Estás en medio de una conversación con ${firstName} que te acaba de enviar un mensaje casual o de seguimiento a un saludo previo. Responde de manera natural, cálida y breve (máximo 3 enunciados) en español. Si te pregunta "cómo estás" o algo similar, responde amablemente y pregúntale en qué le puedes ayudar. Usa emojis apropiados.
+                                                const promptText = `Eres el asistente de atención ciudadana del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora. Ten en cuenta que Javier Lamarque ha sido 3 veces Alcalde de Cajeme y tiene una probada experiencia. Estás en medio de una conversación con ${firstName} que te acaba de enviar un mensaje casual o de seguimiento a un saludo previo. Responde de manera natural, cálida y breve (máximo 3 enunciados) en español. Si te pregunta "cómo estás" o algo similar, responde amablemente y pregúntale en qué le puedes ayudar. Usa emojis apropiados.
 
 Si el ciudadano hace mención de algún evento o torneo, ten en cuenta la siguiente información oficial:
 ${EVENT_CONTEXT}
@@ -1811,7 +1817,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                                     try {
                                                         const genAI = new GoogleGenerativeAI(geminiKey);
                                                         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-                                                        const promptText = `Eres el asistente de atención ciudadana del Candidato Javier Lamarque en Sonora. Estás respondiendo a un ciudadano llamado ${firstName} que tiene preguntas, dudas o comentarios sobre un evento.
+                                                        const promptText = `Eres el asistente de atención ciudadana del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora. Ten en cuenta que Javier Lamarque ha sido 3 veces Alcalde de Cajeme y tiene una probada experiencia. Estás respondiendo a un ciudadano llamado ${firstName} que tiene preguntas, dudas o comentarios sobre un evento.
 
 Usa la siguiente información oficial para responder a sus dudas de forma clara, amable y precisa:
 ${EVENT_CONTEXT}
@@ -1833,7 +1839,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                                         if (msgLower.includes('lamarque') || msgLower.includes('obregon') || msgLower.includes('obregón') || msgLower.includes('itson') || msgLower.includes('asamblea') || msgLower.includes('20')) {
                                                             replyText = `¡Hola, ${firstName}! La Asamblea Informativa "Así Gobierna la 4T en Sonora" con el invitado especial Javier Lamarque Cano se llevará a cabo el sábado 20 de junio a las 10:00 AM en la Arena ITSON, en Ciudad Obregón. ¡Te esperamos! 🏛️✨`;
                                                         } else {
-                                                            replyText = `¡Hola, ${firstName}! El gran Torneo de Dominadas de nuestro Candidato Javier Lamarque se llevó a cabo el sábado 13 de junio. Tenemos 3 sedes en Guaymas: Fátima (11:00 AM), Centinela (4:00 PM) y Guaymas Norte (6:00 PM). Los requisitos son copia de acta de nacimiento del menor, copia del INE del tutor y la carta responsiva firmada. ¡Te esperamos! ⚽🏆`;
+                                                            replyText = `¡Hola, ${firstName}! El gran Torneo de Dominadas de nuestro Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque se llevó a cabo el sábado 13 de junio. Tenemos 3 sedes en Guaymas: Fátima (11:00 AM), Centinela (4:00 PM) y Guaymas Norte (6:00 PM). Los requisitos son copia de acta de nacimiento del menor, copia del INE del tutor y la carta responsiva firmada. ¡Te esperamos! ⚽🏆`;
                                                         }
                                                         newBotState = 'idle';
                                                     }
@@ -1842,7 +1848,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                                     if (msgLower.includes('lamarque') || msgLower.includes('obregon') || msgLower.includes('obregón') || msgLower.includes('itson') || msgLower.includes('asamblea') || msgLower.includes('20')) {
                                                         replyText = `¡Hola, ${firstName}! La Asamblea Informativa "Así Gobierna la 4T en Sonora" con el invitado especial Javier Lamarque Cano se llevará a cabo el sábado 20 de junio a las 10:00 AM en la Arena ITSON, en Ciudad Obregón. ¡Te esperamos! 🏛️✨`;
                                                     } else {
-                                                        replyText = `¡Hola, ${firstName}! El gran Torneo de Dominadas de nuestro Candidato Javier Lamarque se llevó a cabo el sábado 13 de junio. Tenemos 3 sedes en Guaymas: Fátima (11:00 AM), Centinela (4:00 PM) y Guaymas Norte (6:00 PM). Los requisitos son copia de acta de nacimiento del menor, copia del INE del tutor y la carta responsiva firmada. ¡Te esperamos! ⚽🏆`;
+                                                        replyText = `¡Hola, ${firstName}! El gran Torneo de Dominadas de nuestro Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque se llevó a cabo el sábado 13 de junio. Tenemos 3 sedes en Guaymas: Fátima (11:00 AM), Centinela (4:00 PM) y Guaymas Norte (6:00 PM). Los requisitos son copia de acta de nacimiento del menor, copia del INE del tutor y la carta responsiva firmada. ¡Te esperamos! ⚽🏆`;
                                                     }
                                                     newBotState = 'idle';
                                                 }
@@ -1874,7 +1880,13 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                                             try {
                                                                 const genAI = new GoogleGenerativeAI(geminiKey);
                                                                 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-                                                                const promptText = `Eres el asistente de atención ciudadana del Candidato Javier Lamarque en Sonora. Responde de manera sumamente cálida, amable, institucional y natural en español a este mensaje del ciudadano ${firstName}. Si es un saludo de apoyo, agradece su entusiasmo. Si es una duda, responde amablemente y recuérdale que estamos para servirle. Mantén la respuesta breve (máximo 3 enunciados) y usa emojis apropiados.
+                                                                const promptText = `Eres el asistente de atención ciudadana del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora.
+
+Ten en cuenta los siguientes logros e información clave sobre Javier Lamarque para responder de manera natural cuando te pregunten sobre él:
+- Es 3 veces Alcalde de Cajeme, lo que demuestra su amplia experiencia y resultados en la administración pública.
+- Es Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora.
+
+Responde de manera sumamente cálida, amable, institucional y natural en español a este mensaje del ciudadano ${firstName}. Si es un saludo de apoyo, agradece su entusiasmo. Si es una duda, responde amablemente y recuérdale que estamos para servirle. Mantén la respuesta breve (máximo 3 enunciados) y usa emojis apropiados.
 
 Si el ciudadano hace mención de algún evento o torneo, ten en cuenta la siguiente información oficial:
 ${EVENT_CONTEXT}
@@ -1901,7 +1913,13 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                                         try {
                                                             const genAI = new GoogleGenerativeAI(geminiKey);
                                                             const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-                                                            const promptText = `Eres el asistente de atención ciudadana del Candidato Javier Lamarque en Sonora. Responde de manera sumamente cálida, amable, institucional y natural en español a este mensaje del ciudadano ${firstName}. Si es un saludo de apoyo, agradece su entusiasmo. Si es una duda, responde amablemente y recuérdale que estamos para servirle. Mantén la respuesta breve (máximo 3 enunciados) y usa emojis apropiados.
+                                                            const promptText = `Eres el asistente de atención ciudadana del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora.
+
+Ten en cuenta los siguientes logros e información clave sobre Javier Lamarque para responder de manera natural cuando te pregunten sobre él:
+- Es 3 veces Alcalde de Cajeme, lo que demuestra su amplia experiencia y resultados en la administración pública.
+- Es Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora.
+
+Responde de manera sumamente cálida, amable, institucional y natural en español a este mensaje del ciudadano ${firstName}. Si es un saludo de apoyo, agradece su entusiasmo. Si es una duda, responde amablemente y recuérdale que estamos para servirle. Mantén la respuesta breve (máximo 3 enunciados) y usa emojis apropiados.
 
 Si el ciudadano hace mención de algún evento o torneo, ten en cuenta la siguiente información oficial:
 ${EVENT_CONTEXT}
@@ -1922,7 +1940,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                                             }
                                         } else {
                                             // Contact NOT found by phone number
-                                            replyText = `¡Hola! 👋 Te saluda el Asistente Virtual del Candidato Javier Lamarque. Veo que nos escribes desde este número pero aún no lo tenemos registrado en nuestra red ciudadana.\n\n¿Ya te habías registrado anteriormente con otro número de teléfono o eres un nuevo integrante? 🗳️\n\nEscribe:\n1️⃣ **"Ya me registré"** (si usaste otro número)\n2️⃣ **"Soy nuevo"** (si deseas registrarte hoy)`;
+                                            replyText = `¡Hola! 👋 Te saluda el Asistente Virtual del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque. Veo que nos escribes desde este número pero aún no lo tenemos registrado en nuestra red ciudadana.\n\n¿Ya te habías registrado anteriormente con otro número de teléfono o eres un nuevo integrante? 🗳️\n\nEscribe:\n1️⃣ **"Ya me registré"** (si usaste otro número)\n2️⃣ **"Soy nuevo"** (si deseas registrarte hoy)`;
                                             newBotState = 'validando_telefono';
                                         }
                                     }
@@ -1950,7 +1968,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                             } catch (dbErr) {
                                 console.error('Error saving gestion to Firestore CRM collection:', dbErr);
                             }
-                            replyText = `¡Listo! He registrado tu caso con el **Folio de Gestión: ${randomFolio}** y lo he canalizado con nuestro equipo de Vinculación. 📋\n\n📞 El número de teléfono oficial de Vinculación es: **662 423 6390**\n\n🔗 Puedes escribirles directamente haciendo clic en el siguiente enlace de WhatsApp:\nhttps://wa.me/526624236390?text=Hola,%20mi%20Folio%20de%20Gesti%C3%B3n%20es%20${randomFolio}\n\nComo Enlace Ciudadano registrado del Candidato Javier Lamarque, tu participación es sumamente importante para nosotros. Sigamos en comunicación por esta vía para mantenerte al tanto de las actividades y coordinar nuestro apoyo en territorio. ¡Que tengas un excelente día! 🏛️✨`;
+                            replyText = `¡Listo! He registrado tu caso con el **Folio de Gestión: ${randomFolio}** y lo he canalizado con nuestro equipo de atención ciudadana. 📋\n\nComo Enlace Ciudadano registrado del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque, tu participación es sumamente importante para nosotros. Sigamos en comunicación por esta vía para mantenerte al tanto de las actividades y coordinar nuestro apoyo en territorio. ¡Que tengas un excelente día! 🏛️✨`;
                         }
 
                         // Send the reply if we constructed one

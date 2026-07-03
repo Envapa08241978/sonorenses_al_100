@@ -4,7 +4,7 @@ import DominadasForm from './DominadasForm'
 
 export const metadata: Metadata = {
     title: 'Torneo Estatal: Dominadas en mi Barrio — Hermosillo 2026',
-    description: 'Convocatoria al Torneo Estatal "Dominadas en mi Barrio" organizado por el Candidato Carlos Javier Lamarque Cano. 29 de junio y 01 de julio 2026, Hermosillo, Sonora. Inscripción gratuita.',
+    description: 'Convocatoria al Torneo Estatal "Dominadas en mi Barrio" organizado por el Aspirante a la Coordinación Estatal Carlos Javier Lamarque Cano. 29 de junio y 01 de julio 2026, Hermosillo, Sonora. Inscripción gratuita.',
     keywords: [
         'dominadas en mi barrio',
         'torneo estatal dominadas',
@@ -50,7 +50,7 @@ export default function DominadasPage() {
                     {/* OBJETIVO */}
                     <div className="objetivo-wrapper">
                         <p className="objetivo-title">
-                            Con el objetivo de fomentar la actividad física, la sana convivencia y el talento entre nuestra comunidad, el Candidato de la República{' '}
+                            Con el objetivo de fomentar la actividad física, la sana convivencia y el talento entre nuestra comunidad, el Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora{' '}
                             <strong style={{ color: '#fff' }}>Carlos Javier Lamarque Cano</strong>{' '}
                             lanza la presente convocatoria:
                         </p>

@@ -120,7 +120,7 @@ export default function ChatTab({
                     <div className="relative flex-shrink-0">
                         <img 
                             src="/javier_lamarque.jpg" 
-                            alt="Candidato Javier Lamarque" 
+                            alt="Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque" 
                             className="w-10 h-10 rounded-full object-cover border-2 border-red-500 shadow-md"
                             onError={(e) => {
                                 e.currentTarget.src = "https://via.placeholder.com/150";
@@ -129,7 +129,7 @@ export default function ChatTab({
                         <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full animate-pulse" />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <div className="font-black text-gray-800 text-xs truncate leading-tight">Candidato Javier Lamarque</div>
+                        <div className="font-black text-gray-800 text-xs truncate leading-tight">Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque</div>
                         <div className="text-[9px] text-green-600 font-bold flex items-center gap-1 mt-0.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block animate-ping"></span>
                             <span>WhatsApp Conectado</span>
@@ -435,7 +435,7 @@ export default function ChatTab({
                             <div className="w-32 h-32 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center border-4 border-white shadow-inner">
                                 <img 
                                     src="/javier_lamarque.jpg" 
-                                    alt="Candidato Javier Lamarque" 
+                                    alt="Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque" 
                                     className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
                                     onError={(e) => {
                                         e.currentTarget.src = "https://via.placeholder.com/150";
@@ -446,7 +446,7 @@ export default function ChatTab({
                         </div>
                         <div className="max-w-md">
                             <h3 className="font-black text-2xl text-gray-800 tracking-tight mb-1">
-                                Candidato Javier Lamarque
+                                Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque
                             </h3>
                             <p className="text-xs font-bold text-red-600 uppercase tracking-widest mb-4">
                                 Plataforma de Vinculación Ciudadana

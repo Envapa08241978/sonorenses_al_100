@@ -39,7 +39,7 @@ export default function ConfigTab({
             <div className="space-y-6 mb-12">
                 {[
                     { key: 'name', label: 'Nombre Formal', type: 'text', placeholder: 'Ej. Javier Lamarque' },
-                    { key: 'title', label: 'Cargo o Título', type: 'text', placeholder: 'Ej. Candidato de la República' },
+                    { key: 'title', label: 'Cargo o Título', type: 'text', placeholder: 'Ej. Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora' },
                     { key: 'party', label: 'Partido', type: 'text', placeholder: 'Ej. Morena' },
                     { key: 'phone', label: 'WhatsApp de Enlace Institucional (10 dígitos)', type: 'tel', placeholder: 'Ej. 6621234567' },
                     { key: 'dashboardPassword', label: 'Contraseña de este Panel', type: 'password', placeholder: '••••••••' },

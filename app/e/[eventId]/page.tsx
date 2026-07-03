@@ -29,7 +29,7 @@ async function getOgImage(eventId: string): Promise<string> {
 }
 
 async function getEventName(eventId: string): Promise<string> {
-    const defaultName = 'Registro Ciudadano - Candidato Carlos Javier Lamarque Cano'
+    const defaultName = 'Registro Ciudadano - Aspirante a la Coordinación Estatal Carlos Javier Lamarque Cano'
 
     try {
         if (!eventId) return defaultName
@@ -59,12 +59,12 @@ export async function generateMetadata(
 
     return {
         title: `${eventName} | Carlos Javier Lamarque Cano`,
-        description: 'Registro ciudadano y participación comunitaria. Plataforma oficial del Candidato Carlos Javier Lamarque Cano para el Estado de Sonora.',
+        description: 'Registro ciudadano y participación comunitaria. Plataforma oficial del Aspirante a la Coordinación Estatal Carlos Javier Lamarque Cano para el Estado de Sonora.',
         openGraph: {
             title: eventName,
-            description: 'Registro ciudadano y participación comunitaria del Candidato Carlos Javier Lamarque Cano.',
+            description: 'Registro ciudadano y participación comunitaria del Aspirante a la Coordinación Estatal Carlos Javier Lamarque Cano.',
             url: `https://www.sonorensesal100.com/e/${params.eventId}`,
-            siteName: 'Carlos Javier Lamarque Cano - Candidato de la República',
+            siteName: 'Carlos Javier Lamarque Cano - Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora',
             images: [
                 {
                     url: ogImage,
@@ -79,7 +79,7 @@ export async function generateMetadata(
         twitter: {
             card: 'summary_large_image',
             title: eventName,
-            description: 'Registro ciudadano del Candidato Carlos Javier Lamarque Cano.',
+            description: 'Registro ciudadano del Aspirante a la Coordinación Estatal Carlos Javier Lamarque Cano.',
             images: [ogImage],
         },
     }

@@ -812,7 +812,7 @@ function CitizenEventPageInner(props: { eventId?: string }) {
             <footer className="py-6 text-center bg-gray-900 border-t border-gray-800">
                 <Link href="https://sonorensesal100.com" target="_blank"
                     className="text-xs font-bold text-gray-400 hover:text-white transition-colors">
-                    Carlos Javier Lamarque Cano • Candidato de la República
+                    Carlos Javier Lamarque Cano • Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora
                 </Link>
             </footer>
 
