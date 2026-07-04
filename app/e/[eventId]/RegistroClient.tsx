@@ -1187,62 +1187,6 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                                                     className="flex-1 px-3 py-2 rounded-xl text-sm font-bold border border-gray-200 bg-gray-50 outline-none focus:border-red-400 focus:bg-white transition-colors text-gray-800 tracking-wider" />
                                             </div>
                                         </div>
-    
-                                        <div>
-                                            <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">Ciudad</label>
-                                            <input type="text" value={rsvpCiudad} onChange={(e) => setRsvpCiudad(e.target.value)}
-                                                placeholder="Ej. Hermosillo"
-                                                className="w-full px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 bg-gray-50 outline-none focus:border-red-400 focus:bg-white transition-colors text-gray-800" />
-                                        </div>
-    
-                                        <div>
-                                            <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">Calle</label>
-                                            <input type="text" value={rsvpCalle} onChange={(e) => setRsvpCalle(e.target.value)}
-                                                placeholder="Ej. Av. Reforma"
-                                                className="w-full px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 bg-gray-50 outline-none focus:border-red-400 focus:bg-white transition-colors text-gray-800" />
-                                        </div>
-    
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div>
-                                                <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">Número Exterior</label>
-                                                <input type="text" value={rsvpNumExt} onChange={(e) => setRsvpNumExt(e.target.value)}
-                                                    placeholder="Ej. 123"
-                                                    className="w-full px-3 py-2 rounded-xl text-sm font-bold border border-gray-200 bg-gray-50 outline-none focus:border-red-400 text-center text-gray-800 focus:bg-white" />
-                                            </div>
-                                            <div>
-                                                <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">Sección Electoral</label>
-                                                <input type="text" value={rsvpSeccional} onChange={(e) => setRsvpSeccional(e.target.value)}
-                                                    placeholder="Ej. 1234"
-                                                    className="w-full px-3 py-2 rounded-xl text-sm font-bold border border-gray-200 bg-gray-50 outline-none focus:border-red-400 text-center text-gray-800 focus:bg-white" />
-                                            </div>
-                                        </div>
-    
-                                        <div>
-                                            <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-1.5">Le gustaría ser parte de nuestro movimiento como:</label>
-                                            <div className="space-y-1.5">
-                                                {['Protagonista del cambio verdadero', 'Promoción del voto', 'Defensa del voto', 'Activismo digital'].map(role => (
-                                                    <label key={role} className={`flex items-center gap-3 p-2 rounded-xl border cursor-pointer transition-all ${
-                                                        rsvpRoles.includes(role)
-                                                            ? 'border-red-400 bg-red-50/50'
-                                                            : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
-                                                    }`}>
-                                                        <input type="checkbox" checked={rsvpRoles.includes(role)}
-                                                            onChange={() => setRsvpRoles(prev => prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role])}
-                                                            className="w-4 h-4 accent-red-500" />
-                                                        <span className="text-sm font-medium text-gray-700">{role}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </div>
-    
-                                        {!parentId && (
-                                            <div className="mt-4">
-                                                <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">Soy invitado por *</label>
-                                                <input type="text" value={rsvpParentName} onChange={(e) => setRsvpParentName(e.target.value)}
-                                                    placeholder="Nombre de quien te invitó"
-                                                    className="w-full px-3 py-2 rounded-xl text-sm font-bold border border-gray-200 bg-gray-50 outline-none focus:border-red-400 text-gray-800 focus:bg-white" />
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                                 
