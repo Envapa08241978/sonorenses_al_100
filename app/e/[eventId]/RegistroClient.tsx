@@ -989,24 +989,22 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
             {/* ==========================================
                 FLOATING UPLOAD BUTTON
                 ========================================== */}
-            {!props.hideGalleryAndRespalda && (
-                <div className="fixed bottom-6 right-4 z-40">
-                    <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileUpload} className="hidden" />
+            <div className="fixed bottom-6 right-4 z-40">
+                <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileUpload} className="hidden" />
 
-                    <button onClick={() => {
-                        if (!knownContact) {
-                            setShowIdentityModal(true)
-                        } else {
-                            fileInputRef.current?.click()
-                        }
-                    }} disabled={isUploading}
-                        className="w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-transform active:scale-90 disabled:opacity-50"
-                        style={{ background: accent, border: '4px solid white' }}>
-                        {isUploading ? <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
-                            : <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>}
-                    </button>
-                </div>
-            )}
+                <button onClick={() => {
+                    if (!knownContact) {
+                        setShowIdentityModal(true)
+                    } else {
+                        fileInputRef.current?.click()
+                    }
+                }} disabled={isUploading}
+                    className="w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-transform active:scale-90 disabled:opacity-50"
+                    style={{ background: accent, border: '4px solid white' }}>
+                    {isUploading ? <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
+                        : <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>}
+                </button>
+            </div>
 
             {/* ==========================================
                 FOOTER
