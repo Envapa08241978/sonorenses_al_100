@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { GoogleMap, Polygon } from '@react-google-maps/api';
+import { GoogleMap, Polygon, Marker, InfoWindow } from '@react-google-maps/api';
 import { ContactItem, LEVEL_STYLES, SONORA_CENTER } from './types';
+import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 interface MapTabProps {
     contacts: ContactItem[];
@@ -14,8 +16,10 @@ export default function MapTab({ contacts, accent, isMapLoaded }: MapTabProps) {
     const [mapData, setMapData] = useState<any>(null);
     const [selectedSector, setSelectedSector] = useState<any>(null);
     const [isLoadingMap, setIsLoadingMap] = useState(true);
+    const [media, setMedia] = useState<any[]>([]);
+    const [selectedMedia, setSelectedMedia] = useState<any>(null);
 
-    // LAZY LOAD: Only fetch map data when this tab mounts
+    // LAZY LOAD: Fetch map data
     useEffect(() => {
         setIsLoadingMap(true);
         fetch('/map_data.json')
@@ -24,9 +28,22 @@ export default function MapTab({ contacts, accent, isMapLoaded }: MapTabProps) {
             .catch(err => { console.error(err); setIsLoadingMap(false); });
     }, []);
 
+    // Fetch media for markers
+    useEffect(() => {
+        const mediaRef = collection(db, 'campaigns', 'main_campaign', 'media');
+        const q = query(mediaRef, orderBy('timestamp', 'desc'));
+        const unsub = onSnapshot(q, (snap) => {
+            const fetched = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
+            // Only keep media with lat/lng
+            setMedia(fetched.filter((m: any) => m.lat && m.lng));
+        });
+        return () => unsub();
+    }, []);
+
     return (
-        <div className="h-[750px] flex flex-col md:flex-row animate-in slide-in-from-right duration-500">
-            <div className="flex-1 bg-slate-100 relative">
+        <div className="flex flex-col gap-6 overflow-y-auto pb-10">
+            <div className="h-[750px] flex flex-col md:flex-row animate-in slide-in-from-right duration-500 rounded-2xl overflow-hidden shadow-sm border border-slate-200">
+                <div className="flex-1 bg-slate-100 relative">
                 {isMapLoaded && mapData ? (
                     <GoogleMap mapContainerStyle={{width:'100%', height:'100%'}} center={SONORA_CENTER} zoom={7} options={{disableDefaultUI:true, styles:[{featureType:'poi', elementType:'labels', stylers:[{visibility:'off'}]}]}}>
                         {mapData.targets?.map((t:any, idx:number) => {
@@ -39,7 +56,7 @@ export default function MapTab({ contacts, accent, isMapLoaded }: MapTabProps) {
 
                             return (
                                 <Polygon 
-                                    key={idx} 
+                                    key={`poly-${idx}`} 
                                     paths={t.geometry} 
                                     options={{
                                         fillColor: accent, 
@@ -52,6 +69,30 @@ export default function MapTab({ contacts, accent, isMapLoaded }: MapTabProps) {
                                 />
                             );
                         })}
+                        
+                        {/* Media Markers */}
+                        {media.map((m) => (
+                            <Marker
+                                key={`marker-${m.id}`}
+                                position={{ lat: m.lat, lng: m.lng }}
+                                onClick={() => setSelectedMedia(m)}
+                                icon={{
+                                    url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+                                }}
+                            />
+                        ))}
+
+                        {selectedMedia && (
+                            <InfoWindow
+                                position={{ lat: selectedMedia.lat, lng: selectedMedia.lng }}
+                                onCloseClick={() => setSelectedMedia(null)}
+                            >
+                                <div className="p-2 max-w-[200px]">
+                                    <p className="text-xs font-bold mb-2">Subido por: {selectedMedia.uploaderName || 'Brigadista'}</p>
+                                    <img src={selectedMedia.url} alt="Evidencia" className="w-full h-auto rounded shadow" />
+                                </div>
+                            </InfoWindow>
+                        )}
                     </GoogleMap>
                 ) : <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 font-black text-slate-300 gap-4"><div className="w-10 h-10 border-4 border-slate-200 border-t-theme rounded-full animate-spin"/>DIBUJANDO CARTOGRAFIA...</div>}
             </div>
@@ -155,6 +196,25 @@ export default function MapTab({ contacts, accent, isMapLoaded }: MapTabProps) {
                     </div>
                 )}
             </div>
+            </div>
+            
+            {/* Gallery Section */}
+            {media.length > 0 && (
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-in fade-in slide-in-from-bottom-5">
+                    <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-3">📸 Galería de Evidencias en Campo</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        {media.map((m) => (
+                            <div key={`gallery-${m.id}`} className="group relative rounded-xl overflow-hidden shadow border border-slate-100 aspect-square cursor-pointer hover:shadow-lg transition-all" onClick={() => window.open(m.url, '_blank')}>
+                                <img src={m.url} alt="Evidencia" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
+                                    <p className="text-white text-[10px] font-bold line-clamp-2">{m.uploaderName || 'Brigadista'}</p>
+                                    <p className="text-white/70 text-[8px] mt-1">{new Date(m.timestamp).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

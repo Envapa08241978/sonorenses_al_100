@@ -29,6 +29,10 @@ interface MediaItem {
     type: 'photo' | 'video'
     timestamp: number
     fileName?: string
+    lat?: number
+    lng?: number
+    uploaderId?: string
+    uploaderName?: string
 }
 
 /* ================================================================
@@ -106,6 +110,7 @@ function CitizenEventPageInner(props: { eventId?: string }) {
     const [isLoading, setIsLoading] = useState(true)
     const [showQR, setShowQR] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
+    const [isWatermarking, setIsWatermarking] = useState(false)
     const [uploadSuccess, setUploadSuccess] = useState(false)
     const [uploadError, setUploadError] = useState<string | null>(null)
     const [showUploadOptions, setShowUploadOptions] = useState(false)
@@ -318,7 +323,7 @@ function CitizenEventPageInner(props: { eventId?: string }) {
         setIsDownloading(false)
     }
 
-    /* ---- Upload with content moderation ---- */
+    /* ---- Upload with content moderation and GPS ---- */
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
@@ -334,24 +339,162 @@ function CitizenEventPageInner(props: { eventId?: string }) {
 
         setIsUploading(true)
         try {
+            let lat = 0;
+            let lng = 0;
+            let fileToUpload: File | Blob = file;
+            let finalFileName = `${Date.now()}-${file.name}`;
+            
             if (isImage) {
+                if (!('geolocation' in navigator)) {
+                    setUploadError('Tu dispositivo no soporta GPS. Es obligatorio para la evidencia.');
+                    setIsUploading(false);
+                    resetInputs();
+                    return;
+                }
+                try {
+                    const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 15000 });
+                    });
+                    lat = pos.coords.latitude;
+                    lng = pos.coords.longitude;
+                } catch (geoErr) {
+                    setUploadError('Debes permitir acceso a tu ubicación (GPS) para subir fotos de evidencia.');
+                    setIsUploading(false);
+                    resetInputs();
+                    return;
+                }
+
                 const mod = await analyzeImageContent(file)
                 if (!mod.isAppropriate) { setUploadError(mod.reason || 'Contenido no permitido'); setIsUploading(false); resetInputs(); return }
+
+                // --- WATERMARK PROCESSING ---
+                setIsWatermarking(true);
+                try {
+                    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+                    
+                    // 1. Reverse Geocode
+                    let address = '';
+                    if (apiKey) {
+                        try {
+                            const geoRes = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`);
+                            const geoData = await geoRes.json();
+                            if (geoData.results && geoData.results.length > 0) {
+                                address = geoData.results[0].formatted_address;
+                            }
+                        } catch (e) { console.error('Geocode failed', e); }
+                    }
+
+                    // 2. Load Image
+                    const img = new Image();
+                    img.src = URL.createObjectURL(file);
+                    await new Promise(r => { img.onload = r; });
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d')!;
+
+                    // Draw original image
+                    ctx.drawImage(img, 0, 0);
+                    
+                    // Draw bottom overlay
+                    const overlayHeight = Math.max(300, img.height * 0.25);
+                    const gradient = ctx.createLinearGradient(0, img.height - overlayHeight, 0, img.height);
+                    gradient.addColorStop(0, 'rgba(0,0,0,0)');
+                    gradient.addColorStop(1, 'rgba(0,0,0,0.8)');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, img.height - overlayHeight, img.width, overlayHeight);
+
+                    // 3. Load Static Map
+                    if (apiKey) {
+                        try {
+                            const mapSize = Math.max(200, Math.floor(img.width * 0.2));
+                            const mapImg = new Image();
+                            mapImg.crossOrigin = "Anonymous";
+                            mapImg.src = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=16&size=${mapSize}x${mapSize}&markers=color:red%7C${lat},${lng}&key=${apiKey}`;
+                            await new Promise((resolve, reject) => {
+                                mapImg.onload = resolve;
+                                mapImg.onerror = reject;
+                            });
+                            
+                            // Draw map with border
+                            const padding = Math.floor(img.width * 0.02);
+                            ctx.fillStyle = 'white';
+                            ctx.fillRect(padding - 5, img.height - mapSize - padding - 5, mapSize + 10, mapSize + 10);
+                            ctx.drawImage(mapImg, padding, img.height - mapSize - padding, mapSize, mapSize);
+                        } catch(e) { console.error('Static map load failed', e); }
+                    }
+
+                    // 4. Draw Text
+                    const rightPadding = Math.floor(img.width * 0.02);
+                    const fontSize = Math.max(16, Math.floor(img.width * 0.035));
+                    ctx.fillStyle = 'white';
+                    ctx.textAlign = 'right';
+                    ctx.font = `bold ${fontSize}px sans-serif`;
+                    
+                    // Text Lines
+                    const uploaderNameText = `#${knownContact?.name || parentName || 'Brigadista'}`;
+                    const dateText = new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' });
+                    const coordsText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                    
+                    const lines = [];
+                    lines.push(dateText);
+                    lines.push(coordsText);
+                    if (address) {
+                        // Split address slightly if too long
+                        const addrParts = address.split(', ');
+                        for (const p of addrParts) lines.push(p);
+                    }
+                    lines.push(uploaderNameText);
+
+                    let textY = img.height - rightPadding;
+                    // Draw lines from bottom to top
+                    for (let i = lines.length - 1; i >= 0; i--) {
+                        // Draw shadow
+                        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                        ctx.fillText(lines[i], img.width - rightPadding + 2, textY + 2);
+                        // Draw text
+                        ctx.fillStyle = 'white';
+                        ctx.fillText(lines[i], img.width - rightPadding, textY);
+                        textY -= (fontSize * 1.2);
+                    }
+
+                    // 5. Convert to Blob
+                    const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/jpeg', 0.9));
+                    if (blob) {
+                        fileToUpload = blob;
+                        finalFileName = `${Date.now()}-watermarked.jpg`;
+                    }
+                } catch(e) { console.error('Watermark error', e); }
+                setIsWatermarking(false);
             }
 
-            const fileName = `${Date.now()}-${file.name}`
-            const storageRef = ref(storage, `campaigns/main_campaign/media/${fileName}`)
-            await uploadBytes(storageRef, file)
+            const storageRef = ref(storage, `campaigns/main_campaign/media/${finalFileName}`)
+            await uploadBytes(storageRef, fileToUpload)
             const downloadURL = await getDownloadURL(storageRef)
-            await addDoc(collection(db, 'campaigns', 'main_campaign', 'media'), {
-                url: downloadURL, type: isVideo ? 'video' : 'photo', timestamp: serverTimestamp(), fileName, eventId: event.id || ''
-            })
+            
+            const docData: any = {
+                url: downloadURL, 
+                type: isVideo ? 'video' : 'photo', 
+                timestamp: serverTimestamp(), 
+                fileName: finalFileName, 
+                eventId: event.id || ''
+            };
+            
+            if (isImage && lat && lng) {
+                docData.lat = lat;
+                docData.lng = lng;
+                docData.uploaderId = contactId || parentId || '';
+                docData.uploaderName = knownContact?.name || parentName || '';
+            }
+
+            await addDoc(collection(db, 'campaigns', 'main_campaign', 'media'), docData)
             setUploadSuccess(true)
             setTimeout(() => setUploadSuccess(false), 3000)
         } catch (err) {
             console.error('Upload error:', err)
             setUploadError('Error al subir. Intenta de nuevo.')
-        } finally { setIsUploading(false); resetInputs() }
+        } finally { setIsUploading(false); setIsWatermarking(false); resetInputs() }
     }
 
     const resetInputs = () => {
