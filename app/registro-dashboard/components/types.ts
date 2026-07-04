@@ -26,6 +26,7 @@ export interface ContactItem {
     numInt?: string;
     qrSent?: boolean;
     source?: string;
+    consent?: string;
 }
 
 export interface EventItem {

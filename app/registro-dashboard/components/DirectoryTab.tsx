@@ -264,7 +264,25 @@ export default function DirectoryTab({
                                     <td className="px-6 py-6">
                                         <p className="font-black text-slate-800 text-xs">{c.phone}</p>
                                         <p className="text-[9px] text-slate-400 font-bold uppercase mt-1">SEC: {c.seccional || 'S/D'}</p>
-                                        <p className="text-[9px] text-slate-400 font-bold uppercase">{c.colonia || 'COL. NO ASIG.'}</p>
+                                        <p className="text-[9px] text-slate-400 font-bold uppercase mb-2">{c.colonia || 'COL. NO ASIG.'}</p>
+                                        
+                                        {/* Consentimiento WhatsApp */}
+                                        {c.consent === 'yes' ? (
+                                            <div className="flex items-center gap-1 mt-1">
+                                                <span className="text-emerald-500 text-[10px]">✅</span>
+                                                <span className="text-[8px] font-black text-emerald-600 uppercase tracking-wider bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 shadow-sm">WA Confirmado</span>
+                                            </div>
+                                        ) : c.consent === 'no' ? (
+                                            <div className="flex items-center gap-1 mt-1">
+                                                <span className="text-rose-500 text-[10px]">🚫</span>
+                                                <span className="text-[8px] font-black text-rose-600 uppercase tracking-wider bg-rose-50 px-1.5 py-0.5 rounded border border-rose-100 shadow-sm">Rechazado</span>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-1 mt-1">
+                                                <span className="text-amber-500 text-[10px]">⏳</span>
+                                                <span className="text-[8px] font-black text-amber-600 uppercase tracking-wider bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100 shadow-sm">Pendiente</span>
+                                            </div>
+                                        )}
                                     </td>
                                     <td className="px-10 py-6">
                                         <div className="flex items-center justify-center gap-2 flex-wrap">
