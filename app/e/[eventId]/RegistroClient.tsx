@@ -993,11 +993,7 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                 <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileUpload} className="hidden" />
 
                 <button onClick={() => {
-                    if (!knownContact) {
-                        setShowIdentityModal(true)
-                    } else {
-                        fileInputRef.current?.click()
-                    }
+                    fileInputRef.current?.click()
                 }} disabled={isUploading}
                     className="w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-transform active:scale-90 disabled:opacity-50"
                     style={{ background: accent, border: '4px solid white' }}>
@@ -1062,58 +1058,7 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                 </div>
             )}
 
-            {/* ==========================================
-                IDENTITY MODAL (Lamarque / Brigadista Identifier)
-                ========================================== */}
-            {showIdentityModal && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
-                    onClick={() => setShowIdentityModal(false)}>
-                    <div className="rounded-3xl w-full max-w-sm bg-white shadow-2xl relative p-6 flex flex-col overflow-hidden"
-                        onClick={(e) => e.stopPropagation()}>
-                        <div className="absolute top-0 left-0 w-full h-1.5" style={{ background: accent }}></div>
-                        
-                        <h3 className="text-xl font-black text-gray-800 tracking-tight mb-2 mt-2">Identificación de Brigadista</h3>
-                        <p className="text-xs text-gray-500 font-medium mb-5">Ingresa tu número de WhatsApp registrado para firmar tus evidencias fotográficas con tu nombre:</p>
-                        
-                        <div className="space-y-3 mb-6">
-                            <div className="flex items-center gap-2">
-                                <span className="bg-gray-100 text-gray-500 font-bold px-3 py-2.5 rounded-xl border border-gray-200 text-sm flex-shrink-0">🇲🇽 +52</span>
-                                <input type="tel" value={identityPhone} onChange={(e) => setIdentityPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                                    placeholder="10 dígitos" inputMode="numeric" maxLength={10} autoFocus
-                                    className="flex-1 px-3 py-2.5 rounded-xl text-sm font-bold border border-gray-200 bg-gray-50 outline-none focus:border-red-400 focus:bg-white transition-colors text-gray-800 tracking-wider" />
-                            </div>
-                            {identityError && <p className="text-xs text-red-500 font-bold">⚠️ {identityError}</p>}
-                        </div>
 
-                        <div className="flex flex-col gap-2">
-                            <button onClick={handleIdentityLookup} disabled={isLookingUpIdentity}
-                                className="w-full py-3.5 rounded-xl text-sm font-black text-white shadow-md disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2"
-                                style={{ background: accent }}>
-                                {isLookingUpIdentity ? (
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                ) : 'IDENTIFICARME 🔎'}
-                            </button>
-                            
-                            <div className="flex gap-2 mt-1">
-                                <button onClick={() => {
-                                    setShowIdentityModal(false);
-                                    setTimeout(() => fileInputRef.current?.click(), 300);
-                                }}
-                                    className="flex-1 py-2.5 rounded-xl text-xs font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors active:scale-95 text-center">
-                                    Subir Anónimo
-                                </button>
-                                <button onClick={() => {
-                                    setShowIdentityModal(false);
-                                    setShowRSVP(true);
-                                }}
-                                    className="flex-1 py-2.5 rounded-xl text-xs font-bold text-red-800 bg-red-50 hover:bg-red-100 transition-colors active:scale-95 text-center">
-                                    Registrarme
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
             {uploadError && (
                 <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] rounded-xl px-5 py-3 flex items-center gap-2 text-sm font-bold text-white shadow-xl"
                     style={{ background: '#ef4444' }}>
@@ -1191,6 +1136,62 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                                                     className="flex-1 px-3 py-2 rounded-xl text-sm font-bold border border-gray-200 bg-gray-50 outline-none focus:border-red-400 focus:bg-white transition-colors text-gray-800 tracking-wider" />
                                             </div>
                                         </div>
+    
+                                        <div>
+                                            <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">Ciudad</label>
+                                            <input type="text" value={rsvpCiudad} onChange={(e) => setRsvpCiudad(e.target.value)}
+                                                placeholder="Ej. Hermosillo"
+                                                className="w-full px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 bg-gray-50 outline-none focus:border-red-400 focus:bg-white transition-colors text-gray-800" />
+                                        </div>
+    
+                                        <div>
+                                            <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">Calle</label>
+                                            <input type="text" value={rsvpCalle} onChange={(e) => setRsvpCalle(e.target.value)}
+                                                placeholder="Ej. Av. Reforma"
+                                                className="w-full px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 bg-gray-50 outline-none focus:border-red-400 focus:bg-white transition-colors text-gray-800" />
+                                        </div>
+    
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">Número Exterior</label>
+                                                <input type="text" value={rsvpNumExt} onChange={(e) => setRsvpNumExt(e.target.value)}
+                                                    placeholder="Ej. 123"
+                                                    className="w-full px-3 py-2 rounded-xl text-sm font-bold border border-gray-200 bg-gray-50 outline-none focus:border-red-400 text-center text-gray-800 focus:bg-white" />
+                                            </div>
+                                            <div>
+                                                <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">Sección Electoral</label>
+                                                <input type="text" value={rsvpSeccional} onChange={(e) => setRsvpSeccional(e.target.value)}
+                                                    placeholder="Ej. 1234"
+                                                    className="w-full px-3 py-2 rounded-xl text-sm font-bold border border-gray-200 bg-gray-50 outline-none focus:border-red-400 text-center text-gray-800 focus:bg-white" />
+                                            </div>
+                                        </div>
+    
+                                        <div>
+                                            <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-1.5">Le gustaría ser parte de nuestro movimiento como:</label>
+                                            <div className="space-y-1.5">
+                                                {['Protagonista del cambio verdadero', 'Promoción del voto', 'Defensa del voto', 'Activismo digital'].map(role => (
+                                                    <label key={role} className={`flex items-center gap-3 p-2 rounded-xl border cursor-pointer transition-all ${
+                                                        rsvpRoles.includes(role)
+                                                            ? 'border-red-400 bg-red-50/50'
+                                                            : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
+                                                    }`}>
+                                                        <input type="checkbox" checked={rsvpRoles.includes(role)}
+                                                            onChange={() => setRsvpRoles(prev => prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role])}
+                                                            className="w-4 h-4 accent-red-500" />
+                                                        <span className="text-sm font-medium text-gray-700">{role}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+    
+                                        {!parentId && (
+                                            <div className="mt-4">
+                                                <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">Soy invitado por *</label>
+                                                <input type="text" value={rsvpParentName} onChange={(e) => setRsvpParentName(e.target.value)}
+                                                    placeholder="Nombre de quien te invitó"
+                                                    className="w-full px-3 py-2 rounded-xl text-sm font-bold border border-gray-200 bg-gray-50 outline-none focus:border-red-400 text-gray-800 focus:bg-white" />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                                 
