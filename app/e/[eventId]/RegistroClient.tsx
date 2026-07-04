@@ -364,10 +364,7 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                     return;
                 }
 
-                const mod = await analyzeImageContent(file)
-                if (!mod.isAppropriate) { setUploadError(mod.reason || 'Contenido no permitido'); setIsUploading(false); resetInputs(); return }
-
-                // --- WATERMARK PROCESSING ---
+                // --- WATERMARK PROCESSING & RESIZE ---
                 setIsWatermarking(true);
                 try {
                     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
@@ -384,50 +381,62 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                         } catch (e) { console.error('Geocode failed', e); }
                     }
 
-                    // 2. Load Image
+                    // 2. Load Image & Resize
                     const img = new Image();
                     img.src = URL.createObjectURL(file);
                     await new Promise(r => { img.onload = r; });
 
+                    const MAX_WIDTH = 1200;
+                    let targetWidth = img.width;
+                    let targetHeight = img.height;
+                    
+                    if (img.width > MAX_WIDTH) {
+                        targetWidth = MAX_WIDTH;
+                        targetHeight = Math.floor(img.height * (MAX_WIDTH / img.width));
+                    }
+
                     const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
+                    canvas.width = targetWidth;
+                    canvas.height = targetHeight;
                     const ctx = canvas.getContext('2d')!;
 
-                    // Draw original image
-                    ctx.drawImage(img, 0, 0);
+                    // Draw original image resized
+                    ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
                     
                     // Draw bottom overlay
-                    const overlayHeight = Math.max(300, img.height * 0.25);
-                    const gradient = ctx.createLinearGradient(0, img.height - overlayHeight, 0, img.height);
+                    const overlayHeight = Math.max(300, targetHeight * 0.25);
+                    const gradient = ctx.createLinearGradient(0, targetHeight - overlayHeight, 0, targetHeight);
                     gradient.addColorStop(0, 'rgba(0,0,0,0)');
                     gradient.addColorStop(1, 'rgba(0,0,0,0.8)');
                     ctx.fillStyle = gradient;
-                    ctx.fillRect(0, img.height - overlayHeight, img.width, overlayHeight);
+                    ctx.fillRect(0, targetHeight - overlayHeight, targetWidth, overlayHeight);
 
                     // 3. Load Static Map
                     if (apiKey) {
                         try {
-                            const mapSize = Math.max(200, Math.floor(img.width * 0.2));
+                            const mapSize = Math.max(200, Math.floor(targetWidth * 0.2));
                             const mapImg = new Image();
                             mapImg.crossOrigin = "Anonymous";
                             mapImg.src = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=16&size=${mapSize}x${mapSize}&markers=color:red%7C${lat},${lng}&key=${apiKey}`;
-                            await new Promise((resolve, reject) => {
-                                mapImg.onload = resolve;
-                                mapImg.onerror = reject;
-                            });
+                            await Promise.race([
+                                new Promise((resolve, reject) => {
+                                    mapImg.onload = resolve;
+                                    mapImg.onerror = reject;
+                                }),
+                                new Promise((_, reject) => setTimeout(() => reject(new Error('Map timeout')), 5000))
+                            ]);
                             
                             // Draw map with border
-                            const padding = Math.floor(img.width * 0.02);
+                            const padding = Math.floor(targetWidth * 0.02);
                             ctx.fillStyle = 'white';
-                            ctx.fillRect(padding - 5, img.height - mapSize - padding - 5, mapSize + 10, mapSize + 10);
-                            ctx.drawImage(mapImg, padding, img.height - mapSize - padding, mapSize, mapSize);
-                        } catch(e) { console.error('Static map load failed', e); }
+                            ctx.fillRect(padding - 5, targetHeight - mapSize - padding - 5, mapSize + 10, mapSize + 10);
+                            ctx.drawImage(mapImg, padding, targetHeight - mapSize - padding, mapSize, mapSize);
+                        } catch(e) { console.error('Static map load failed or timed out', e); }
                     }
 
                     // 4. Draw Text
-                    const rightPadding = Math.floor(img.width * 0.02);
-                    const fontSize = Math.max(16, Math.floor(img.width * 0.035));
+                    const rightPadding = Math.floor(targetWidth * 0.02);
+                    const fontSize = Math.max(16, Math.floor(targetWidth * 0.035));
                     ctx.fillStyle = 'white';
                     ctx.textAlign = 'right';
                     ctx.font = `bold ${fontSize}px sans-serif`;
@@ -447,26 +456,33 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                     }
                     lines.push(uploaderNameText);
 
-                    let textY = img.height - rightPadding;
+                    let textY = targetHeight - rightPadding;
                     // Draw lines from bottom to top
                     for (let i = lines.length - 1; i >= 0; i--) {
                         // Draw shadow
                         ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                        ctx.fillText(lines[i], img.width - rightPadding + 2, textY + 2);
+                        ctx.fillText(lines[i], targetWidth - rightPadding + 2, textY + 2);
                         // Draw text
                         ctx.fillStyle = 'white';
-                        ctx.fillText(lines[i], img.width - rightPadding, textY);
+                        ctx.fillText(lines[i], targetWidth - rightPadding, textY);
                         textY -= (fontSize * 1.2);
                     }
 
                     // 5. Convert to Blob
-                    const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/jpeg', 0.9));
+                    const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/jpeg', 0.8));
                     if (blob) {
                         fileToUpload = blob;
                         finalFileName = `${Date.now()}-watermarked.jpg`;
                     }
                 } catch(e) { console.error('Watermark error', e); }
                 setIsWatermarking(false);
+
+                // Analyze the resulting much smaller blob
+                try {
+                    const modFile = new File([fileToUpload], finalFileName, { type: 'image/jpeg' });
+                    const mod = await analyzeImageContent(modFile)
+                    if (!mod.isAppropriate) { setUploadError(mod.reason || 'Contenido no permitido'); setIsUploading(false); resetInputs(); return }
+                } catch(e) { console.error('Analyze error', e); }
             }
 
             const storageRef = ref(storage, `campaigns/main_campaign/media/${finalFileName}`)
@@ -957,28 +973,8 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                 ========================================== */}
             <div className="fixed bottom-6 right-4 z-40">
                 <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileUpload} className="hidden" />
-                <input ref={videoInputRef} type="file" accept="video/*" capture="environment" onChange={handleFileUpload} className="hidden" />
-                <input ref={galleryInputRef} type="file" accept="image/*,video/*" onChange={handleFileUpload} className="hidden" />
 
-                {showUploadOptions && (
-                    <div className="absolute bottom-20 right-0 rounded-2xl p-2 mb-2 flex flex-col gap-1 min-w-[180px] shadow-2xl bg-white border border-gray-100">
-                        <button onClick={() => { fileInputRef.current?.click(); setShowUploadOptions(false) }}
-                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 focus:bg-gray-100 active:bg-gray-200 transition-colors">
-                            <span className="text-xl">📸</span> Cámara (Foto)
-                        </button>
-                        <button onClick={() => { videoInputRef.current?.click(); setShowUploadOptions(false) }}
-                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 focus:bg-gray-100 active:bg-gray-200 transition-colors">
-                            <span className="text-xl">🎥</span> Cámara (Video)
-                        </button>
-                        <div className="border-t border-gray-100 my-1"></div>
-                        <button onClick={() => { galleryInputRef.current?.click(); setShowUploadOptions(false) }}
-                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 focus:bg-gray-100 active:bg-gray-200 transition-colors">
-                            <span className="text-xl">🖼️</span> Elegir de Galería
-                        </button>
-                    </div>
-                )}
-
-                <button onClick={() => setShowUploadOptions(!showUploadOptions)} disabled={isUploading}
+                <button onClick={() => fileInputRef.current?.click()} disabled={isUploading}
                     className="w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-transform active:scale-90 disabled:opacity-50"
                     style={{ background: accent, border: '4px solid white' }}>
                     {isUploading ? <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
