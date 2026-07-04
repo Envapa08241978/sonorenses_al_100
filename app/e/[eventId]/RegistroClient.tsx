@@ -124,7 +124,9 @@ function CitizenEventPageInner(props: { eventId?: string }) {
     const [rsvpRoles, setRsvpRoles] = useState<string[]>([])
     const [rsvpParentName, setRsvpParentName] = useState('')
     const [isSubmittingRSVP, setIsSubmittingRSVP] = useState(false)
+    const [isScanningINE, setIsScanningINE] = useState(false)
     const [rsvpSuccess, setRsvpSuccess] = useState(false)
+    const [qrLink, setQrLink] = useState('')
     const [generatedFolio, setGeneratedFolio] = useState<string>('')
     
     // Auto-fill from contact id
@@ -537,34 +539,65 @@ function CitizenEventPageInner(props: { eventId?: string }) {
             setRsvpSeccional('')
             setRsvpRoles([])
             setRsvpParentName('')
-            setRsvpSuccess(true)
-            setTimeout(() => setRsvpSuccess(false), 8000)
 
-            // Open WhatsApp with pre-filled message for both new and existing users
-            const politicianPhone = config.phone?.replace(/\D/g, '') || ''
-            if (politicianPhone) {
-                const confirmedName = finalName;
-                const finalParentName = parentName || rsvpParentName || '';
-                
-                const isLamarqueEvent = event.name?.toLowerCase().includes('lamarque') || 
-                                        event.description?.toLowerCase().includes('lamarque') || 
-                                        (props.eventId && props.eventId.toLowerCase().includes('lamarque'));
-                
-                let rawMsg = `¡Hola! Me acabo de registrar como Enlace de ${config.name}. 🎉\n📋 ${confirmedName}\n🏛️ ${event.name || ''}${finalParentName ? `\n\nInvitado por: ${finalParentName}` : ''}`;
-                
-                if (isLamarqueEvent) {
-                    rawMsg = `¡Hola! Me acabo de registrar para asistir a la *Asamblea Informativa: Así Gobierna la 4T en Sonora* con el invitado especial *Javier Lamarque Cano*. 🏛️✨\n\n*👤 Nombre:* ${confirmedName}\n*📍 Lugar:* Arena ITSON (Ciudad Obregón)\n*📅 Fecha:* Sábado 20 de Junio - 10:00 AM${finalParentName ? `\n\n*👥 Invitado por:* ${finalParentName}` : ''}`;
-                }
-                
-                const msg = encodeURIComponent(rawMsg);
-                // Redirigir automáticamente usando window.location.href para evitar bloqueadores de popups
-                window.location.href = `https://wa.me/526622244979?text=${msg}`;
+            // Configurar WhatsApp link para código QR
+            const politicianPhone = config.phone?.replace(/\D/g, '') || '5216622244979'
+            const confirmedName = finalName;
+            const finalParentName = parentName || rsvpParentName || '';
+            
+            const isLamarqueEvent = event.name?.toLowerCase().includes('lamarque') || 
+                                    event.description?.toLowerCase().includes('lamarque') || 
+                                    (props.eventId && props.eventId.toLowerCase().includes('lamarque'));
+            
+            let rawMsg = `¡Hola! Me acabo de registrar como Enlace de ${config.name}. 🎉\n📋 ${confirmedName}\n🏛️ ${event.name || ''}${finalParentName ? `\n\nInvitado por: ${finalParentName}` : ''}`;
+            
+            if (isLamarqueEvent) {
+                rawMsg = `¡Hola! Me acabo de registrar para asistir a la *Asamblea Informativa: Así Gobierna la 4T en Sonora* con el invitado especial *Javier Lamarque Cano*. 🏛️✨\n\n*👤 Nombre:* ${confirmedName}\n*📍 Lugar:* Arena ITSON (Ciudad Obregón)\n*📅 Fecha:* Sábado 20 de Junio - 10:00 AM${finalParentName ? `\n\n*👥 Invitado por:* ${finalParentName}` : ''}`;
             }
+            
+            const msg = encodeURIComponent(rawMsg);
+            setQrLink(`https://wa.me/${politicianPhone}?text=${msg}`);
+            setRsvpSuccess(true);
+            // No hacemos redirect automático ni timeout para dejar el QR en pantalla
         } catch (err) {
             console.error('RSVP error:', err)
             setUploadError('Error al registrar. Intenta de nuevo.')
         } finally { setIsSubmittingRSVP(false) }
     }
+
+    /* ---- INE Scanner (OCR) ---- */
+    const handleScanINE = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsScanningINE(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            const res = await fetch('/api/ocr', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                setUploadError(error.error || 'Error al procesar la credencial');
+                return;
+            }
+
+            const data = await res.json();
+            if (data.name) setRsvpName(data.name);
+            if (data.calle) setRsvpCalle(data.calle);
+            if (data.numExt) setRsvpNumExt(data.numExt);
+            if (data.ciudad) setRsvpCiudad(data.ciudad);
+            if (data.seccional) setRsvpSeccional(data.seccional);
+
+        } catch (err) {
+            setUploadError('Error de conexión al escanear INE');
+        } finally {
+            setIsScanningINE(false);
+        }
+    };
 
     /* ---- Get initials ---- */
     const getInitials = (name: string) => {
@@ -826,27 +859,30 @@ function CitizenEventPageInner(props: { eventId?: string }) {
             )}
             {rsvpSuccess && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/90 backdrop-blur-sm animate-in fade-in">
-                    <div className="bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 text-center max-w-sm w-full mx-4 relative overflow-hidden">
+                    <div className="bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 text-center max-w-sm w-full mx-4 relative overflow-hidden flex flex-col items-center">
                         <div className="absolute top-0 left-0 w-full h-2" style={{ background: accent }}></div>
-                        <div className="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-4xl mb-4 bg-green-50 text-green-500 shadow-inner">✅</div>
-                        <h2 className="text-2xl font-black text-gray-800 mb-2">¡Registro Exitoso!</h2>
+                        <h2 className="text-2xl font-black text-gray-800 mb-2 mt-4">¡Registro Exitoso!</h2>
                         
-                        {generatedFolio && (
-                            <div className="my-4 bg-gray-50 border border-gray-200 rounded-xl p-4">
-                                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Folio de Pre-registro</p>
-                                <p className="text-3xl font-black" style={{ color: accent }}>{generatedFolio}</p>
-                            </div>
-                        )}
-                        
-                        <p className="text-gray-500 font-medium mb-6">
-                            {knownContact 
-                                ? 'Tu asistencia ha sido confirmada.' 
-                                : 'Tu registro como Enlace Comunitario ha sido validado. Abriendo WhatsApp para confirmar...'}
+                        <div className="bg-white p-4 rounded-2xl shadow-lg border-2 border-gray-100 mb-4 inline-block mt-4">
+                            <QRCodeSVG value={qrLink} size={200} level="H" includeMargin={false} />
+                        </div>
+
+                        <p className="text-sm text-gray-600 font-medium mb-4">
+                            Pídele al ciudadano que escanee este código con su celular para confirmar su registro.
                         </p>
-                        {generatedFolio 
-                            ? <p className="text-xs text-gray-400 font-bold bg-gray-50 py-2 rounded-lg">Guarda tu folio para un acceso rápido el día del evento.</p>
-                            : <p className="text-xs text-gray-400 font-bold bg-gray-50 py-2 rounded-lg">Completa tu registro enviando el mensaje en WhatsApp.</p>
-                        }
+                        
+                        <div className="bg-gray-50 rounded-xl p-3 w-full mb-6">
+                            <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">O envíanos un WhatsApp al:</p>
+                            <p className="text-lg font-black tracking-widest" style={{ color: accent }}>662 224 4979</p>
+                        </div>
+
+                        <button 
+                            onClick={() => setRsvpSuccess(false)}
+                            className="w-full py-4 rounded-xl text-white font-black text-sm uppercase tracking-widest shadow-lg hover:opacity-90 active:scale-95 transition-all"
+                            style={{ background: accent }}
+                        >
+                            Siguiente Ciudadano
+                        </button>
                     </div>
                 </div>
             )}
@@ -909,6 +945,31 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                                     )}
                                     <p className="text-sm text-gray-500 font-medium mb-6">Ingresa tus datos reales para habilitar el cruce demográfico de la zona.</p>
     
+                                    {/* INE Scanner Button */}
+                                    <div className="mb-6">
+                                        <label className="relative flex items-center justify-center gap-2 w-full py-3 px-4 bg-blue-50 border-2 border-dashed border-blue-200 text-blue-600 rounded-xl font-bold cursor-pointer hover:bg-blue-100 transition-colors">
+                                            {isScanningINE ? (
+                                                <>
+                                                    <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                                                    <span>Analizando credencial...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span className="text-xl">📷</span>
+                                                    <span>Escanear INE para Auto-Llenar</span>
+                                                    <input 
+                                                        type="file" 
+                                                        accept="image/*" 
+                                                        capture="environment" 
+                                                        className="hidden" 
+                                                        onChange={handleScanINE} 
+                                                        disabled={isScanningINE}
+                                                    />
+                                                </>
+                                            )}
+                                        </label>
+                                    </div>
+
                                     <div className="space-y-2.5">
                                         <div>
                                             <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">Nombre completo *</label>
