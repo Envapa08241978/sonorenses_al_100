@@ -140,10 +140,14 @@ function CitizenEventPageInner(props: { eventId?: string }) {
 
     // Fetch known contact
     useEffect(() => {
-        if (!contactId) return
         const loadContact = async () => {
+            let activeContactId = contactId
+            if (!activeContactId && typeof window !== 'undefined') {
+                activeContactId = localStorage.getItem('nexo_contact_id')
+            }
+            if (!activeContactId) return
             try {
-                const snap = await getDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', contactId))
+                const snap = await getDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', activeContactId))
                 if (snap.exists()) {
                     setKnownContact({ id: snap.id, ...snap.data() })
                     setRsvpName(snap.data().name || '')
@@ -167,6 +171,49 @@ function CitizenEventPageInner(props: { eventId?: string }) {
     useEffect(() => {
         if (typeof window !== 'undefined') setUploadUrl(`${window.location.origin}/e/${props.eventId || ''}`)
     }, [props.eventId])
+
+    // --- Identity Lookup (For unregistered/uncookied uploads) ---
+    const [showIdentityModal, setShowIdentityModal] = useState(false)
+    const [identityPhone, setIdentityPhone] = useState('')
+    const [identityError, setIdentityError] = useState('')
+    const [isLookingUpIdentity, setIsLookingUpIdentity] = useState(false)
+
+    const handleIdentityLookup = async () => {
+        const cleanPhone = identityPhone.replace(/\D/g, '')
+        if (cleanPhone.length !== 10) { setIdentityError('Ingresa un número de 10 dígitos'); return }
+        
+        setIsLookingUpIdentity(true)
+        setIdentityError('')
+        try {
+            const q = query(
+                collection(db, 'campaigns', 'main_campaign', 'contacts'),
+                where('phone', '==', cleanPhone)
+            )
+            const snap = await getDocs(q)
+            if (!snap.empty) {
+                const docData = snap.docs[0]
+                const contact: any = { id: docData.id, ...docData.data() }
+                setKnownContact(contact)
+                setRsvpName(contact.name || '')
+                setRsvpPhone(contact.phone || '')
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem('nexo_contact_id', docData.id)
+                }
+                setShowIdentityModal(false)
+                // Trigger camera upload
+                setTimeout(() => {
+                    fileInputRef.current?.click()
+                }, 300)
+            } else {
+                setIdentityError('Número de WhatsApp no encontrado en la base de datos. ¿Deseas registrarte primero?')
+            }
+        } catch (err) {
+            console.error('Lookup error:', err)
+            setIdentityError('Error al buscar. Intenta de nuevo.')
+        } finally {
+            setIsLookingUpIdentity(false)
+        }
+    }
 
     /* ---- Load config + active event from Firebase ---- */
     useEffect(() => {
@@ -650,6 +697,10 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                 }
             }
 
+            if (typeof window !== 'undefined' && contactDocId) {
+                localStorage.setItem('nexo_contact_id', contactDocId)
+            }
+
             setGeneratedFolio(newFolio);
 
             setShowRSVP(false)
@@ -679,7 +730,7 @@ function CitizenEventPageInner(props: { eventId?: string }) {
             let rawMsg = `¡Hola! Me acabo de registrar como Enlace de ${config.name}. 🎉\n📋 ${confirmedName}\n🏛️ ${event.name || ''}${finalParentName ? `\n\nInvitado por: ${finalParentName}` : ''}`;
             
             if (isLamarqueEvent) {
-                rawMsg = `¡Hola! Me acabo de registrar para asistir a la *Asamblea Informativa: Así Gobierna la 4T en Sonora* con el invitado especial *Javier Lamarque Cano*. 🏛️✨\n\n*👤 Nombre:* ${confirmedName}\n*📍 Lugar:* Arena ITSON (Ciudad Obregón)\n*📅 Fecha:* Sábado 20 de Junio - 10:00 AM${finalParentName ? `\n\n*👥 Invitado por:* ${finalParentName}` : ''}`;
+                rawMsg = `¡Hola! Me acajo de registrar para asistir a la *Asamblea Informativa: Así Gobierna la 4T en Sonora* con el invitado especial *Javier Lamarque Cano*. 🏛️✨\n\n*👤 Nombre:* ${confirmedName}\n*📍 Lugar:* Arena ITSON (Ciudad Obregón)\n*📅 Fecha:* Sábado 20 de Junio - 10:00 AM${finalParentName ? `\n\n*👥 Invitado por:* ${finalParentName}` : ''}`;
             }
             
             const msg = encodeURIComponent(rawMsg);
@@ -937,7 +988,13 @@ function CitizenEventPageInner(props: { eventId?: string }) {
             <div className="fixed bottom-6 right-4 z-40">
                 <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileUpload} className="hidden" />
 
-                <button onClick={() => fileInputRef.current?.click()} disabled={isUploading}
+                <button onClick={() => {
+                    if (!knownContact) {
+                        setShowIdentityModal(true)
+                    } else {
+                        fileInputRef.current?.click()
+                    }
+                }} disabled={isUploading}
                     className="w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-transform active:scale-90 disabled:opacity-50"
                     style={{ background: accent, border: '4px solid white' }}>
                     {isUploading ? <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
@@ -997,6 +1054,59 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                         >
                             Siguiente Ciudadano
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {/* ==========================================
+                IDENTITY MODAL (Lamarque / Brigadista Identifier)
+                ========================================== */}
+            {showIdentityModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
+                    onClick={() => setShowIdentityModal(false)}>
+                    <div className="rounded-3xl w-full max-w-sm bg-white shadow-2xl relative p-6 flex flex-col overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}>
+                        <div className="absolute top-0 left-0 w-full h-1.5" style={{ background: accent }}></div>
+                        
+                        <h3 className="text-xl font-black text-gray-800 tracking-tight mb-2 mt-2">Identificación de Brigadista</h3>
+                        <p className="text-xs text-gray-500 font-medium mb-5">Ingresa tu número de WhatsApp registrado para firmar tus evidencias fotográficas con tu nombre:</p>
+                        
+                        <div className="space-y-3 mb-6">
+                            <div className="flex items-center gap-2">
+                                <span className="bg-gray-100 text-gray-500 font-bold px-3 py-2.5 rounded-xl border border-gray-200 text-sm flex-shrink-0">🇲🇽 +52</span>
+                                <input type="tel" value={identityPhone} onChange={(e) => setIdentityPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                                    placeholder="10 dígitos" inputMode="numeric" maxLength={10} autoFocus
+                                    className="flex-1 px-3 py-2.5 rounded-xl text-sm font-bold border border-gray-200 bg-gray-50 outline-none focus:border-red-400 focus:bg-white transition-colors text-gray-800 tracking-wider" />
+                            </div>
+                            {identityError && <p className="text-xs text-red-500 font-bold">⚠️ {identityError}</p>}
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <button onClick={handleIdentityLookup} disabled={isLookingUpIdentity}
+                                className="w-full py-3.5 rounded-xl text-sm font-black text-white shadow-md disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2"
+                                style={{ background: accent }}>
+                                {isLookingUpIdentity ? (
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                ) : 'IDENTIFICARME 🔎'}
+                            </button>
+                            
+                            <div className="flex gap-2 mt-1">
+                                <button onClick={() => {
+                                    setShowIdentityModal(false);
+                                    setTimeout(() => fileInputRef.current?.click(), 300);
+                                }}
+                                    className="flex-1 py-2.5 rounded-xl text-xs font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors active:scale-95 text-center">
+                                    Subir Anónimo
+                                </button>
+                                <button onClick={() => {
+                                    setShowIdentityModal(false);
+                                    setShowRSVP(true);
+                                }}
+                                    className="flex-1 py-2.5 rounded-xl text-xs font-bold text-red-800 bg-red-50 hover:bg-red-100 transition-colors active:scale-95 text-center">
+                                    Registrarme
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
