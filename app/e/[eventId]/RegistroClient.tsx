@@ -619,15 +619,15 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                                     style={{ border: `4px solid ${accent}` }} />
                             )}
                             <p className="text-theme-60 text-xs font-bold tracking-[0.2em] uppercase mb-1">{config.title}</p>
-                            <h1 className="text-theme text-3xl md:text-5xl font-black tracking-tight leading-tight">{config.name}</h1>
+                            <img src="/SONORENSES%20AL%20100_logo.jpg" alt="Sonorenses al 100" className="w-full max-w-[280px] mx-auto mb-4 object-contain mix-blend-multiply" />
                             {config.party && <p className="text-theme-80 font-medium text-sm mt-2 bg-gray-100 inline-block px-4 py-1 rounded-full border border-gray-200">{config.party}</p>}
                         </div>
 
                         {/* Event name */}
                         <div className="mt-8 relative z-10 max-w-lg mx-auto bg-gray-50/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-100 shadow-sm">
-                            <p className="text-xs font-black tracking-[0.15em] uppercase mb-1" style={{ color: accent }}>📍 {event.id === 'evento-demo' ? 'Atención Permanente' : 'Convocatoria General'}</p>
-                            <h2 className="text-theme text-xl md:text-2xl font-bold">{event.name}</h2>
-                            {event.description && <p className="text-gray-600 text-sm mt-3 font-medium">{event.description}</p>}
+                            <p className="text-xs font-black tracking-[0.15em] uppercase mb-1" style={{ color: accent }}>📍 REGISTRO DE SIMPATIZANTES</p>
+                            <h2 className="text-theme text-xl md:text-2xl font-bold">Sonorenses Con Javier Lamarque</h2>
+                            <p className="text-gray-600 text-sm mt-3 font-medium">Súmate para que continúe la Cuarta Transformación</p>
                         </div>
                     </div>
                 )}
@@ -654,7 +654,7 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                     <button onClick={() => setShowRSVP(true)} data-btn
                         className="w-full max-w-sm px-8 py-4 rounded-xl text-sm font-black tracking-wider text-white transition-all hover:scale-[1.02] active:scale-95 shadow-lg"
                         style={{ background: accent }}>
-                        📋 REGISTRAR ASISTENCIA / ENLACE
+                        📋 REGISTRATE
                     </button>
                     {event.coords && (
                         <a href={`https://www.google.com/maps?q=${event.coords}`} target="_blank" rel="noopener noreferrer"
