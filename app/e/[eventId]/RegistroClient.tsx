@@ -367,20 +367,6 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                 // --- WATERMARK PROCESSING & RESIZE ---
                 setIsWatermarking(true);
                 try {
-                    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
-                    
-                    // 1. Reverse Geocode
-                    let address = '';
-                    if (apiKey) {
-                        try {
-                            const geoRes = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`);
-                            const geoData = await geoRes.json();
-                            if (geoData.results && geoData.results.length > 0) {
-                                address = geoData.results[0].formatted_address;
-                            }
-                        } catch (e) { console.error('Geocode failed', e); }
-                    }
-
                     // 2. Load Image & Resize
                     const img = new Image();
                     img.src = URL.createObjectURL(file);
@@ -404,35 +390,12 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                     ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
                     
                     // Draw bottom overlay
-                    const overlayHeight = Math.max(300, targetHeight * 0.25);
+                    const overlayHeight = Math.max(150, targetHeight * 0.15);
                     const gradient = ctx.createLinearGradient(0, targetHeight - overlayHeight, 0, targetHeight);
                     gradient.addColorStop(0, 'rgba(0,0,0,0)');
                     gradient.addColorStop(1, 'rgba(0,0,0,0.8)');
                     ctx.fillStyle = gradient;
                     ctx.fillRect(0, targetHeight - overlayHeight, targetWidth, overlayHeight);
-
-                    // 3. Load Static Map
-                    if (apiKey) {
-                        try {
-                            const mapSize = Math.max(200, Math.floor(targetWidth * 0.2));
-                            const mapImg = new Image();
-                            mapImg.crossOrigin = "Anonymous";
-                            mapImg.src = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=16&size=${mapSize}x${mapSize}&markers=color:red%7C${lat},${lng}&key=${apiKey}`;
-                            await Promise.race([
-                                new Promise((resolve, reject) => {
-                                    mapImg.onload = resolve;
-                                    mapImg.onerror = reject;
-                                }),
-                                new Promise((_, reject) => setTimeout(() => reject(new Error('Map timeout')), 5000))
-                            ]);
-                            
-                            // Draw map with border
-                            const padding = Math.floor(targetWidth * 0.02);
-                            ctx.fillStyle = 'white';
-                            ctx.fillRect(padding - 5, targetHeight - mapSize - padding - 5, mapSize + 10, mapSize + 10);
-                            ctx.drawImage(mapImg, padding, targetHeight - mapSize - padding, mapSize, mapSize);
-                        } catch(e) { console.error('Static map load failed or timed out', e); }
-                    }
 
                     // 4. Draw Text
                     const rightPadding = Math.floor(targetWidth * 0.02);
@@ -444,17 +407,9 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                     // Text Lines
                     const uploaderNameText = `#${knownContact?.name || parentName || 'Brigadista'}`;
                     const dateText = new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' });
-                    const coordsText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                    const coordsText = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
                     
-                    const lines = [];
-                    lines.push(dateText);
-                    lines.push(coordsText);
-                    if (address) {
-                        // Split address slightly if too long
-                        const addrParts = address.split(', ');
-                        for (const p of addrParts) lines.push(p);
-                    }
-                    lines.push(uploaderNameText);
+                    const lines = [dateText, coordsText, uploaderNameText];
 
                     let textY = targetHeight - rightPadding;
                     // Draw lines from bottom to top
@@ -473,8 +428,16 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                     if (blob) {
                         fileToUpload = blob;
                         finalFileName = `${Date.now()}-watermarked.jpg`;
+                    } else {
+                        throw new Error('Canvas toBlob failed');
                     }
-                } catch(e) { console.error('Watermark error', e); }
+                } catch(e: any) { 
+                    console.error('Watermark error', e); 
+                    setUploadError('Error al sellar foto: ' + (e?.message || 'Desconocido'));
+                    setIsWatermarking(false);
+                    setIsUploading(false);
+                    return; // Stop upload if watermark fails so it doesn't upload 15MB file
+                }
                 setIsWatermarking(false);
 
                 // Analyze the resulting much smaller blob
