@@ -541,7 +541,12 @@ function CitizenEventPageInner(props: { eventId?: string }) {
             setRsvpParentName('')
 
             // Configurar WhatsApp link para código QR
-            const politicianPhone = config.phone?.replace(/\D/g, '') || '5216622244979'
+            let politicianPhone = config.phone?.replace(/\D/g, '') || '5216622244979'
+            if (politicianPhone.length === 10) {
+                politicianPhone = '521' + politicianPhone;
+            } else if (politicianPhone.length === 12 && politicianPhone.startsWith('52')) {
+                politicianPhone = '521' + politicianPhone.slice(2);
+            }
             const confirmedName = finalName;
             const finalParentName = parentName || rsvpParentName || '';
             
