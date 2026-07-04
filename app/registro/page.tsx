@@ -91,5 +91,5 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RegistroPage() {
     const targetEventId = await getActiveEventId()
-    return <CitizenEventPage eventId={targetEventId} />
+    return <CitizenEventPage eventId={targetEventId} hideGalleryAndRespalda={true} />
 }

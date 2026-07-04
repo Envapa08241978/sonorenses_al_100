@@ -65,7 +65,7 @@ const DEFAULT_EVENT = {
 /* ================================================================
    MAIN COMPONENT
    ================================================================ */
-function CitizenEventPageInner(props: { eventId?: string }) {
+function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda?: boolean }) {
     // --- Hierarchy & Parent Link ---
     const searchParams = useSearchParams()
     const parentId = searchParams.get('ref') || searchParams.get('b') || ''
@@ -879,7 +879,7 @@ function CitizenEventPageInner(props: { eventId?: string }) {
             {/* ==========================================
                 SECTION 2: CONFIRMED COUNT
                 ========================================== */}
-            {contacts.length > 0 && (
+            {!props.hideGalleryAndRespalda && contacts.length > 0 && (
                 <section className="px-4 py-8 bg-gray-50 border-b border-gray-100 shadow-inner">
                     <p className="text-center text-sm mb-5 font-black uppercase tracking-widest" style={{ color: accent }}>
                         🤝 La Comunidad Respalda ({contacts.length})
@@ -904,103 +904,109 @@ function CitizenEventPageInner(props: { eventId?: string }) {
             )}
 
             {/* ==========================================
-                SECTION 4: ALBUM HEADER
+                SECTION 4: ALBUM HEADER & GALLERY GRID
                 ========================================== */}
-            <section className="sticky top-0 z-40 px-4 py-4 bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-100">
-                <div className="flex items-center justify-between max-w-5xl mx-auto">
-                    <div className="flex items-center gap-2">
-                        <span className="text-lg font-black text-theme">📸 Evidencias</span>
-                        <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                            {media.length} archivos
-                        </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <button onClick={() => setShowQR(true)} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white border shadow-sm hover:bg-gray-50"
-                            style={{ color: accent, borderColor: accent }}>
-                            QR
-                        </button>
-                        <button onClick={downloadAll} disabled={isDownloading || media.length === 0}
-                            className="px-4 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5 disabled:opacity-40 shadow-md transition-opacity"
-                            style={{ background: accent }}>
-                            {isDownloading ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>}
-                            Descargar
-                        </button>
-                    </div>
-                </div>
-                <div className="flex gap-2 mt-3 max-w-5xl mx-auto">
-                    {(['all', 'photos', 'videos'] as const).map(f => (
-                        <button key={f} onClick={() => setFilter(f)}
-                            className="px-4 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm border"
-                            style={{
-                                background: filter === f ? accent : 'white',
-                                color: filter === f ? 'white' : 'gray',
-                                borderColor: filter === f ? accent : '#e5e7eb',
-                            }}>
-                            {f === 'all' ? 'Ver Todo' : f === 'photos' ? 'Solo Fotos' : 'Solo Videos'}
-                        </button>
-                    ))}
-                </div>
-            </section>
-
-            {/* ==========================================
-                SECTION 5: GALLERY GRID
-                ========================================== */}
-            <main className="px-3 py-6 pb-28 max-w-5xl mx-auto bg-gray-50 min-h-screen">
-                {isLoading ? (
-                    <div className="flex justify-center py-16">
-                        <div className="w-10 h-10 border-4 rounded-full animate-spin" style={{ borderColor: accent, borderTopColor: 'transparent' }} />
-                    </div>
-                ) : filteredMedia.length === 0 ? (
-                    <div className="text-center py-16 bg-white rounded-3xl border border-gray-100 shadow-sm">
-                        <div className="text-5xl mb-4 grayscale opacity-50 block">📷</div>
-                        <p className="text-gray-800 font-bold text-lg">Álbum Comunitario</p>
-                        <p className="text-sm mt-2 text-gray-500 font-medium max-w-xs mx-auto">Toma una foto de la reunión, marcha o asamblea para dejar evidencia del movimiento.</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
-                        {filteredMedia.map((item, index) => (
-                            <div key={item.id} onClick={() => setSelectedIndex(index)}
-                                className="relative aspect-square rounded-2xl overflow-hidden cursor-pointer group shadow-sm border border-gray-100 bg-white">
-                                {item.type === 'video' ? (
-                                    <video src={item.url} className="w-full h-full object-cover" muted playsInline preload="metadata"
-                                        onLoadedData={(e) => { (e.target as HTMLVideoElement).currentTime = 0.5 }} />
-                                ) : (
-                                    <img src={item.url} alt="" loading="lazy"
-                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                                )}
-                                {item.type === 'video' && (
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm bg-black/40">
-                                            <svg className="w-5 h-5 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                                        </div>
-                                    </div>
-                                )}
+            {!props.hideGalleryAndRespalda && (
+                <>
+                    <section className="sticky top-0 z-40 px-4 py-4 bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-100">
+                        <div className="flex items-center justify-between max-w-5xl mx-auto">
+                            <div className="flex items-center gap-2">
+                                <span className="text-lg font-black text-theme">📸 Evidencias</span>
+                                <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                                    {media.length} archivos
+                                </span>
                             </div>
-                        ))}
-                    </div>
-                )}
-            </main>
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => setShowQR(true)} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white border shadow-sm hover:bg-gray-50"
+                                    style={{ color: accent, borderColor: accent }}>
+                                    QR
+                                </button>
+                                <button onClick={downloadAll} disabled={isDownloading || media.length === 0}
+                                    className="px-4 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5 disabled:opacity-40 shadow-md transition-opacity"
+                                    style={{ background: accent }}>
+                                    {isDownloading ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>}
+                                    Descargar
+                                </button>
+                            </div>
+                        </div>
+                        <div className="flex gap-2 mt-3 max-w-5xl mx-auto">
+                            {(['all', 'photos', 'videos'] as const).map(f => (
+                                <button key={f} onClick={() => setFilter(f)}
+                                    className="px-4 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm border"
+                                    style={{
+                                        background: filter === f ? accent : 'white',
+                                        color: filter === f ? 'white' : 'gray',
+                                        borderColor: filter === f ? accent : '#e5e7eb',
+                                    }}>
+                                    {f === 'all' ? 'Ver Todo' : f === 'photos' ? 'Solo Fotos' : 'Solo Videos'}
+                                </button>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* ==========================================
+                        SECTION 5: GALLERY GRID
+                        ========================================== */}
+                    <main className="px-3 py-6 pb-28 max-w-5xl mx-auto bg-gray-50 min-h-screen">
+                        {isLoading ? (
+                            <div className="flex justify-center py-16">
+                                <div className="w-10 h-10 border-4 rounded-full animate-spin" style={{ borderColor: accent, borderTopColor: 'transparent' }} />
+                            </div>
+                        ) : filteredMedia.length === 0 ? (
+                            <div className="text-center py-16 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                                <div className="text-5xl mb-4 grayscale opacity-50 block">📷</div>
+                                <p className="text-gray-800 font-bold text-lg">Álbum Comunitario</p>
+                                <p className="text-sm mt-2 text-gray-500 font-medium max-w-xs mx-auto">Toma una foto de la reunión, marcha o asamblea para dejar evidencia del movimiento.</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
+                                {filteredMedia.map((item, index) => (
+                                    <div key={item.id} onClick={() => setSelectedIndex(index)}
+                                        className="relative aspect-square rounded-2xl overflow-hidden cursor-pointer group shadow-sm border border-gray-100 bg-white">
+                                        {item.type === 'video' ? (
+                                            <video src={item.url} className="w-full h-full object-cover" muted playsInline preload="metadata"
+                                                onLoadedData={(e) => { (e.target as HTMLVideoElement).currentTime = 0.5 }} />
+                                        ) : (
+                                            <img src={item.url} alt="" loading="lazy"
+                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                        )}
+                                        {item.type === 'video' && (
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm bg-black/40">
+                                                    <svg className="w-5 h-5 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </main>
+                </>
+            )}
 
             {/* ==========================================
                 FLOATING UPLOAD BUTTON
                 ========================================== */}
-            <div className="fixed bottom-6 right-4 z-40">
-                <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileUpload} className="hidden" />
+            {!props.hideGalleryAndRespalda && (
+                <div className="fixed bottom-6 right-4 z-40">
+                    <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileUpload} className="hidden" />
 
-                <button onClick={() => {
-                    if (!knownContact) {
-                        setShowIdentityModal(true)
-                    } else {
-                        fileInputRef.current?.click()
-                    }
-                }} disabled={isUploading}
-                    className="w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-transform active:scale-90 disabled:opacity-50"
-                    style={{ background: accent, border: '4px solid white' }}>
-                    {isUploading ? <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
-                        : <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>}
-                </button>
-            </div>
+                    <button onClick={() => {
+                        if (!knownContact) {
+                            setShowIdentityModal(true)
+                        } else {
+                            fileInputRef.current?.click()
+                        }
+                    }} disabled={isUploading}
+                        className="w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-transform active:scale-90 disabled:opacity-50"
+                        style={{ background: accent, border: '4px solid white' }}>
+                        {isUploading ? <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
+                            : <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>}
+                    </button>
+                </div>
+            )}
 
             {/* ==========================================
                 FOOTER
@@ -1309,10 +1315,10 @@ function CitizenEventPageInner(props: { eventId?: string }) {
     )
 }
 
-export function CitizenEventPage(props: { eventId?: string }) {
+export function CitizenEventPage(props: { eventId?: string; hideGalleryAndRespalda?: boolean }) {
     return (
         <Suspense fallback={<div className="min-h-screen bg-white" />}>
-            <CitizenEventPageInner eventId={props.eventId} />
+            <CitizenEventPageInner eventId={props.eventId} hideGalleryAndRespalda={props.hideGalleryAndRespalda} />
         </Suspense>
     )
 }
