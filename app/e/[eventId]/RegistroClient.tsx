@@ -618,7 +618,6 @@ function CitizenEventPageInner(props: { eventId?: string }) {
                                     className="w-24 h-24 rounded-full mx-auto mb-4 object-cover shadow-xl"
                                     style={{ border: `4px solid ${accent}` }} />
                             )}
-                            <p className="text-theme-60 text-xs font-bold tracking-[0.2em] uppercase mb-1">{config.title}</p>
                             <img src="/SONORENSES%20AL%20100_logo.jpg" alt="Sonorenses al 100" className="w-full max-w-[280px] mx-auto mb-4 object-contain mix-blend-multiply" />
                             {config.party && <p className="text-theme-80 font-medium text-sm mt-2 bg-gray-100 inline-block px-4 py-1 rounded-full border border-gray-200">{config.party}</p>}
                         </div>
