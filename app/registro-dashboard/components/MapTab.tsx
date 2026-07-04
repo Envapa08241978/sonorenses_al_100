@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleMap, Polygon, Marker, InfoWindow } from '@react-google-maps/api';
 import { ContactItem, LEVEL_STYLES, SONORA_CENTER } from './types';
-import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { collection, query, onSnapshot, orderBy, doc, deleteDoc } from 'firebase/firestore';
+import { db, storage } from '@/lib/firebase';
+import { ref, deleteObject } from 'firebase/storage';
 
 interface MapTabProps {
     contacts: ContactItem[];
@@ -87,9 +88,29 @@ export default function MapTab({ contacts, accent, isMapLoaded }: MapTabProps) {
                                 position={{ lat: selectedMedia.lat, lng: selectedMedia.lng }}
                                 onCloseClick={() => setSelectedMedia(null)}
                             >
-                                <div className="p-2 max-w-[200px]">
-                                    <p className="text-xs font-bold mb-2">Subido por: {selectedMedia.uploaderName || 'Brigadista'}</p>
-                                    <img src={selectedMedia.url} alt="Evidencia" className="w-full h-auto rounded shadow" />
+                                <div className="p-2 max-w-[200px] flex flex-col gap-2">
+                                    <p className="text-xs font-bold">Subido por: {selectedMedia.uploaderName || 'Brigadista'}</p>
+                                    <img src={selectedMedia.url} alt="Evidencia" className="w-full h-auto rounded shadow cursor-pointer" onClick={() => window.open(selectedMedia.url, '_blank')} />
+                                    <button 
+                                        onClick={async () => {
+                                            if (window.confirm('¿Seguro que deseas eliminar esta evidencia? Se borrará la foto y su pin en el mapa.')) {
+                                                try {
+                                                    await deleteDoc(doc(db, 'campaigns', 'main_campaign', 'media', selectedMedia.id));
+                                                    if (selectedMedia.fileName) {
+                                                        const sRef = ref(storage, `campaigns/main_campaign/media/${selectedMedia.fileName}`);
+                                                        await deleteObject(sRef).catch(() => {});
+                                                    }
+                                                    setSelectedMedia(null);
+                                                } catch (err) {
+                                                    console.error('Error deleting:', err);
+                                                    alert('Error al borrar la imagen');
+                                                }
+                                            }
+                                        }}
+                                        className="w-full py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-[10px] shadow-sm transition-colors text-center"
+                                    >
+                                        🗑️ BORRAR PIN
+                                    </button>
                                 </div>
                             </InfoWindow>
                         )}
@@ -206,6 +227,29 @@ export default function MapTab({ contacts, accent, isMapLoaded }: MapTabProps) {
                         {media.map((m) => (
                             <div key={`gallery-${m.id}`} className="group relative rounded-xl overflow-hidden shadow border border-slate-100 aspect-square cursor-pointer hover:shadow-lg transition-all" onClick={() => window.open(m.url, '_blank')}>
                                 <img src={m.url} alt="Evidencia" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                                
+                                <button 
+                                    onClick={async (e) => {
+                                        e.stopPropagation();
+                                        if (window.confirm('¿Seguro que deseas eliminar esta evidencia? Se borrará la foto y su pin en el mapa.')) {
+                                            try {
+                                                await deleteDoc(doc(db, 'campaigns', 'main_campaign', 'media', m.id));
+                                                if (m.fileName) {
+                                                    const sRef = ref(storage, `campaigns/main_campaign/media/${m.fileName}`);
+                                                    await deleteObject(sRef).catch(() => {});
+                                                }
+                                            } catch (err) {
+                                                console.error('Error deleting:', err);
+                                                alert('Error al borrar la imagen');
+                                            }
+                                        }
+                                    }}
+                                    className="absolute top-2.5 right-2.5 z-20 w-8 h-8 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-lg transition-colors border border-white/20 active:scale-90"
+                                    title="Eliminar evidencia"
+                                >
+                                    🗑️
+                                </button>
+
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
                                     <p className="text-white text-[10px] font-bold line-clamp-2">{m.uploaderName || 'Brigadista'}</p>
                                     <p className="text-white/70 text-[8px] mt-1">{new Date(m.timestamp).toLocaleDateString()}</p>
