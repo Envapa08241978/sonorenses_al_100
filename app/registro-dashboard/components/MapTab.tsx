@@ -6,6 +6,7 @@ import { ContactItem, LEVEL_STYLES, SONORA_CENTER } from './types';
 import { collection, query, onSnapshot, orderBy, doc, deleteDoc } from 'firebase/firestore';
 import { db, storage } from '@/lib/firebase';
 import { ref, deleteObject } from 'firebase/storage';
+import * as XLSX from 'xlsx';
 
 interface MapTabProps {
     contacts: ContactItem[];
@@ -19,6 +20,39 @@ export default function MapTab({ contacts, accent, isMapLoaded }: MapTabProps) {
     const [isLoadingMap, setIsLoadingMap] = useState(true);
     const [media, setMedia] = useState<any[]>([]);
     const [selectedMedia, setSelectedMedia] = useState<any>(null);
+
+    const exportEvidenciasToExcel = () => {
+        if (media.length === 0) {
+            alert('No hay evidencias para exportar.');
+            return;
+        }
+
+        const rows = media.map(m => {
+            let fecha = '---';
+            if (m.timestamp) {
+                const dt = (m.timestamp as any)?.toDate ? (m.timestamp as any).toDate() : new Date(m.timestamp);
+                if (!isNaN(dt.getTime())) {
+                    fecha = dt.toLocaleString('es-MX');
+                }
+            }
+            return {
+                'Nombre del Brigadista': m.uploaderName || 'Anónimo',
+                'ID del Brigadista': m.uploaderId || '---',
+                'Tipo': m.type === 'photo' ? 'Foto' : (m.type === 'video' ? 'Video' : m.type || 'Foto'),
+                'Latitud': m.lat || '',
+                'Longitud': m.lng || '',
+                'ID del Evento': m.eventId || '',
+                'Nombre de Archivo': m.fileName || '',
+                'URL de la Imagen': m.url || '',
+                'Fecha de Carga': fecha
+            };
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(rows);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Evidencias');
+        XLSX.writeFile(workbook, `Evidencias_en_Campo_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    };
 
     // LAZY LOAD: Fetch map data
     useEffect(() => {
@@ -222,7 +256,15 @@ export default function MapTab({ contacts, accent, isMapLoaded }: MapTabProps) {
             {/* Gallery Section */}
             {media.length > 0 && (
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-in fade-in slide-in-from-bottom-5">
-                    <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-3">📸 Galería de Evidencias en Campo</h3>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">📸 Galería de Evidencias en Campo</h3>
+                        <button 
+                            onClick={exportEvidenciasToExcel}
+                            className="px-6 py-3 rounded-2xl bg-emerald-600 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-100 flex items-center gap-2"
+                        >
+                            📥 Exportar Excel
+                        </button>
+                    </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                         {media.map((m) => (
                             <div key={`gallery-${m.id}`} className="group relative rounded-xl overflow-hidden shadow border border-slate-100 aspect-square cursor-pointer hover:shadow-lg transition-all" onClick={() => window.open(m.url, '_blank')}>
