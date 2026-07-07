@@ -1215,7 +1215,7 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                                     <button onClick={handleRSVPSubmit} disabled={isSubmittingRSVP || !rsvpName.trim() || rsvpPhone.replace(/\D/g, '').length !== 10 || (!parentId && !rsvpParentName.trim())} data-btn
                                         className="w-full py-3 rounded-xl text-sm font-black text-white shadow-lg disabled:opacity-50 disabled:shadow-none transition-all active:scale-95"
                                         style={{ background: accent }}>
-                                        {isSubmittingRSVP ? 'VERIFICANDO...' : 'REGISTRAR MI ASISTENCIA ✅'}
+                                        {isSubmittingRSVP ? 'VERIFICANDO...' : 'REGISTRARME ✅'}
                                     </button>
                                     <p className="text-[0.6rem] text-center text-gray-400 font-bold mt-3 uppercase tracking-widest">Al registrarte descargas automáticamente contacto VCARD.</p>
                                 </div>
