@@ -137,23 +137,35 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
     // Auto-fill from contact id
     const contactId = searchParams.get('c')
     const [knownContact, setKnownContact] = useState<any>(null)
+    const [brigadistaContact, setBrigadistaContact] = useState<any>(null)
 
-    // Fetch known contact
+    // Fetch known contact / brigadista contact
     useEffect(() => {
         const loadContact = async () => {
-            let activeContactId = contactId
-            if (!activeContactId && typeof window !== 'undefined') {
-                activeContactId = localStorage.getItem('nexo_contact_id')
+            // 1. If c is in URL, this is a 1-click confirmation for a specific contact
+            if (contactId) {
+                try {
+                    const snap = await getDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', contactId))
+                    if (snap.exists()) {
+                        setKnownContact({ id: snap.id, ...snap.data() })
+                        setRsvpName(snap.data().name || '')
+                        setRsvpPhone(snap.data().phone || '')
+                    }
+                } catch (err) { console.error('Contact lookup error:', err) }
             }
-            if (!activeContactId) return
-            try {
-                const snap = await getDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', activeContactId))
-                if (snap.exists()) {
-                    setKnownContact({ id: snap.id, ...snap.data() })
-                    setRsvpName(snap.data().name || '')
-                    setRsvpPhone(snap.data().phone || '')
+
+            // 2. Load brigadista/owner identity from localStorage
+            if (typeof window !== 'undefined') {
+                const storedId = localStorage.getItem('nexo_contact_id')
+                if (storedId) {
+                    try {
+                        const snap = await getDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', storedId))
+                        if (snap.exists()) {
+                            setBrigadistaContact({ id: snap.id, ...snap.data() })
+                        }
+                    } catch (err) { console.error('Brigadista lookup error:', err) }
                 }
-            } catch (err) { console.error('Contact lookup error:', err) }
+            }
         }
         loadContact()
     }, [contactId])
@@ -452,7 +464,7 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                     ctx.font = `bold ${fontSize}px sans-serif`;
                     
                     // Text Lines
-                    const uploaderNameText = `#${knownContact?.name || parentName || 'Brigadista'}`;
+                    const uploaderNameText = `#${knownContact?.name || brigadistaContact?.name || parentName || 'Brigadista'}`;
                     const dateText = new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' });
                     const coordsText = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
                     
@@ -510,8 +522,8 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
             if (isImage && lat && lng) {
                 docData.lat = lat;
                 docData.lng = lng;
-                docData.uploaderId = contactId || parentId || '';
-                docData.uploaderName = knownContact?.name || parentName || '';
+                docData.uploaderId = contactId || brigadistaContact?.id || parentId || '';
+                docData.uploaderName = knownContact?.name || brigadistaContact?.name || parentName || '';
             }
 
             await addDoc(collection(db, 'campaigns', 'main_campaign', 'media'), docData)
@@ -565,7 +577,7 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
             const isBrigadeo = !!parentId;
             const isRealEvent = !isBrigadeo && currentEventId && currentEventId !== 'registro-territorio';
             let newFolio = '';
-            let contactDocId = contactId || '';
+            let contactDocId = contactId || knownContact?.id || '';
             let finalName = rsvpName.trim();
 
             if (!knownContact) {
@@ -605,10 +617,10 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                         numExt: rsvpNumExt.trim(),
                         seccional: rsvpSeccional.trim(),
                         roles: rsvpRoles,
-                        parentId: parentId || '',
-                        parentName: parentName || rsvpParentName || '',
-                        invitedBy: parentName || rsvpParentName || '',
-                        level: parentId ? Math.max(1, parentLevel - 1) : 1,
+                        parentId: parentId || brigadistaContact?.id || '',
+                        parentName: parentName || brigadistaContact?.name || rsvpParentName || '',
+                        invitedBy: parentName || brigadistaContact?.name || rsvpParentName || '',
+                        level: parentId ? Math.max(1, parentLevel - 1) : (brigadistaContact ? Math.max(1, (brigadistaContact.level || 1) - 1) : 1),
                         pyramidType: 'votation',
                         eventId: currentEventId,
                         eventIds: [currentEventId],
@@ -660,7 +672,7 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                             numExt: rsvpNumExt.trim(),
                             seccional: rsvpSeccional.trim(),
                             roles: rsvpRoles,
-                            parentName: parentName || rsvpParentName || knownContact?.parentName || '',
+                            parentName: parentName || brigadistaContact?.name || rsvpParentName || knownContact?.parentName || '',
                             status: 'registrado',
                             timestamp: serverTimestamp()
                         });
@@ -684,7 +696,7 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                             numExt: rsvpNumExt.trim(),
                             seccional: rsvpSeccional.trim(),
                             roles: rsvpRoles,
-                            parentName: parentName || rsvpParentName || knownContact?.parentName || '',
+                            parentName: parentName || brigadistaContact?.name || rsvpParentName || knownContact?.parentName || '',
                             status: 'registrado',
                             timestamp: serverTimestamp()
                         });
@@ -698,7 +710,10 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
             }
 
             if (typeof window !== 'undefined' && contactDocId) {
-                localStorage.setItem('nexo_contact_id', contactDocId)
+                const storedId = localStorage.getItem('nexo_contact_id')
+                if (!storedId) {
+                    localStorage.setItem('nexo_contact_id', contactDocId)
+                }
             }
 
             setGeneratedFolio(newFolio);
