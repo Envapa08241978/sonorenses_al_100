@@ -1058,6 +1058,14 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                             </p>
                         </div>
 
+                        {/* ===== NEXT CITIZEN BUTTON (between QR and self-reg) ===== */}
+                        <button 
+                            onClick={() => setRsvpSuccess(false)}
+                            className="w-full py-4 mt-4 rounded-xl text-gray-500 font-bold text-sm uppercase tracking-widest bg-white border-2 border-gray-100 hover:bg-gray-50 transition-all"
+                        >
+                            Siguiente Ciudadano
+                        </button>
+
                         {/* ===== SEPARATOR ===== */}
                         <div className="flex items-center gap-3 w-full my-4">
                             <div className="flex-1 h-px bg-gray-200"></div>
