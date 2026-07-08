@@ -725,6 +725,92 @@ export async function POST(request: Request) {
                              (messageBodyLower.includes('corregir') || messageBodyLower.includes('cambiar') || messageBodyLower.includes('modificar')))
                         );
 
+                        
+                        // DETECT: Request for personal link / QR re-send
+                        const isRequestingLink = isConversationalState && (
+                            messageBodyLower.includes('mi liga') ||
+                            messageBodyLower.includes('mi link') ||
+                            messageBodyLower.includes('mi enlace') ||
+                            messageBodyLower.includes('mi qr') ||
+                            messageBodyLower.includes('mi código qr') ||
+                            messageBodyLower.includes('mi codigo qr') ||
+                            messageBodyLower.includes('reenviar mi qr') ||
+                            messageBodyLower.includes('reenviar mi liga') ||
+                            messageBodyLower.includes('reenviar mi link') ||
+                            messageBodyLower.includes('reenviar mi enlace') ||
+                            messageBodyLower.includes('manda mi qr') ||
+                            messageBodyLower.includes('manda mi liga') ||
+                            messageBodyLower.includes('enviar mi qr') ||
+                            messageBodyLower.includes('enviar mi liga') ||
+                            messageBodyLower.includes('mandar mi qr') ||
+                            messageBodyLower.includes('mandar mi liga') ||
+                            messageBodyLower.includes('necesito mi liga') ||
+                            messageBodyLower.includes('necesito mi qr') ||
+                            messageBodyLower.includes('necesito mi enlace') ||
+                            messageBodyLower.includes('quiero mi liga') ||
+                            messageBodyLower.includes('quiero mi qr') ||
+                            messageBodyLower.includes('quiero mi enlace') ||
+                            messageBodyLower.includes('dame mi liga') ||
+                            messageBodyLower.includes('dame mi qr') ||
+                            messageBodyLower.includes('dame mi enlace') ||
+                            messageBodyLower.includes('link personal') ||
+                            messageBodyLower.includes('liga personal') ||
+                            messageBodyLower.includes('enlace personal') ||
+                            messageBodyLower.includes('qr personal')
+                        );
+
+                        // HANDLE: Personal link / QR re-send request (short-circuit before Gemini)
+                        if (isRequestingLink) {
+                            if (contactDoc && contactData) {
+                                // Phone verified: the WhatsApp number matches a registered contact
+                                await sendPersonalRecruitmentLink({
+                                    token, phoneId, cleanTo,
+                                    contactDocId: contactDoc.id,
+                                    contactName: contactData.name || name,
+                                    messagesRef, chatRef
+                                });
+                            } else {
+                                // No matching contact found — security: don't send anything
+                                const noContactReply = `Lo siento, no encontramos un registro asociado a este número de WhatsApp. 🔍\n\nPara obtener tu enlace personal, primero necesitas registrarte en:\nhttps://www.sonorensesal100.com/registro\n\nUna vez registrado, tu liga y QR se generarán automáticamente. 📋`;
+                                
+                                const noContactPayload = {
+                                    messaging_product: 'whatsapp',
+                                    to: cleanTo,
+                                    type: 'text',
+                                    text: { body: noContactReply }
+                                };
+                                
+                                try {
+                                    const resp = await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Authorization': `Bearer ${token}`,
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify(noContactPayload)
+                                    });
+                                    
+                                    if (resp.ok) {
+                                        await addDoc(messagesRef, {
+                                            body: noContactReply,
+                                            to: cleanTo,
+                                            type: 'text',
+                                            direction: 'outbound',
+                                            timestamp: serverTimestamp()
+                                        });
+                                        await setDoc(chatRef, {
+                                            lastMessage: `🤖 Auto-respuesta: Liga solicitada pero sin registro`,
+                                            lastMessageAt: serverTimestamp(),
+                                            botState: 'idle'
+                                        }, { merge: true });
+                                    }
+                                } catch (err) {
+                                    console.error('Error sending no-contact link reply:', err);
+                                }
+                            }
+                            return new NextResponse('EVENT_RECEIVED', { status: 200 });
+                        }
+
                         const isConfirmingYesText = isConversationalState && (
                             messageBodyLower.includes('si asistire') || 
                             messageBodyLower.includes('sí asistiré') || 
