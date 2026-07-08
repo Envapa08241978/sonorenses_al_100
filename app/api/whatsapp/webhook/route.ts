@@ -330,20 +330,21 @@ export async function POST(request: Request) {
 
                     // 1. AUTO-REPLY TYPE A: Registration Message
                     const isTournamentReg = msgType === 'text' && messageDoc.body && messageDoc.body.includes('Torneo de Dominadas');
+                    // Check if they already have consent set in the chat or contact
+                    let existingConsent = '';
+                    if (chatDoc.exists() && chatDoc.data().consent) {
+                        existingConsent = chatDoc.data().consent;
+                    } else if (contactData && contactData.consent) {
+                        existingConsent = contactData.consent;
+                    }
+
                     const isRegistration = msgType === 'text' && messageDoc.body && (
                         messageDoc.body.includes('Me acabo de registrar') ||
-                        messageDoc.body.includes('Folio:')
+                        messageDoc.body.includes('Folio:') ||
+                        (contactDoc && !existingConsent)
                     );
 
                     if (isRegistration) {
-                        // Check if they already have consent set in the chat or contact
-                        let existingConsent = '';
-                        if (chatDoc.exists() && chatDoc.data().consent) {
-                            existingConsent = chatDoc.data().consent;
-                        } else if (contactData && contactData.consent) {
-                            existingConsent = contactData.consent;
-                        }
-
                         if (existingConsent === 'yes' || existingConsent === 'no') {
                             // Already has consent, send a simple thank you / updated registration message
                             const firstName = name.split(' ')[0] || 'Hola';
