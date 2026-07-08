@@ -37,6 +37,107 @@ INFORMACIÓN OFICIAL DE LOS EVENTOS VIGENTES:
 - Descripción: Asamblea informativa sobre los logros y la forma de gobernar de la Cuarta Transformación (4T) en Sonora.
 `;
 
+/* ================================================================
+   HELPER: Send personal recruitment link + QR to a validated contact
+   ================================================================ */
+async function sendPersonalRecruitmentLink(params: {
+    token: string;
+    phoneId: string;
+    cleanTo: string;
+    contactDocId: string;
+    contactName: string;
+    messagesRef: any;
+    chatRef: any;
+}) {
+    const { token, phoneId, cleanTo, contactDocId, contactName, messagesRef, chatRef } = params;
+    const firstName = contactName.split(' ')[0] || 'Enlace';
+
+    // 1. Build the personal recruitment link
+    const personalLink = `https://www.sonorensesal100.com/registro?ref=${contactDocId}`;
+
+    // 2. Build the QR image URL (using free qrserver.com API)
+    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(personalLink)}&format=png&margin=10`;
+
+    // 3. Send text message with the personal link
+    const linkMessage = `¡Hola ${firstName}! 🎉 Te comparto tu enlace personal de reclutamiento para la plataforma ciudadana de Sonorenses al 100. 🏛️✨\n\nComparte este link con las personas que quieras registrar:\n${personalLink}\n\n¡Tu participación es muy importante! 🙌`;
+
+    try {
+        const textPayload = {
+            messaging_product: 'whatsapp',
+            to: cleanTo,
+            type: 'text',
+            text: { body: linkMessage }
+        };
+
+        const textResponse = await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(textPayload)
+        });
+
+        if (textResponse.ok) {
+            await addDoc(messagesRef, {
+                body: linkMessage,
+                to: cleanTo,
+                type: 'text',
+                direction: 'outbound',
+                timestamp: serverTimestamp()
+            });
+        }
+
+        // 4. Send QR image as a second message
+        const imagePayload = {
+            messaging_product: 'whatsapp',
+            to: cleanTo,
+            type: 'image',
+            image: {
+                link: qrImageUrl,
+                caption: `📱 Código QR de tu enlace personal. Pídele a las personas que lo escaneen con su cámara para registrarse bajo tu nombre.`
+            }
+        };
+
+        const imageResponse = await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(imagePayload)
+        });
+
+        if (imageResponse.ok) {
+            await addDoc(messagesRef, {
+                body: '📱 Código QR de tu enlace personal.',
+                to: cleanTo,
+                type: 'image',
+                direction: 'outbound',
+                timestamp: serverTimestamp()
+            });
+        }
+
+        // 5. Mark linkSent on the contact document
+        if (contactDocId) {
+            await updateDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', contactDocId), {
+                linkSent: true,
+                linkSentTimestamp: serverTimestamp()
+            });
+        }
+
+        // 6. Update chat with status
+        await setDoc(chatRef, {
+            lastMessage: `🤖 Auto-envío: Liga personal + QR enviados`,
+            lastMessageAt: serverTimestamp()
+        }, { merge: true });
+
+        console.log(`✅ Personal link + QR sent to ${cleanTo} (contact: ${contactDocId})`);
+    } catch (err) {
+        console.error('Error sending personal recruitment link:', err);
+    }
+}
+
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get('hub.mode');
@@ -286,8 +387,16 @@ export async function POST(request: Request) {
                                         isTournament: isTournamentReg
                                     }, { merge: true });
                                 }
-                            } catch (err) {
-                                console.error('Error sending registration confirmation reply:', err);
+                            } catch (err) { console.error('Error sending registration confirmation reply:', err); }
+
+                            // AUTO-SEND: Personal recruitment link + QR (if not already sent)
+                            if (contactDoc && !isTournamentReg && !contactData?.linkSent) {
+                                await sendPersonalRecruitmentLink({
+                                    token, phoneId, cleanTo,
+                                    contactDocId: contactDoc.id,
+                                    contactName: contactData?.name || name,
+                                    messagesRef, chatRef
+                                });
                             }
                         } else {
                             // Send full greeting with consent buttons
