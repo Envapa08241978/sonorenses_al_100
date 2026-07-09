@@ -47,8 +47,8 @@ export default function StatsPanel({ contacts, events, accent, filterLevels, set
                 <h3 className="text-white font-black text-[10px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] mb-3 md:mb-4 flex items-center gap-2">
                     <span className="text-base md:text-lg">📊</span> Estructura de Red
                 </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
-                    {[1, 2, 3, 4, 5, 6].map(level => {
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                    {[1, 2, 3, 4, 5].map(level => {
                         const count = contacts.filter(c => (c.level || 1) === level).length;
                         const levelLabel = LEVEL_ROLES[level] || `Nivel ${level}`;
                         const isActive = filterLevels.length === 1 && filterLevels[0] === level;

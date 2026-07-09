@@ -61,6 +61,8 @@ export default function DirectoryTab({
             return;
         }
 
+        const contactsMap = new Map(contacts.map(item => [item.id, item]));
+
         const rows = filteredContacts.map(c => {
             let fecha = '---';
             if (c.timestamp) {
@@ -69,15 +71,62 @@ export default function DirectoryTab({
                     fecha = dt.toLocaleString('es-MX');
                 }
             }
+
+            // Inicializar la cadena jerárquica para niveles del 1 al 5
+            const levelsPath: Record<number, string> = {
+                1: '---',
+                2: '---',
+                3: '---',
+                4: '---',
+                5: '---',
+            };
+
+            // Poner el nombre en su respectivo nivel
+            if (c.level && c.level >= 1 && c.level <= 5) {
+                levelsPath[c.level] = c.name;
+            }
+
+            // Subir por el árbol de referidos
+            let current = c;
+            let depth = 0;
+            while (current.parentId && depth < 20) {
+                const parent = contactsMap.get(current.parentId);
+                if (!parent) break;
+                if (parent.level && parent.level >= 1 && parent.level <= 5) {
+                    levelsPath[parent.level] = parent.name;
+                }
+                current = parent;
+                depth++;
+            }
+
+            const colNivel5 = LEVEL_ROLES[5] ? `Nivel 5: ${LEVEL_ROLES[5]}` : 'Nivel 5';
+            const colNivel4 = LEVEL_ROLES[4] ? `Nivel 4: ${LEVEL_ROLES[4]}` : 'Nivel 4';
+            const colNivel3 = LEVEL_ROLES[3] ? `Nivel 3: ${LEVEL_ROLES[3]}` : 'Nivel 3';
+            const colNivel2 = LEVEL_ROLES[2] ? `Nivel 2: ${LEVEL_ROLES[2]}` : 'Nivel 2';
+            const colNivel1 = LEVEL_ROLES[1] ? `Nivel 1: ${LEVEL_ROLES[1]}` : 'Nivel 1';
+
             return {
+                'ID': c.id,
                 'Nombre': c.name,
                 'WhatsApp': c.phone,
                 'Calle': c.calle || '',
+                'Num Ext': c.numExt || '',
+                'Num Int': c.numInt || '',
+                'Colonia': c.colonia || '',
+                'Código Postal': c.cp || '',
+                'Municipio': c.municipio || '',
                 'Seccional': c.seccional || '',
-                'Rol': LEVEL_ROLES[c.level || 1],
-                'Lider': c.parentName || '---',
-                'Eventos Asistidos': Array.from(new Set([...(c.eventNames || []), c.eventName].filter(Boolean))).join(', ') || '---',
-                'Fecha Registro': fecha
+                'Distrito': c.distrito || '',
+                'Invitado Por': c.invitedBy || '',
+                'Consentimiento': c.consent || 'no_definido',
+                'Origen': c.source || '',
+                'Fecha Registro': fecha,
+                'Rol': LEVEL_ROLES[c.level || 1] || `Nivel ${c.level || 1}`,
+                [colNivel5]: levelsPath[5],
+                [colNivel4]: levelsPath[4],
+                [colNivel3]: levelsPath[3],
+                [colNivel2]: levelsPath[2],
+                [colNivel1]: levelsPath[1]
             };
         });
 
