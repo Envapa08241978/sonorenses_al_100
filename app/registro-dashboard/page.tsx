@@ -391,10 +391,31 @@ export default function RegistroDashboard() {
                 if (res.ok) {
                     await updateDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', c.id), {
                         lastBroadcastTemplate: broadcastTemplate.trim(),
-                        lastBroadcastAt: serverTimestamp()
+                        lastBroadcastAt: serverTimestamp(),
+                        broadcastError: null,
+                        broadcastErrorCode: null
+                    });
+                } else {
+                    const errData = await res.json().catch(() => null);
+                    const metaError = errData?.error?.error_data?.details || errData?.error?.message || "Error al enviar mensaje";
+                    const errorCode = errData?.error?.code || null;
+                    await updateDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', c.id), {
+                        broadcastError: metaError,
+                        broadcastErrorCode: errorCode,
+                        lastBroadcastAttemptAt: serverTimestamp()
                     });
                 }
-            } catch (error) { console.error(error); }
+            } catch (error) { 
+                console.error(error); 
+                try {
+                    await updateDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', c.id), {
+                        broadcastError: error instanceof Error ? error.message : "Error de red/conexión",
+                        lastBroadcastAttemptAt: serverTimestamp()
+                    });
+                } catch (dbErr) {
+                    console.error("Error writing failure to Firestore:", dbErr);
+                }
+            }
             setBroadcastProgress(i + 1);
             await new Promise(r => setTimeout(r, 300));
         }

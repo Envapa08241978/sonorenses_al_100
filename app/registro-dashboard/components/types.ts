@@ -29,6 +29,9 @@ export interface ContactItem {
     consent?: string;
     lastBroadcastTemplate?: string;
     lastBroadcastAt?: any;
+    broadcastError?: string;
+    broadcastErrorCode?: number;
+    lastBroadcastAttemptAt?: any;
 }
 
 export interface EventItem {
