@@ -27,6 +27,8 @@ export interface ContactItem {
     qrSent?: boolean;
     source?: string;
     consent?: string;
+    lastBroadcastTemplate?: string;
+    lastBroadcastAt?: any;
 }
 
 export interface EventItem {

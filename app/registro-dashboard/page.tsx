@@ -382,7 +382,19 @@ export default function RegistroDashboard() {
             const c = targetContacts[i];
             const name = c.name.split(' ')[0];
             const varsReplaced = broadcastVariables.map(v => v.replace(/\{nombre\}/gi, name));
-            try { await fetch('/api/whatsapp/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: c.phone, templateName: broadcastTemplate.trim(), templateParams: varsReplaced, headerImageUrl: broadcastHeaderImage.trim() }) }); } catch (error) { console.error(error); }
+            try { 
+                const res = await fetch('/api/whatsapp/send', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ to: c.phone, templateName: broadcastTemplate.trim(), templateParams: varsReplaced, headerImageUrl: broadcastHeaderImage.trim() }) 
+                }); 
+                if (res.ok) {
+                    await updateDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', c.id), {
+                        lastBroadcastTemplate: broadcastTemplate.trim(),
+                        lastBroadcastAt: serverTimestamp()
+                    });
+                }
+            } catch (error) { console.error(error); }
             setBroadcastProgress(i + 1);
             await new Promise(r => setTimeout(r, 300));
         }

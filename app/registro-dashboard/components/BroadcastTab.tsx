@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ContactItem } from './types';
 import { MultiSelect } from './MultiSelect';
 
@@ -36,6 +36,8 @@ export default function BroadcastTab({
     setBroadcastRoleFilters, broadcastSegmentFilters, setBroadcastSegmentFilters,
     uniqueSeccionales, handleMetaBroadcast, handleTestBroadcast
 }: BroadcastTabProps) {
+    const [excludeAlreadySent, setExcludeAlreadySent] = useState(false);
+
     const filteredForBroadcast = contacts.filter(c => {
         const mS = broadcastSeccionalFilters.length === 0 || broadcastSeccionalFilters.includes(c.seccional || '');
         const mR = broadcastRoleFilters.length === 0 || (c.roles?.some(r => broadcastRoleFilters.includes(r)));
@@ -58,7 +60,13 @@ export default function BroadcastTab({
                 }
             }
         }
-        return mS && mR && mSeg;
+
+        let mExcl = true;
+        if (excludeAlreadySent && broadcastTemplate) {
+            mExcl = c.lastBroadcastTemplate !== broadcastTemplate.trim();
+        }
+
+        return mS && mR && mSeg && mExcl;
     });
     const total = filteredForBroadcast.length;
 
@@ -124,6 +132,19 @@ export default function BroadcastTab({
                         <label className="text-[10px] font-black text-slate-400 uppercase ml-4 mb-2 block">Filtrar por Rol</label>
                         <MultiSelect placeholder="Todos los roles" options={allRolesList.map(r => ({label: r, value: r}))} selected={broadcastRoleFilters} onChange={setBroadcastRoleFilters} />
                     </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-5 bg-slate-50 border-2 border-slate-100 rounded-3xl">
+                    <input 
+                        id="excludeSent" 
+                        type="checkbox" 
+                        checked={excludeAlreadySent} 
+                        onChange={e => setExcludeAlreadySent(e.target.checked)} 
+                        className="w-5 h-5 accent-blue-600 rounded cursor-pointer"
+                    />
+                    <label htmlFor="excludeSent" className="text-xs font-black text-slate-600 cursor-pointer select-none">
+                        Excluir contactos que ya recibieron la plantilla "{broadcastTemplate || 'ninguna'}"
+                    </label>
                 </div>
 
                 <div className="bg-white border-2 border-slate-50 rounded-[32px] shadow-xl p-8">
