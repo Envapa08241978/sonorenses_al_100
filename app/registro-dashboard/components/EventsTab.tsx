@@ -14,22 +14,18 @@ interface EventsTabProps {
     setInvitationEventId: (id: string | null) => void;
     setInvitationSentContacts: (v: any) => void;
     handleOpenPreRegistros: (eventId: string) => void;
-    exportDominadasToExcel: () => void;
     deleteEvent: (id: string) => void;
 }
 
 export default function EventsTab({
     events, config, handleSetActiveEvent, handleDifundir, setEditingEventId,
     setEventForm, setShowEventForm, setInvitationEventId, setInvitationSentContacts,
-    handleOpenPreRegistros, exportDominadasToExcel, deleteEvent
+    handleOpenPreRegistros, deleteEvent
 }: EventsTabProps) {
     return (
         <div className="p-10 bg-slate-50/50 min-h-[700px] animate-in zoom-in-95 duration-500">
             <div className="flex gap-4 mb-12">
                 <button onClick={() => { setEditingEventId(null); setEventForm({name:'', targetSeccionales:[]}); setShowEventForm(true); }} className="flex-1 bg-slate-900 shadow-2xl shadow-slate-200 text-white py-6 rounded-[32px] font-black text-sm hover:bg-black hover:scale-[1.01] active:scale-95 transition-all uppercase tracking-widest">Crear Nueva Asamblea</button>
-                <button onClick={exportDominadasToExcel} className="flex-1 bg-emerald-600 shadow-2xl shadow-emerald-100 text-white py-6 rounded-[32px] font-black text-sm hover:bg-emerald-700 hover:scale-[1.01] active:scale-95 transition-all uppercase tracking-widest flex items-center justify-center gap-3">
-                    <span>⚽</span> Descargar Registros Dominadas
-                </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {events.map(e => (

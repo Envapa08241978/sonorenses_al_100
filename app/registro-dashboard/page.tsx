@@ -496,60 +496,6 @@ export default function RegistroDashboard() {
         finally { setIsLoadingPreRegistros(false); }
     };
 
-    const exportDominadasToExcel = async () => {
-        try {
-            const snap = await getDocs(collection(db, 'campaigns', 'main_campaign', 'dominadas_registros'));
-            const data = snap.docs.map(d => d.data());
-            if (data.length === 0) { alert('No hay registros de dominadas.'); return; }
-            
-            const guaymasRows: any[] = [];
-            const hermosilloRows: any[] = [];
-
-            data.forEach(c => {
-                let fecha = '---';
-                if (c.timestamp) { 
-                    const dt = (c.timestamp as any)?.toDate ? (c.timestamp as any).toDate() : new Date(c.timestamp); 
-                    if (!isNaN(dt.getTime())) fecha = dt.toLocaleString('es-MX'); 
-                }
-                
-                const row = { 
-                    'Nombre': c.nombre, 
-                    'Tutor': c.tutor || '', 
-                    'Email': c.email || '', 
-                    'Celular Participante': c.celular, 
-                    'Celular Tutor': c.celularTutor || '',
-                    'Categoría': c.categoriaLabel || c.categoria, 
-                    'Sede': c.sedeLabel || c.sede, 
-                    'Fecha de Registro': fecha 
-                };
-
-                // Identificar si es de Hermosillo por los IDs de jornada o nombres de sede
-                const isHermosillo = c.jornada === 'jun29_hacienda_flor' || 
-                                     c.jornada === 'jul01_coloso' || 
-                                     (c.sedeLabel && (c.sedeLabel.toLowerCase().includes('hacienda') || c.sedeLabel.toLowerCase().includes('coloso')));
-                
-                if (isHermosillo) {
-                    hermosilloRows.push(row);
-                } else {
-                    guaymasRows.push(row);
-                }
-            });
-
-            const wb = XLSX.utils.book_new();
-            
-            if (hermosilloRows.length > 0) {
-                const wsHmo = XLSX.utils.json_to_sheet(hermosilloRows);
-                XLSX.utils.book_append_sheet(wb, wsHmo, "Hermosillo");
-            }
-            if (guaymasRows.length > 0) {
-                const wsGmy = XLSX.utils.json_to_sheet(guaymasRows);
-                XLSX.utils.book_append_sheet(wb, wsGmy, "Guaymas");
-            }
-
-            XLSX.writeFile(wb, `registros-dominadas-${new Date().toISOString().slice(0,10)}.xlsx`);
-        } catch (err) { console.error(err); alert('Error al descargar.'); }
-    };
-
     const mergeDuplicateContact = async (oldId: string, newId: string, brigData: any) => {
         try {
             const oldRef = doc(db, 'campaigns', 'main_campaign', 'contacts', oldId);
@@ -745,7 +691,7 @@ export default function RegistroDashboard() {
                                     handleDifundir={handleDifundir} setEditingEventId={setEditingEventId}
                                     setEventForm={setEventForm} setShowEventForm={setShowEventForm}
                                     setInvitationEventId={setInvitationEventId} setInvitationSentContacts={setInvitationSentContacts}
-                                    handleOpenPreRegistros={handleOpenPreRegistros} exportDominadasToExcel={exportDominadasToExcel}
+                                    handleOpenPreRegistros={handleOpenPreRegistros}
                                     deleteEvent={deleteEvent}
                                 />
                             )}

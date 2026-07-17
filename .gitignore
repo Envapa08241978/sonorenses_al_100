@@ -31,3 +31,11 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Excel reports and data exports
+*.xlsx
+*.xls
+
+# Scratch data and logs
+scratch/recent_outbounds.json
+scratch/all_conversations.txt

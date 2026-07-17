@@ -45,9 +45,6 @@ export default function BroadcastTab({
         let mSeg = true;
         if (broadcastSegmentFilters.length > 0) {
             mSeg = false;
-            if (broadcastSegmentFilters.includes('dominadas') && c.source === 'dominadas_registration') {
-                mSeg = true;
-            }
             if (broadcastSegmentFilters.includes('delfinario')) {
                 const contactEvents = Array.from(new Set([...(c.eventNames || []), c.eventName].filter(Boolean)));
                 if (contactEvents.includes('ESPECTACULO EN EL DELFINARIO')) {
@@ -120,7 +117,6 @@ export default function BroadcastTab({
                         <label className="text-[10px] font-black text-slate-400 uppercase ml-4 mb-2 block">Segmento Especial</label>
                         <MultiSelect placeholder="Todos" options={[
                             { label: 'Solo Hermosillo 📍', value: 'hermosillo' },
-                            { label: 'Torneo de Dominadas ⚽', value: 'dominadas' },
                             { label: 'Espectáculo Delfinario 🐬', value: 'delfinario' }
                         ]} selected={broadcastSegmentFilters} onChange={setBroadcastSegmentFilters} />
                     </div>
