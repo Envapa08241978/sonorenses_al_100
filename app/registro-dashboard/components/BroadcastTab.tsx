@@ -37,6 +37,7 @@ export default function BroadcastTab({
     uniqueSeccionales, handleMetaBroadcast, handleTestBroadcast
 }: BroadcastTabProps) {
     const [excludeAlreadySent, setExcludeAlreadySent] = useState(false);
+    const [onlyConfirmed, setOnlyConfirmed] = useState(true);
 
     const filteredForBroadcast = contacts.filter(c => {
         const mS = broadcastSeccionalFilters.length === 0 || broadcastSeccionalFilters.includes(c.seccional || '');
@@ -63,7 +64,9 @@ export default function BroadcastTab({
             mExcl = c.lastBroadcastTemplate !== broadcastTemplate.trim();
         }
 
-        return mS && mR && mSeg && mExcl;
+        const mConsent = !onlyConfirmed || c.consent === 'yes';
+
+        return mS && mR && mSeg && mExcl && mConsent;
     });
     const total = filteredForBroadcast.length;
 
@@ -130,17 +133,32 @@ export default function BroadcastTab({
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3 p-5 bg-slate-50 border-2 border-slate-100 rounded-3xl">
-                    <input 
-                        id="excludeSent" 
-                        type="checkbox" 
-                        checked={excludeAlreadySent} 
-                        onChange={e => setExcludeAlreadySent(e.target.checked)} 
-                        className="w-5 h-5 accent-blue-600 rounded cursor-pointer"
-                    />
-                    <label htmlFor="excludeSent" className="text-xs font-black text-slate-600 cursor-pointer select-none">
-                        Excluir contactos que ya recibieron la plantilla "{broadcastTemplate || 'ninguna'}"
-                    </label>
+                <div className="flex flex-col gap-4 p-5 bg-slate-50 border-2 border-slate-100 rounded-3xl">
+                    <div className="flex items-center gap-3">
+                        <input 
+                            id="excludeSent" 
+                            type="checkbox" 
+                            checked={excludeAlreadySent} 
+                            onChange={e => setExcludeAlreadySent(e.target.checked)} 
+                            className="w-5 h-5 accent-blue-600 rounded cursor-pointer"
+                        />
+                        <label htmlFor="excludeSent" className="text-xs font-black text-slate-600 cursor-pointer select-none">
+                            Excluir contactos que ya recibieron la plantilla "{broadcastTemplate || 'ninguna'}"
+                        </label>
+                    </div>
+
+                    <div className="flex items-center gap-3 pt-3 border-t border-slate-200/60">
+                        <input 
+                            id="onlyConfirmedCheck" 
+                            type="checkbox" 
+                            checked={onlyConfirmed} 
+                            onChange={e => setOnlyConfirmed(e.target.checked)} 
+                            className="w-5 h-5 accent-blue-600 rounded cursor-pointer"
+                        />
+                        <label htmlFor="onlyConfirmedCheck" className="text-xs font-black text-slate-600 cursor-pointer select-none flex items-center gap-2">
+                            <span>✅</span> Solo enviar a contactos con WhatsApp Confirmado (Consentimiento Aceptado)
+                        </label>
+                    </div>
                 </div>
 
                 <div className="bg-white border-2 border-slate-50 rounded-[32px] shadow-xl p-8">
