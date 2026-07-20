@@ -46,8 +46,35 @@ Se realizaron adecuaciones en el panel de control (`registro-dashboard`) relativ
     *   **Remociones:** Se eliminaron las columnas `Lider` y `Eventos Asistidos`.
     *   **Trazabilidad de Cadena Jerárquica:** Se programó una búsqueda recursiva ascendente a través del `parentId` para trazar la línea de mando completa de cada contacto del Nivel 5 al 1. El Excel resultante crea una columna dedicada para cada nivel (ej. `Nivel 5: Coordinador General`, `Nivel 4: Coordinador Territorial`, etc.) y escribe allí el nombre del superior respectivo. Esto permite agrupar y filtrar la estructura de referidos de forma directa en la hoja de cálculo.
 
+## 4. Limpieza y Depuración del Proyecto (Julio 2026)
+
+* **Eliminación de Torneo de Dominadas:** Se removieron los archivos, referencias y componentes pertenecientes al proyecto secundario *"Torneo Estatal Dominadas en mi Barrio"* que venían heredados de una clonación inicial de código. El proyecto quedó limpio y exclusivo para las operaciones de **Sonorenses al 100**.
+
+## 5. Difusión Masiva y Configuración de Imágenes de Cabecera (Meta API)
+
+* **Manejo de Imágenes de Encabezado:** 
+  * Se configuró el envío de plantillas de Meta con imagen en la cabecera (`headerImageUrl`).
+  * Se localizaron y vincularon las URLs oficiales alojadas en Firebase Storage (ej. flyer *"Así Gobierna la 4T en Sonora"*).
+  * Se documentó el flujo con herramientas externas de hospedaje directo de imágenes (como **Postimages** / `postimages.org`), recomendando utilizar siempre la variante de **"Enlace directo"** (URL directa terminada en `.jpg` o `.png` como `https://i.postimg.cc/.../imagen.jpg`) requerida por la API de Meta Graph.
+
+## 6. Filtro de Consentimiento para Envíos Masivos (WhatsApp Confirmado)
+
+Para evitar reportes de spam y bloqueo de número por parte de Meta, se reforzó el módulo de Difusión ([BroadcastTab.tsx](file:///c:/Users/ENRIQ/OneDrive/Documents/Paginas%20web/Sonorenses_al_100/app/registro-dashboard/components/BroadcastTab.tsx)):
+
+* **Filtro `onlyConfirmed`:** Se implementó una verificación que valida que el campo `c.consent === 'yes'` antes de incluir a un contacto en el público segmentado de envío masivo.
+* **Casilla Interactivas en Panel:** Se añadió la casilla de verificación *"✅ Solo enviar a contactos con WhatsApp Confirmado (Consentimiento Aceptado)"*, la cual viene **activada por defecto** para proteger la cuenta de WhatsApp Business.
+* **Integración con GitHub/Vercel:** Todos los cambios fueron desplegados a producción en Vercel mediante el repositorio oficial de GitHub.
+
+## 7. Reporte de Métricas y Registro de Difusiones
+
+* **Rendimiento de Plantilla `asamblea_copacabana`:**
+  * **Meta Analytics:** 650 mensajes entregados con una tasa de apertura/lectura del **73% (476 leídos)**.
+  * **Base de Datos Firebase:** 1,345 envíos registrados acumulados de difusiones sobre un padrón total de 1,440 contactos.
+
 ---
 **Nota para futuros asistentes:** 
 *   Si se requieren realizar cambios al webhook (`route.ts`), es de suma importancia **NO modificar ni eliminar** las validaciones de intercepción rápida (`isRequestingLink` e `isRegistration`), ya que controlan el correcto flujo de onboarding y auto-servicio de los Enlaces Ciudadanos.
 *   Al modificar el directorio o el flujo de carga, ten en cuenta que la base de datos almacena los niveles como enteros del 1 al 5. Los nombres legibles de cada rol están mapeados en `LEVEL_ROLES` (`types.ts`).
+*   En el módulo de **Difusión**, siempre asegúrate de pasar únicamente URLs de imágenes directas (`https://...jpg` o `.png`) en la cabecera y mantener activo por defecto el filtro de consentimiento (`onlyConfirmed`) para no poner en riesgo la cuenta oficial ante Meta.
+
 
