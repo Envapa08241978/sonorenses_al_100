@@ -290,13 +290,17 @@ export default function RegistroDashboard() {
             });
             await batch.commit();
             alert(`Promoción exitosa: ${item.name} sube a Nivel ${newLevel} y sus ${subordinates.length} subordinados subieron con él.`);
+            refetchContacts(); refetchStats();
         } catch (err) { console.error(err); }
     };
 
     const handleDemote = async (item: ContactItem) => {
         const newLevel = (item.level || 1) - 1;
         if (newLevel < 1) return;
-        try { await updateDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', item.id), { level: newLevel }); } catch (err) { console.error(err); }
+        try { 
+            await updateDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', item.id), { level: newLevel }); 
+            refetchContacts(); refetchStats();
+        } catch (err) { console.error(err); }
     };
 
     const handleReassign = async (itemId: string, newParentId: string) => {
@@ -305,6 +309,7 @@ export default function RegistroDashboard() {
             const pName = pSnap.exists() ? pSnap.data().name : 'Admin';
             await updateDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', itemId), { parentId: newParentId, parentName: pName });
             alert('Líder reasignado');
+            refetchContacts();
         } catch (err) { console.error(err); }
     };
 
@@ -313,10 +318,23 @@ export default function RegistroDashboard() {
         setIsSavingEdit(true);
         try {
             const { id, ...data } = editingContact;
-            await updateDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', id), data);
+            
+            // Clean payload to prevent undefined and stringified timestamp errors
+            const cleanData: any = {};
+            for (const [key, value] of Object.entries(data)) {
+                if (value !== undefined && key !== 'timestamp' && key !== 'createdAt') {
+                    cleanData[key] = value;
+                }
+            }
+            
+            await updateDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', id), cleanData);
             setEditingContact(null);
             alert('Registro actualizado correctamente');
-        } catch (err) { console.error(err); }
+            refetchContacts(); refetchStats();
+        } catch (err) { 
+            console.error(err); 
+            alert('Error al guardar: ' + err);
+        }
         finally { setIsSavingEdit(false); }
     };
 
@@ -331,7 +349,10 @@ export default function RegistroDashboard() {
         const cleanPhone = item.phone.replace(/\D/g, '');
         const msg = encodeURIComponent(`¡Hola ${item.name.split(' ')[0]}! 👋\n\nTe comparto tu enlace personal de reclutamiento para la plataforma ciudadana de ${config.name}. 🗳️\n\n✅ Comparte este link con las personas que quieras registrar:\n${link}\n\n¡Tu participación es muy importante! 💪`);
         window.open(`https://wa.me/52${cleanPhone}?text=${msg}`, '_blank');
-        try { await updateDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', item.id), { qrSent: true }); } catch (err) { console.error(err); }
+        try { 
+            await updateDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', item.id), { qrSent: true }); 
+            refetchContacts();
+        } catch (err) { console.error(err); }
     };
 
     const handleSendChatMessage = async (e?: React.FormEvent) => {
@@ -557,7 +578,12 @@ export default function RegistroDashboard() {
     };
 
     const deleteEvent = async (id: string) => { if (confirm('¿Eliminar evento?')) await deleteDoc(doc(db, 'campaigns', 'main_campaign', 'events', id)); };
-    const deleteContact = async (id: string) => { if (confirm('¿Eliminar contacto de la red?')) await deleteDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', id)); };
+    const deleteContact = async (id: string) => { 
+        if (confirm('¿Eliminar contacto de la red?')) {
+            await deleteDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', id)); 
+            refetchContacts(); refetchStats();
+        }
+    };
 
     /* ================================================================
        DERIVED DATA — Now comes pre-filtered from server API
