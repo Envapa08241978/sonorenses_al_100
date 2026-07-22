@@ -341,15 +341,14 @@ export async function POST(request: Request) {
                     const isRegistration = msgType === 'text' && messageDoc.body && (
                         messageDoc.body.includes('Me acabo de registrar') ||
                         messageDoc.body.includes('Folio:') ||
-                        (contactDoc && !existingConsent)
+                        (contactData && contactData.justRegistered === true)
                     );
 
                     const sendConsentPromptIfNeeded = async () => {
+                        // Always send prompt if they haven't explicitly said 'yes' (even if 'no', so we can ask again as requested, or if empty)
+                        // But don't send if they are currently clicking a button.
                         if (contactDoc && existingConsent !== 'yes' && !isRegistration && !isButtonSelection && msgType === 'text') {
-                            const firstName = name.split(' ')[0] || 'Hola';
-                            const consentPrompt = isTournamentReg 
-                                ? `Para brindarte la mejor atención y asegurar una comunicación fluida sobre horarios, sedes y roles de juego, por favor realiza dos sencillas acciones:\n\n1️⃣ **Guarda este número** en tus contactos como **Actividades del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque** 📲.\n\n2️⃣ **Autorización de Difusión:** ¿Nos das tu consentimiento para enviarte mensajes informativos sobre el torneo y actividades comunitarias del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque? ✅`
-                                : `Para brindarte la mejor atención y asegurar una comunicación fluida, por favor realiza dos sencillas acciones:\n\n1️⃣ **Guarda este número** en tus contactos como **Enlace del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque** 📲.\n\n2️⃣ **Autorización de Difusión:** Para compartirte información de interés sobre el movimiento y las actividades del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque, ¿nos das tu consentimiento para enviarte mensajes informativos y de difusión? ✅`;
+                            const consentPrompt = `Para brindarte la mejor atención y mantenerte al tanto, por favor confirma lo siguiente:\n\n¿Nos das tu consentimiento para enviarte mensajes informativos y de difusión sobre nuestras actividades? ✅`;
                             
                             const payload = {
                                 messaging_product: 'whatsapp',
@@ -373,7 +372,7 @@ export async function POST(request: Request) {
                                     body: JSON.stringify(payload)
                                 });
                                 if (response.ok) {
-                                    await setDoc(chatRef, { lastMessage: '🤖 Auto-respuesta con botones de consentimiento enviada' }, { merge: true });
+                                    // Don't overwrite lastMessage so the dashboard still sees their last real message
                                 }
                             } catch (err) {
                                 console.error('Error sending secondary consent prompt:', err);
