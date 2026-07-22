@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleMap, Polygon, Marker, InfoWindow } from '@react-google-maps/api';
 import { ContactItem, LEVEL_STYLES, SONORA_CENTER } from './types';
-import { collection, query, onSnapshot, orderBy, doc, deleteDoc } from 'firebase/firestore';
+import { collection, query, onSnapshot, orderBy, doc, deleteDoc, limit } from 'firebase/firestore';
 import { db, storage } from '@/lib/firebase';
 import { ref, deleteObject } from 'firebase/storage';
 import * as XLSX from 'xlsx';
@@ -12,6 +12,7 @@ interface MapTabProps {
     contacts: ContactItem[];
     accent: string;
     isMapLoaded: boolean;
+    statsBySeccional?: Record<number, number>;
 }
 
 export default function MapTab({ contacts, accent, isMapLoaded }: MapTabProps) {
@@ -63,10 +64,10 @@ export default function MapTab({ contacts, accent, isMapLoaded }: MapTabProps) {
             .catch(err => { console.error(err); setIsLoadingMap(false); });
     }, []);
 
-    // Fetch media for markers
+    // Fetch media for markers (limited to 150 most recent)
     useEffect(() => {
         const mediaRef = collection(db, 'campaigns', 'main_campaign', 'media');
-        const q = query(mediaRef, orderBy('timestamp', 'desc'));
+        const q = query(mediaRef, orderBy('timestamp', 'desc'), limit(150));
         const unsub = onSnapshot(q, (snap) => {
             const fetched = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
             // Only keep media with lat/lng

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ContactItem, LEVEL_STYLES, LEVEL_ROLES } from './types';
 import { MultiSelect } from './MultiSelect';
 import * as XLSX from 'xlsx';
@@ -34,6 +34,15 @@ interface DirectoryTabProps {
     setSelectedQRContact: (c: ContactItem | null) => void;
     deleteContact: (id: string) => void;
     handleImportContacts?: (contacts: any[]) => void;
+    // Server-side pagination props
+    isLoadingContacts?: boolean;
+    currentPage: number;
+    setCurrentPage: (page: number | ((p: number) => number)) => void;
+    hasMore: boolean;
+    pageSize: number;
+    totalContacts: number;
+    refetchContacts: () => void;
+    refetchStats: () => void;
 }
 
 export default function DirectoryTab({
@@ -42,98 +51,47 @@ export default function DirectoryTab({
     filterColonias, setFilterColonias, filterEvents, setFilterEvents,
     filterOnlyOrphans, setFilterOnlyOrphans, uniqueSeccionales, uniqueColonias,
     uniqueEventNames, config, handleWhatsApp, handleSendQR, handlePromote,
-    handleDemote, handleReassign, setEditingContact, setSelectedQRContact, deleteContact, handleImportContacts
+    handleDemote, handleReassign, setEditingContact, setSelectedQRContact, deleteContact, handleImportContacts,
+    isLoadingContacts, currentPage, setCurrentPage, hasMore, pageSize, totalContacts,
+    refetchContacts, refetchStats
 }: DirectoryTabProps) {
-    // --- Pagination ---
-    const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 50;
-    const totalPages = Math.ceil(sortedContacts.length / pageSize);
-    const paginatedContacts = sortedContacts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    // Pagination is now server-side — contacts already contains only the current page
+    const paginatedContacts = sortedContacts;
+    const [isExporting, setIsExporting] = useState(false);
 
-    // Reset page when filters change
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchQuery, filterLevels, filterSeccionales, filterColonias, filterEvents, filterOnlyOrphans]);
+    const exportToExcel = async () => {
+        setIsExporting(true);
+        try {
+            // Build query params matching current filters
+            const params = new URLSearchParams();
+            params.set('format', 'json');
+            if (filterLevels.length > 0) params.set('levels', filterLevels.join(','));
+            if (filterSeccionales.length > 0) params.set('seccionales', filterSeccionales.join(','));
+            if (filterColonias.length > 0) params.set('colonias', filterColonias.join(','));
+            if (searchQuery) params.set('search', searchQuery);
+            if (filterEvents.length > 0) params.set('events', filterEvents.join(','));
+            if (filterOnlyOrphans) params.set('onlyOrphans', 'true');
 
-    const exportToExcel = () => {
-        if (filteredContacts.length === 0) {
-            alert('No hay contactos para exportar.');
-            return;
+            const res = await fetch(`/api/exportContacts?${params.toString()}`);
+            if (!res.ok) throw new Error('Error al exportar');
+            const data = await res.json();
+
+            if (!data.rows || data.rows.length === 0) {
+                alert('No hay contactos para exportar.');
+                return;
+            }
+
+            const worksheet = XLSX.utils.json_to_sheet(data.rows);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Directorio");
+            XLSX.writeFile(workbook, `directorio-${new Date().toISOString().slice(0,10)}.xlsx`);
+            alert(`Se exportaron ${data.totalExported.toLocaleString()} contactos exitosamente.`);
+        } catch (error) {
+            console.error('Error exporting:', error);
+            alert('Error al exportar contactos. Revisa la consola.');
+        } finally {
+            setIsExporting(false);
         }
-
-        const contactsMap = new Map(contacts.map(item => [item.id, item]));
-
-        const rows = filteredContacts.map(c => {
-            let fecha = '---';
-            if (c.timestamp) {
-                const dt = (c.timestamp as any)?.toDate ? (c.timestamp as any).toDate() : new Date(c.timestamp);
-                if (!isNaN(dt.getTime())) {
-                    fecha = dt.toLocaleString('es-MX');
-                }
-            }
-
-            // Inicializar la cadena jerárquica para niveles del 1 al 5
-            const levelsPath: Record<number, string> = {
-                1: '---',
-                2: '---',
-                3: '---',
-                4: '---',
-                5: '---',
-            };
-
-            // Poner el nombre en su respectivo nivel
-            if (c.level && c.level >= 1 && c.level <= 5) {
-                levelsPath[c.level] = c.name;
-            }
-
-            // Subir por el árbol de referidos
-            let current = c;
-            let depth = 0;
-            while (current.parentId && depth < 20) {
-                const parent = contactsMap.get(current.parentId);
-                if (!parent) break;
-                if (parent.level && parent.level >= 1 && parent.level <= 5) {
-                    levelsPath[parent.level] = parent.name;
-                }
-                current = parent;
-                depth++;
-            }
-
-            const colNivel5 = LEVEL_ROLES[5] ? `Nivel 5: ${LEVEL_ROLES[5]}` : 'Nivel 5';
-            const colNivel4 = LEVEL_ROLES[4] ? `Nivel 4: ${LEVEL_ROLES[4]}` : 'Nivel 4';
-            const colNivel3 = LEVEL_ROLES[3] ? `Nivel 3: ${LEVEL_ROLES[3]}` : 'Nivel 3';
-            const colNivel2 = LEVEL_ROLES[2] ? `Nivel 2: ${LEVEL_ROLES[2]}` : 'Nivel 2';
-            const colNivel1 = LEVEL_ROLES[1] ? `Nivel 1: ${LEVEL_ROLES[1]}` : 'Nivel 1';
-
-            return {
-                'ID': c.id,
-                'Nombre': c.name,
-                'WhatsApp': c.phone,
-                'Calle': c.calle || '',
-                'Num Ext': c.numExt || '',
-                'Num Int': c.numInt || '',
-                'Colonia': c.colonia || '',
-                'Código Postal': c.cp || '',
-                'Municipio': c.municipio || '',
-                'Seccional': c.seccional || '',
-                'Distrito': c.distrito || '',
-                'Invitado Por': c.invitedBy || '',
-                'Consentimiento': c.consent || 'no_definido',
-                'Origen': c.source || '',
-                'Fecha Registro': fecha,
-                'Rol': LEVEL_ROLES[c.level || 1] || `Nivel ${c.level || 1}`,
-                [colNivel5]: levelsPath[5],
-                [colNivel4]: levelsPath[4],
-                [colNivel3]: levelsPath[3],
-                [colNivel2]: levelsPath[2],
-                [colNivel1]: levelsPath[1]
-            };
-        });
-
-        const worksheet = XLSX.utils.json_to_sheet(rows);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Directorio");
-        XLSX.writeFile(workbook, `directorio-${new Date().toISOString().slice(0,10)}.xlsx`);
     };
 
     const exportToVCF = () => {
@@ -222,7 +180,7 @@ export default function DirectoryTab({
                         IMPORTAR
                         <input type="file" accept=".xlsx, .xls, .csv" className="hidden" onChange={handleFileUpload} />
                     </label>
-                    <button onClick={exportToExcel} className="px-8 py-4 rounded-3xl bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-700 transition-all shadow-xl shadow-blue-100">Exportar Excel</button>
+                    <button onClick={exportToExcel} disabled={isExporting} className="px-8 py-4 rounded-3xl bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 disabled:opacity-50">{isExporting ? 'Exportando...' : 'Exportar Excel'}</button>
                     <button onClick={exportToVCF} className="px-8 py-4 rounded-3xl bg-emerald-600 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-100 flex items-center gap-2">📱 Exportar Contactos</button>
                 </div>
             </div>
@@ -369,28 +327,35 @@ export default function DirectoryTab({
                 </table>
 
                 {/* Pagination Bar */}
-                {sortedContacts.length > pageSize && (
-                    <div className="flex items-center justify-between px-10 py-6 bg-slate-50 border-t border-gray-100">
-                        <button
-                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                            disabled={currentPage === 1}
-                            className="px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all disabled:opacity-30 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm"
-                        >
-                            ← Anterior
-                        </button>
-                        <div className="text-center">
-                            <p className="text-sm font-black text-slate-700">Página {currentPage} de {totalPages}</p>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Mostrando {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, sortedContacts.length)} de {sortedContacts.length}</p>
-                        </div>
-                        <button
-                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                            disabled={currentPage === totalPages}
-                            className="px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all disabled:opacity-30 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm"
-                        >
-                            Siguiente →
-                        </button>
+                <div className="flex items-center justify-between px-10 py-6 bg-slate-50 border-t border-gray-100">
+                    <button
+                        onClick={() => setCurrentPage((p: number) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1 || isLoadingContacts}
+                        className="px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all disabled:opacity-30 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm"
+                    >
+                        ← Anterior
+                    </button>
+                    <div className="text-center">
+                        {isLoadingContacts ? (
+                            <div className="flex items-center gap-3">
+                                <div className="w-5 h-5 border-2 border-slate-300 border-t-red-500 rounded-full animate-spin" />
+                                <p className="text-sm font-black text-slate-400">Cargando...</p>
+                            </div>
+                        ) : (
+                            <>
+                                <p className="text-sm font-black text-slate-700">Página {currentPage}</p>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Mostrando {paginatedContacts.length} de {totalContacts.toLocaleString()} contactos</p>
+                            </>
+                        )}
                     </div>
-                )}
+                    <button
+                        onClick={() => setCurrentPage((p: number) => p + 1)}
+                        disabled={!hasMore || isLoadingContacts}
+                        className="px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all disabled:opacity-30 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm"
+                    >
+                        Siguiente →
+                    </button>
+                </div>
 
                 {filteredContacts.length === 0 && <div className="py-20 text-center grayscale opacity-50"><span className="text-6xl block mb-4">🔍</span><p className="font-black text-slate-300 uppercase tracking-widest">Sin resultados en la red</p></div>}
             </div>

@@ -6,6 +6,7 @@ import { MultiSelect } from './MultiSelect';
 
 interface BroadcastTabProps {
     contacts: ContactItem[];
+    totalContacts: number;
     broadcastVariables: string[];
     setBroadcastVariables: (v: string[]) => void;
     broadcastHeaderImage: string;
@@ -30,7 +31,7 @@ interface BroadcastTabProps {
 const allRolesList = ['Protagonista del cambio verdadero', 'Activista digital', 'Defensa del voto'];
 
 export default function BroadcastTab({
-    contacts, broadcastVariables, setBroadcastVariables, broadcastHeaderImage, setBroadcastHeaderImage, broadcastTemplate, setBroadcastTemplate,
+    contacts, totalContacts, broadcastVariables, setBroadcastVariables, broadcastHeaderImage, setBroadcastHeaderImage, broadcastTemplate, setBroadcastTemplate,
     broadcastTestPhone, setBroadcastTestPhone, isBroadcasting, broadcastProgress,
     broadcastSeccionalFilters, setBroadcastSeccionalFilters, broadcastRoleFilters,
     setBroadcastRoleFilters, broadcastSegmentFilters, setBroadcastSegmentFilters,

@@ -113,30 +113,44 @@ export default function ChatTab({
         chatInputRef.current?.focus();
     };
 
+    const [searchResults, setSearchResults] = useState<ContactItem[]>([]);
+    const [isSearchingContacts, setIsSearchingContacts] = useState(false);
+
+    useEffect(() => {
+        if (!showNewChatPicker) return;
+        const timer = setTimeout(async () => {
+            setIsSearchingContacts(true);
+            try {
+                const params = new URLSearchParams();
+                params.set('pageSize', '30');
+                if (newChatSearch.trim()) params.set('search', newChatSearch.trim());
+                const res = await fetch(`/api/contactsApi?${params.toString()}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setSearchResults(data.contacts || []);
+                }
+            } catch (err) {
+                console.error('Error searching contacts for chat:', err);
+            } finally {
+                setIsSearchingContacts(false);
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [newChatSearch, showNewChatPicker]);
+
+    const activeContactsList = newChatSearch.trim() ? searchResults : (searchResults.length > 0 ? searchResults : contacts);
+
     return (
-        <div className="flex h-[700px]">
-            <div className="w-1/3 border-r border-gray-100 bg-gray-50 flex flex-col h-full overflow-hidden">
-                <div className="p-3 bg-white border-b border-gray-100 flex items-center gap-3">
-                    <div className="relative flex-shrink-0">
-                        <img 
-                            src="/javier_lamarque.jpg" 
-                            alt="Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque" 
-                            className="w-10 h-10 rounded-full object-cover border-2 border-red-500 shadow-md"
-                            onError={(e) => {
-                                e.currentTarget.src = "https://via.placeholder.com/150";
-                            }}
-                        />
-                        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full animate-pulse" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <div className="font-black text-gray-800 text-xs truncate leading-tight">Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque</div>
-                        <div className="text-[9px] text-green-600 font-bold flex items-center gap-1 mt-0.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block animate-ping"></span>
-                            <span>WhatsApp Conectado</span>
-                        </div>
+        <div className="flex h-[calc(100vh-140px)] min-h-[600px] bg-slate-100 rounded-3xl overflow-hidden shadow-sm border border-slate-200 animate-in fade-in duration-300">
+            {/* Sidebar — Chats List */}
+            <div className="w-full md:w-[380px] bg-white border-r border-gray-100 flex flex-col">
+                <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl font-black text-slate-800 flex items-center gap-2"><span>💬</span> Mensajes Live</h2>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{chats.length} Conversaciones</p>
                     </div>
                     <button 
-                        onClick={() => setShowNewChatPicker(!showNewChatPicker)} 
+                        onClick={() => setShowNewChatPicker(!showNewChatPicker)}
                         className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm flex-shrink-0 ${showNewChatPicker ? 'bg-red-500 text-white rotate-45' : 'bg-slate-50 text-slate-600 hover:bg-red-500 hover:text-white border border-slate-100'}`}
                         title="Nuevo chat"
                     >
@@ -157,44 +171,46 @@ export default function ChatTab({
                             />
                         </div>
                         <div className="max-h-[280px] overflow-y-auto">
-                            {contacts
-                                .filter(c => c.phone && (
-                                    c.name.toLowerCase().includes(newChatSearch.toLowerCase()) ||
-                                    c.phone.includes(newChatSearch)
-                                ))
-                                .slice(0, 50)
-                                .map(contact => {
-                                    const initials = (contact.name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-                                    const colors = ['#EF4444','#F97316','#EAB308','#22C55E','#06B6D4','#3B82F6','#8B5CF6','#EC4899'];
-                                    const colorIdx = contact.name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % colors.length;
-                                    const contactDigits = normalizePhone(contact.phone);
-                                    const existingChat = chats.find(ch => normalizePhone(ch.phone || ch.id) === contactDigits);
-                                    return (
-                                        <button 
-                                            key={contact.id} 
-                                            onClick={() => {
-                                                if (existingChat) {
-                                                    setSelectedChat(existingChat);
-                                                    setShowNewChatPicker(false);
-                                                    setNewChatSearch('');
-                                                } else {
-                                                    handleStartNewChat(contact);
-                                                }
-                                            }} 
-                                            className="w-full text-left px-3 py-2.5 flex items-center gap-3 hover:bg-red-50 transition-all border-b border-slate-50"
-                                        >
-                                            <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-black text-[10px] flex-shrink-0" style={{ backgroundColor: colors[colorIdx] }}>
-                                                {initials}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="font-bold text-gray-800 text-xs truncate">{contact.name}</div>
-                                                <div className="text-[10px] text-gray-400">{contact.phone}</div>
-                                            </div>
-                                            {existingChat && <span className="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold">Chat activo</span>}
-                                        </button>
-                                    );
-                                })}
-                            {contacts.filter(c => c.phone && (c.name.toLowerCase().includes(newChatSearch.toLowerCase()) || c.phone.includes(newChatSearch))).length === 0 && (
+                            {isSearchingContacts ? (
+                                <div className="p-4 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+                                    <div className="w-4 h-4 border-2 border-slate-300 border-t-red-500 rounded-full animate-spin" />
+                                    Buscando contactos...
+                                </div>
+                            ) : activeContactsList.length > 0 ? (
+                                activeContactsList
+                                    .filter(c => c.phone)
+                                    .map(contact => {
+                                        const initials = (contact.name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+                                        const colors = ['#EF4444','#F97316','#EAB308','#22C55E','#06B6D4','#3B82F6','#8B5CF6','#EC4899'];
+                                        const colorIdx = contact.name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % colors.length;
+                                        const contactDigits = normalizePhone(contact.phone);
+                                        const existingChat = chats.find(ch => normalizePhone(ch.phone || ch.id) === contactDigits);
+                                        return (
+                                            <button 
+                                                key={contact.id} 
+                                                onClick={() => {
+                                                    if (existingChat) {
+                                                        setSelectedChat(existingChat);
+                                                        setShowNewChatPicker(false);
+                                                        setNewChatSearch('');
+                                                    } else {
+                                                        handleStartNewChat(contact);
+                                                    }
+                                                }} 
+                                                className="w-full text-left px-3 py-2.5 flex items-center gap-3 hover:bg-red-50 transition-all border-b border-slate-50"
+                                            >
+                                                <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-black text-[10px] flex-shrink-0" style={{ backgroundColor: colors[colorIdx] }}>
+                                                    {initials}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="font-bold text-gray-800 text-xs truncate">{contact.name}</div>
+                                                    <div className="text-[10px] text-gray-400">{contact.phone}</div>
+                                                </div>
+                                                {existingChat && <span className="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold">Chat activo</span>}
+                                            </button>
+                                        );
+                                    })
+                            ) : (
                                 <div className="p-4 text-center text-xs text-gray-400">No se encontraron contactos</div>
                             )}
                         </div>

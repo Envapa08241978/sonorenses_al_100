@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { db, storage, auth } from '@/lib/firebase';
 import { 
     collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, 
@@ -10,6 +10,7 @@ import {
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { useLoadScript } from '@react-google-maps/api';
+import { useContacts, useStats } from '@/hooks/useContacts';
 import * as XLSX from 'xlsx';
 
 // --- Extracted Components ---
@@ -43,8 +44,7 @@ export default function RegistroDashboard() {
     // --- Core Navigation ---
     const [activeTab, setActiveTab] = useState<TabId>('contacts');
 
-    // --- Campaign Data States ---
-    const [contacts, setContacts] = useState<ContactItem[]>([]);
+    // --- Campaign Data States (lightweight: events, brigadistas, chats stay as onSnapshot) ---
     const [events, setEvents] = useState<EventItem[]>([]);
     const [brigadistas, setBrigadistas] = useState<BrigadistaItem[]>([]);
     const [config, setConfig] = useState<any>({
@@ -67,6 +67,10 @@ export default function RegistroDashboard() {
     const [filterLevelExact, setFilterLevelExact] = useState(false);
     const [filterPyramidType, setFilterPyramidType] = useState<'all' | 'votation' | 'defense'>('all');
     const [filterOnlyOrphans, setFilterOnlyOrphans] = useState(false);
+
+    // --- Server-Side Pagination ---
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 50;
 
     // --- Editing & Communication ---
     const [editingContact, setEditingContact] = useState<ContactItem | null>(null);
@@ -148,11 +152,31 @@ export default function RegistroDashboard() {
         return () => unsubscribe();
     }, []);
 
+    // --- SERVER-SIDE DATA: Contacts via API (paginated, no onSnapshot) ---
+    const { contacts, isLoading: isLoadingContacts, hasMore, refetch: refetchContacts } = useContacts({
+        page: currentPage,
+        pageSize,
+        search: searchQuery,
+        levels: filterLevels,
+        seccionales: filterSeccionales,
+        colonias: filterColonias,
+        events: filterEvents,
+        onlyOrphans: filterOnlyOrphans,
+        pyramidType: filterPyramidType,
+        enabled: isAuthenticated,
+    });
+
+    // --- SERVER-SIDE DATA: Stats (aggregated counts, no full scan) ---
+    const { stats, refetch: refetchStats } = useStats(isAuthenticated);
+
+    // Reset page when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, filterLevels, filterSeccionales, filterColonias, filterEvents, filterOnlyOrphans, filterPyramidType]);
+
+    // --- LIGHTWEIGHT REAL-TIME: Events, brigadistas, chats (small collections) ---
     useEffect(() => {
         if (!isAuthenticated) return;
-        const cRef = collection(db, 'campaigns', 'main_campaign', 'contacts');
-        const qC = query(cRef, orderBy('timestamp', 'desc'));
-        const unsubC = onSnapshot(qC, (snap) => setContacts(snap.docs.map(d => ({ id: d.id, ...d.data() } as any))));
 
         const eRef = collection(db, 'campaigns', 'main_campaign', 'events');
         const unsubE = onSnapshot(eRef, (snap) => setEvents(snap.docs.map(d => ({ id: d.id, ...d.data() } as any))));
@@ -162,10 +186,10 @@ export default function RegistroDashboard() {
         const unsubB = onSnapshot(qB, (snap) => setBrigadistas(snap.docs.map(d => ({ id: d.id, ...d.data() } as any))));
 
         const chatsRef = collection(db, 'campaigns', 'main_campaign', 'chats');
-        const qChats = query(chatsRef, orderBy('lastMessageAt', 'desc'));
+        const qChats = query(chatsRef, orderBy('lastMessageAt', 'desc'), limit(50));
         const unsubChats = onSnapshot(qChats, (snap) => setChats(snap.docs.map(d => ({ id: d.id, ...d.data() } as any))));
 
-        return () => { unsubC(); unsubE(); unsubB(); unsubChats(); };
+        return () => { unsubE(); unsubB(); unsubChats(); };
     }, [isAuthenticated]);
 
     useEffect(() => {
@@ -536,56 +560,17 @@ export default function RegistroDashboard() {
     const deleteContact = async (id: string) => { if (confirm('¿Eliminar contacto de la red?')) await deleteDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', id)); };
 
     /* ================================================================
-       DERIVED DATA — Filtering, Sorting, Metrics
+       DERIVED DATA — Now comes pre-filtered from server API
        ================================================================ */
-    const contactsByParent = useMemo(() => {
-        const map: Record<string, ContactItem[]> = {};
-        contacts.forEach(c => { if (c.parentId) { if (!map[c.parentId]) map[c.parentId] = []; map[c.parentId].push(c); } });
-        return map;
-    }, [contacts]);
+    // Contacts are already filtered and paginated by the server.
+    // `contacts` here is only the current page (50 items), not all 450K.
+    const filteredContacts = contacts;
+    const sortedContacts = contacts; // Server returns them pre-sorted
 
-    const filteredContacts = useMemo(() => {
-        const isFiltering = searchQuery || filterSeccionales.length > 0 || filterColonias.length > 0 || filterLevels.length > 0 || filterOnlyOrphans || filterPyramidType !== 'all';
-        const direct = contacts.filter(c => {
-            const s = searchQuery.toLowerCase();
-            const mS = !s || c.name?.toLowerCase().includes(s) || c.phone?.includes(s);
-            const mSec = filterSeccionales.length === 0 || filterSeccionales.includes(c.seccional || '');
-            const mCol = filterColonias.length === 0 || filterColonias.includes(c.colonia || '');
-            const mLev = filterLevels.length === 0 || filterLevels.includes(c.level || 1);
-            const mO = !filterOnlyOrphans || !c.parentId;
-            const mP = filterPyramidType === 'all' || c.pyramidType === filterPyramidType;
-            const contactEvents = Array.from(new Set([...(c.eventNames || []), c.eventName].filter(Boolean)));
-            const mEv = filterEvents.length === 0 || filterEvents.some(fe => contactEvents.includes(fe));
-            return mS && mSec && mCol && mLev && mO && mP && mEv;
-        });
-        if (!isFiltering && filterEvents.length === 0) return direct;
-        if (direct.length === 0) return [];
-        if (filterLevelExact) return direct;
-        const allIds = new Set(direct.map(d => d.id));
-        const stack = Array.from(allIds);
-        while (stack.length > 0) {
-            const pid = stack.pop();
-            if (pid && contactsByParent[pid]) { contactsByParent[pid].forEach(child => { if (!allIds.has(child.id)) { allIds.add(child.id); stack.push(child.id); } }); }
-        }
-        return contacts.filter(c => allIds.has(c.id));
-    }, [contacts, searchQuery, filterSeccionales, filterColonias, filterLevels, filterLevelExact, filterOnlyOrphans, filterPyramidType, contactsByParent, filterEvents]);
-
-    const sortedContacts = useMemo(() => {
-        const result: ContactItem[] = []; const seen = new Set<string>();
-        const traverse = (parentId: string) => {
-            const children = filteredContacts.filter(c => c.parentId === parentId);
-            children.sort((a,b) => (b.level || 0) - (a.level || 0) || a.name.localeCompare(b.name));
-            children.forEach(child => { if (!seen.has(child.id)) { seen.add(child.id); result.push(child); traverse(child.id); } });
-        };
-        const roots = filteredContacts.filter(c => !c.parentId || !filteredContacts.find(p => p.id === c.parentId));
-        roots.sort((a,b) => (b.level || 0) - (a.level || 0) || a.name.localeCompare(b.name));
-        roots.forEach(root => { if (!seen.has(root.id)) { seen.add(root.id); result.push(root); traverse(root.id); } });
-        return result;
-    }, [filteredContacts]);
-
-    const uniqueSeccionales = Array.from(new Set(contacts.map(c => c.seccional).filter(Boolean))) as string[];
-    const uniqueColonias = Array.from(new Set(contacts.map(c => c.colonia).filter(Boolean))) as string[];
-    const uniqueEventNames = Array.from(new Set(contacts.flatMap(c => [...(c.eventNames || []), c.eventName].filter(Boolean)))) as string[];
+    // Unique values come from the stats API (pre-computed server-side)
+    const uniqueSeccionales = stats?.uniqueSeccionales || [];
+    const uniqueColonias = stats?.uniqueColonias || [];
+    const uniqueEventNames = stats?.uniqueEventNames || [];
 
     // --- Dynamic Theming ---
     const accent = config.accentColor || '#A60321';
@@ -631,7 +616,9 @@ export default function RegistroDashboard() {
 
                     <main className="w-full max-w-[1600px] mx-auto px-6 py-10">
                         <StatsPanel
-                            contacts={contacts} events={events} accent={accent}
+                            totalContacts={stats?.totalContacts || 0}
+                            byLevel={stats?.byLevel || {}}
+                            events={events} accent={accent}
                             filterLevels={filterLevels} setFilterLevels={setFilterLevels}
                             setFilterLevelExact={setFilterLevelExact} setActiveTab={setActiveTab}
                         />
@@ -667,6 +654,12 @@ export default function RegistroDashboard() {
                                     handlePromote={handlePromote} handleDemote={handleDemote} handleReassign={handleReassign}
                                     setEditingContact={setEditingContact} setSelectedQRContact={setSelectedQRContact}
                                     deleteContact={deleteContact} handleImportContacts={handleImportContacts}
+                                    isLoadingContacts={isLoadingContacts}
+                                    currentPage={currentPage} setCurrentPage={setCurrentPage}
+                                    hasMore={hasMore} pageSize={pageSize}
+                                    totalContacts={stats?.totalContacts || 0}
+                                    refetchContacts={refetchContacts}
+                                    refetchStats={refetchStats}
                                 />
                             )}
                             {activeTab === 'chat' && (
@@ -683,7 +676,7 @@ export default function RegistroDashboard() {
                                 />
                             )}
                             {activeTab === 'map' && (
-                                <MapTab contacts={contacts} accent={accent} isMapLoaded={isMapLoaded} />
+                                <MapTab contacts={contacts} accent={accent} isMapLoaded={isMapLoaded} statsBySeccional={stats?.byLevel} />
                             )}
                             {activeTab === 'events' && (
                                 <EventsTab
@@ -697,7 +690,8 @@ export default function RegistroDashboard() {
                             )}
                             {activeTab === 'broadcast' && (
                                 <BroadcastTab
-                                    contacts={contacts} 
+                                    contacts={contacts}
+                                    totalContacts={stats?.totalContacts || 0}
                                     broadcastVariables={broadcastVariables} setBroadcastVariables={setBroadcastVariables}
                                     broadcastHeaderImage={broadcastHeaderImage} setBroadcastHeaderImage={setBroadcastHeaderImage}
                                     broadcastTemplate={broadcastTemplate} setBroadcastTemplate={setBroadcastTemplate}

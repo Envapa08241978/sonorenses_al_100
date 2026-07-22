@@ -4,7 +4,8 @@ import React from 'react';
 import { ContactItem, EventItem, LEVEL_ROLES } from './types';
 
 interface StatsPanelProps {
-    contacts: ContactItem[];
+    totalContacts: number;
+    byLevel: Record<number, number>;
     events: EventItem[];
     accent: string;
     filterLevels: number[];
@@ -13,13 +14,13 @@ interface StatsPanelProps {
     setActiveTab: (tab: any) => void;
 }
 
-export default function StatsPanel({ contacts, events, accent, filterLevels, setFilterLevels, setFilterLevelExact, setActiveTab }: StatsPanelProps) {
+export default function StatsPanel({ totalContacts, byLevel, events, accent, filterLevels, setFilterLevels, setFilterLevelExact, setActiveTab }: StatsPanelProps) {
     return (
         <div className="space-y-4 md:space-y-6 mb-6 md:mb-10">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                 <div className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm relative overflow-hidden group hover:shadow-lg transition-all duration-300">
                     <div className="absolute -right-4 -top-4 w-16 h-16 md:w-20 md:h-20 bg-red-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500" />
-                    <p className="text-3xl md:text-4xl font-black text-theme relative z-10">{contacts.length}</p>
+                    <p className="text-3xl md:text-4xl font-black text-theme relative z-10">{totalContacts.toLocaleString()}</p>
                     <p className="text-[9px] md:text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1 md:mt-2 relative z-10">Directorio Total</p>
                 </div>
                 <div className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm group hover:shadow-lg transition-all cursor-pointer" onClick={() => setActiveTab('map')}>
@@ -49,7 +50,7 @@ export default function StatsPanel({ contacts, events, accent, filterLevels, set
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                     {[1, 2, 3, 4, 5].map(level => {
-                        const count = contacts.filter(c => (c.level || 1) === level).length;
+                        const count = byLevel[level] || 0;
                         const levelLabel = LEVEL_ROLES[level] || `Nivel ${level}`;
                         const isActive = filterLevels.length === 1 && filterLevels[0] === level;
                         return (
@@ -94,14 +95,14 @@ export default function StatsPanel({ contacts, events, accent, filterLevels, set
                             className="flex items-center gap-2 px-4 py-2 bg-white/15 hover:bg-white/25 rounded-full text-white/80 hover:text-white transition-all"
                         >
                             <span>✕</span>
-                            <span>Mostrando: {LEVEL_ROLES[filterLevels[0]]} ({contacts.filter(c => (c.level || 1) === filterLevels[0]).length})</span>
+                            <span>Mostrando: {LEVEL_ROLES[filterLevels[0]]} ({byLevel[filterLevels[0]] || 0})</span>
                             <span>— Click para ver todos</span>
                         </button>
                     ) : (
                         <>
-                            <span>Total en Red: {contacts.length}</span>
+                            <span>Total en Red: {totalContacts.toLocaleString()}</span>
                             <span>•</span>
-                            <span>Niveles activos: {new Set(contacts.map(c => c.level || 1)).size}</span>
+                            <span>Niveles activos: {Object.values(byLevel).filter(v => v > 0).length}</span>
                         </>
                     )}
                 </div>
