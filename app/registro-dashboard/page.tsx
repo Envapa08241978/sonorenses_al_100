@@ -5,7 +5,7 @@ import { db, storage, auth } from '@/lib/firebase';
 import { 
     collection, query, orderBy, onSnapshot, doc, getDoc, setDoc, 
     addDoc, updateDoc, deleteDoc, arrayUnion, serverTimestamp, writeBatch,
-    where, getDocs 
+    where, getDocs, limit
 } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut, User } from 'firebase/auth';
