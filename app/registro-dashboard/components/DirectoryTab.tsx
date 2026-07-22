@@ -275,19 +275,19 @@ export default function DirectoryTab({
                                         
                                         {/* Consentimiento WhatsApp */}
                                         {c.consent === 'yes' ? (
-                                            <div className="flex items-center gap-1 mt-1">
+                                            <div className="flex items-center gap-1 mt-1" title="Aceptó recibir mensajes de difusión">
                                                 <span className="text-emerald-500 text-[10px]">✅</span>
-                                                <span className="text-[8px] font-black text-emerald-600 uppercase tracking-wider bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 shadow-sm">WA Confirmado</span>
+                                                <span className="text-[8px] font-black text-emerald-600 uppercase tracking-wider bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 shadow-sm">Difusión Activa</span>
                                             </div>
                                         ) : c.consent === 'no' ? (
-                                            <div className="flex items-center gap-1 mt-1">
+                                            <div className="flex items-center gap-1 mt-1" title="Rechazó recibir mensajes de difusión">
                                                 <span className="text-rose-500 text-[10px]">🚫</span>
-                                                <span className="text-[8px] font-black text-rose-600 uppercase tracking-wider bg-rose-50 px-1.5 py-0.5 rounded border border-rose-100 shadow-sm">Rechazado</span>
+                                                <span className="text-[8px] font-black text-rose-600 uppercase tracking-wider bg-rose-50 px-1.5 py-0.5 rounded border border-rose-100 shadow-sm">Sin Difusión</span>
                                             </div>
                                         ) : (
-                                            <div className="flex items-center gap-1 mt-1">
+                                            <div className="flex items-center gap-1 mt-1" title="Falta confirmar consentimiento de difusión">
                                                 <span className="text-amber-500 text-[10px]">⏳</span>
-                                                <span className="text-[8px] font-black text-amber-600 uppercase tracking-wider bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100 shadow-sm">Pendiente</span>
+                                                <span className="text-[8px] font-black text-amber-600 uppercase tracking-wider bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100 shadow-sm">Difusión Pendiente</span>
                                             </div>
                                         )}
                                     </td>
