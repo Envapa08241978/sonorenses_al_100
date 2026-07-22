@@ -657,30 +657,8 @@ export async function POST(request: Request) {
                     // 3. CONVERSATIONAL BOT STATE MACHINE (For any general text message)
                     } else {
                         const messageBodyLower = (messageDoc.body || '').toLowerCase().trim();
-
-                        const petitionKeywords = [
-                            'peticion', 'petición', 'solicitud', 'ayuda', 'necesito', 'ocupo',
-                            'problema', 'consulta', 'tramite', 'trámite', 'gestion', 'gestión',
-                            'reportar', 'duda', 'pregunta', 'apoyo social', 'gestionar', 'carta'
-                        ];
-
-                        const isPetition = petitionKeywords.some(keyword => messageBodyLower.includes(keyword));
-
-                        // Query gestiones to see if this user has an active folio
+                        const isPetition = false;
                         let activeGestion: any = null;
-                        if (contactData) {
-                            const gestionesRef = collection(db, 'campaigns', 'main_campaign', 'gestiones');
-                            const qGestiones = query(gestionesRef, where('phone', 'in', [from, cleanFromPhone]));
-                            const gestionesSnap = await getDocs(qGestiones);
-                            
-                            for (const docSnap of gestionesSnap.docs) {
-                                const data = docSnap.data();
-                                if (data.status !== 'resuelto') {
-                                    activeGestion = data;
-                                    break;
-                                }
-                            }
-                        }
 
 
                         let newsAndSocials = '';
@@ -2156,28 +2134,7 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                             }
                         }
 
-                        // Generate Folio and refer if needed
-                        if (isReferralToVinculacion) {
-                            const randomFolio = 'GS-' + Math.floor(1000 + Math.random() * 9000);
-                            try {
-                                await addDoc(collection(db, 'campaigns', 'main_campaign', 'gestiones'), {
-                                    folio: randomFolio,
-                                    phone: from,
-                                    name: contactData?.name || name,
-                                    municipio: contactData?.municipio || '',
-                                    seccional: contactData?.seccional || '',
-                                    petitionText: messageDoc.body || '',
-                                    status: 'pendiente',
-                                    priority: 'baja',
-                                    assignedTo: '',
-                                    notes: '',
-                                    timestamp: serverTimestamp()
-                                });
-                            } catch (dbErr) {
-                                console.error('Error saving gestion to Firestore CRM collection:', dbErr);
-                            }
-                            replyText = `¡Listo! He registrado tu caso con el **Folio de Gestión: ${randomFolio}** y lo he canalizado con nuestro equipo de atención ciudadana. 📋\n\nComo Enlace Ciudadano registrado del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque, tu participación es sumamente importante para nosotros. Sigamos en comunicación por esta vía para mantenerte al tanto de las actividades y coordinar nuestro apoyo en territorio. ¡Que tengas un excelente día! 🏛️✨`;
-                        }
+
 
                         // Send the reply if we constructed one
                         if (replyText) {
