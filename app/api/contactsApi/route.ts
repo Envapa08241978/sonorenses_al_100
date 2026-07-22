@@ -82,8 +82,8 @@ export async function GET(req: NextRequest) {
             (parsedSeccionales.length > 0 && parsedLevels.length > 0) ||
             parsedEvents.length > 0) {
             // Complex filter: fetch more and post-filter
-            // Cap at 5000 to avoid memory issues
-            const maxFetch = Math.min(5000, offset + fetchLimit);
+            // Cap at 25000 to allow scanning the entire current DB for text search
+            const maxFetch = Math.min(25000, offset + fetchLimit);
             snapshot = await q.limit(maxFetch).get();
         } else {
             // Simple filter: use offset + limit
