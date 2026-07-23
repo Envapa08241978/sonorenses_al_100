@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, Suspense } from 'react'
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc, deleteDoc, where, getDocs, updateDoc, arrayUnion } from 'firebase/firestore'
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, getDoc, deleteDoc, where, getDocs, updateDoc, arrayUnion, limit } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { db, storage } from '@/lib/firebase'
 import { QRCodeSVG } from 'qrcode.react'
@@ -265,29 +265,38 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                     const data = configDoc.data()
                     setConfig((prev: any) => ({ ...prev, ...data }))
 
-                    if (props.eventId) {
-                        const eventDoc = await getDoc(doc(db, 'campaigns', 'main_campaign', 'events', props.eventId))
+                    let eventToLoadId = (props.eventId && props.eventId !== 'evento-demo') ? props.eventId : data.activeEventId;
+
+                    if (eventToLoadId) {
+                        const eventDoc = await getDoc(doc(db, 'campaigns', 'main_campaign', 'events', eventToLoadId))
                         if (eventDoc.exists()) {
                             setEvent({ id: eventDoc.id, ...eventDoc.data() })
+                            return
                         }
-                    } else if (parentId) {
+                    }
+
+                    if (parentId) {
                         setEvent({
                             id: 'registro-territorio',
                             name: 'Registro en Territorio',
                             date: new Date().toISOString(),
                             location: 'Trabajo de Campo',
-                            description: 'Registro ciudadano en terrritorio',
+                            description: 'Registro ciudadano en territorio',
                             time: ''
                         })
-                    } else if (data.activeEventId) {
-                        const eventDoc = await getDoc(doc(db, 'campaigns', 'main_campaign', 'events', data.activeEventId))
-                        if (eventDoc.exists()) {
-                            setEvent({ id: eventDoc.id, ...eventDoc.data() })
-                        }
+                        return
+                    }
+
+                    // Fallback: fetch most recent event from Firebase events collection
+                    const eventsQuery = query(collection(db, 'campaigns', 'main_campaign', 'events'), orderBy('date', 'desc'), limit(1))
+                    const eventsSnap = await getDocs(eventsQuery)
+                    if (!eventsSnap.empty) {
+                        const firstEv = eventsSnap.docs[0]
+                        setEvent({ id: firstEv.id, ...firstEv.data() })
                     }
                 }
             } catch (err) {
-                console.log('Using default config (Firebase doc not found)')
+                console.log('Error loading config/event:', err)
             } finally {
                 setConfigLoaded(true)
             }

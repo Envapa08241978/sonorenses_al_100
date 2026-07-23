@@ -1,65 +1,42 @@
 import { Metadata } from 'next'
 import { CitizenEventPage } from '@/app/e/[eventId]/RegistroClient'
-
-const FIRESTORE_BASE = `https://firestore.googleapis.com/v1/projects/soy-nexo/databases/(default)/documents`
+import { adminDb } from '@/lib/firebaseAdmin'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-async function getActiveEventId(): Promise<string> {
+async function getActiveEvent(): Promise<{ id: string; name?: string; image?: string } | null> {
     try {
-        const configRes = await fetch(
-            `${FIRESTORE_BASE}/campaigns/main_campaign/config/profile`,
-            { cache: 'no-store' }
-        )
-        if (configRes.ok) {
-            const configData = await configRes.json()
-            const activeEventId = configData?.fields?.activeEventId?.stringValue
+        const configDoc = await adminDb.collection('campaigns').doc('main_campaign').collection('config').doc('profile').get()
+        if (configDoc.exists) {
+            const activeEventId = configDoc.data()?.activeEventId
             if (activeEventId) {
-                return activeEventId
+                const eventDoc = await adminDb.collection('campaigns').doc('main_campaign').collection('events').doc(activeEventId).get()
+                if (eventDoc.exists) {
+                    return { id: eventDoc.id, ...eventDoc.data() }
+                }
             }
         }
+
+        // Fallback: get most recent event from events collection
+        const latestSnap = await adminDb.collection('campaigns').doc('main_campaign').collection('events').orderBy('date', 'desc').limit(1).get()
+        if (!latestSnap.empty) {
+            const docData = latestSnap.docs[0]
+            return { id: docData.id, ...docData.data() }
+        }
     } catch (e) {
-        console.error("Error fetching active event:", e)
+        console.error("Error fetching active event for /registro:", e)
     }
-    return 'evento-demo'
-}
-
-async function getOgImage(eventId: string): Promise<string> {
-    const defaultImage = 'https://www.sonorensesal100.com/logo-sonorenses.png'
-    try {
-        if (!eventId || eventId === 'evento-demo') return defaultImage
-        const eventRes = await fetch(
-            `${FIRESTORE_BASE}/campaigns/main_campaign/events/${eventId}`,
-            { next: { revalidate: 30 } }
-        )
-        if (!eventRes.ok) return defaultImage
-        const eventData = await eventRes.json()
-        return eventData?.fields?.image?.stringValue || defaultImage
-    } catch {
-        return defaultImage
-    }
-}
-
-async function getEventName(eventId: string): Promise<string> {
-    const defaultName = 'Registro Ciudadano - Carlos Javier Lamarque Cano'
-    try {
-        if (!eventId || eventId === 'evento-demo') return defaultName
-        const eventRes = await fetch(
-            `${FIRESTORE_BASE}/campaigns/main_campaign/events/${eventId}`,
-            { next: { revalidate: 30 } }
-        )
-        if (!eventRes.ok) return defaultName
-        const eventData = await eventRes.json()
-        return eventData?.fields?.name?.stringValue || defaultName
-    } catch {
-        return defaultName
-    }
+    return null
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-    const eventId = await getActiveEventId()
-    const [ogImage, eventName] = await Promise.all([getOgImage(eventId), getEventName(eventId)])
+    const activeEvent = await getActiveEvent()
+    const defaultName = 'Registro Ciudadano - Carlos Javier Lamarque Cano'
+    const defaultImage = 'https://www.sonorensesal100.com/logo-sonorenses.png'
+
+    const eventName = activeEvent?.name || defaultName
+    const ogImage = activeEvent?.image || defaultImage
 
     return {
         title: `${eventName} | Sonorenses al 100`,
@@ -90,6 +67,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RegistroPage() {
-    const targetEventId = await getActiveEventId()
-    return <CitizenEventPage eventId={targetEventId} hideGalleryAndRespalda={true} />
+    const activeEvent = await getActiveEvent()
+    return <CitizenEventPage eventId={activeEvent?.id || ''} hideGalleryAndRespalda={true} />
 }
