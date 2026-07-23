@@ -175,7 +175,7 @@ export default function MapTab({ contacts, accent, isMapLoaded }: MapTabProps) {
 
                 {selectedSector ? (() => {
                     const sectorId = String(selectedSector['Sector Comunitario']);
-                    const sectorContacts = contacts.filter(c => c.seccional === sectorId);
+                    const sectorContacts = contacts.filter(c => c.seccional && String(c.seccional).trim() === String(sectorId).trim());
                     const brigadistasCount = sectorContacts.filter(c => (c.level || 1) >= 1 && (c.level || 1) <= 6).length;
                     const totalParticipantes = sectorContacts.length;
 
