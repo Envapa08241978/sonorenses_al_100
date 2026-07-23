@@ -340,45 +340,62 @@ export async function POST(request: Request) {
 
                     const isRegistration = msgType === 'text' && messageDoc.body && (
                         messageDoc.body.includes('Me acabo de registrar') ||
-                        messageDoc.body.includes('Folio:') ||
-                        (contactData && contactData.justRegistered === true)
+                        messageDoc.body.includes('Folio:')
                     );
 
-                    const sendConsentPromptIfNeeded = async () => {
-                        // Always send prompt if they haven't explicitly said 'yes' (even if 'no', so we can ask again as requested, or if empty)
-                        // But don't send if they are currently clicking a button.
-                        if (contactDoc && existingConsent !== 'yes' && !isRegistration && !isButtonSelection && msgType === 'text') {
-                            const consentPrompt = `Para brindarte la mejor atención y mantenerte al tanto, por favor confirma lo siguiente:\n\n¿Nos das tu consentimiento para enviarte mensajes informativos y de difusión sobre nuestras actividades? ✅`;
-                            
-                            const payload = {
-                                messaging_product: 'whatsapp',
-                                to: cleanTo,
-                                type: 'interactive',
-                                interactive: {
-                                    type: 'button',
-                                    body: { text: consentPrompt },
-                                    action: {
-                                        buttons: [
-                                            { type: 'reply', reply: { id: 'consent_yes', title: 'Sí, acepto ✅' } },
-                                            { type: 'reply', reply: { id: 'consent_no', title: 'No, gracias' } }
-                                        ]
-                                    }
+                    // ========================================================
+                    // CONSENT GATE: If contact exists but hasn't given consent,
+                    // send the consent prompt FIRST and stop. Nothing else runs.
+                    // Button clicks (consent_yes/consent_no) and registration
+                    // messages are excluded so they can be processed normally.
+                    // ========================================================
+                    if (contactDoc && existingConsent !== 'yes' && !isButtonSelection && !isRegistration) {
+                        const consentPrompt = `Para brindarte la mejor atención y mantenerte al tanto, por favor confirma lo siguiente:\n\n¿Nos das tu consentimiento para enviarte mensajes informativos y de difusión sobre nuestras actividades? ✅`;
+                        
+                        const consentPayload = {
+                            messaging_product: 'whatsapp',
+                            to: cleanTo,
+                            type: 'interactive',
+                            interactive: {
+                                type: 'button',
+                                body: { text: consentPrompt },
+                                action: {
+                                    buttons: [
+                                        { type: 'reply', reply: { id: 'consent_yes', title: 'Sí, acepto ✅' } },
+                                        { type: 'reply', reply: { id: 'consent_no', title: 'No, gracias' } }
+                                    ]
                                 }
-                            };
-                            try {
-                                const response = await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
-                                    method: 'POST',
-                                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(payload)
-                                });
-                                if (response.ok) {
-                                    // Don't overwrite lastMessage so the dashboard still sees their last real message
-                                }
-                            } catch (err) {
-                                console.error('Error sending secondary consent prompt:', err);
                             }
+                        };
+                        try {
+                            const resp = await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                                body: JSON.stringify(consentPayload)
+                            });
+                            if (resp.ok) {
+                                await addDoc(messagesRef, {
+                                    body: consentPrompt + '\n\n[Botón: Sí, acepto ✅] [Botón: No, gracias]',
+                                    to: cleanTo,
+                                    type: 'text',
+                                    direction: 'outbound',
+                                    timestamp: serverTimestamp()
+                                });
+                                await setDoc(chatRef, {
+                                    lastMessage: '🤖 Solicitud de consentimiento de difusión enviada',
+                                    lastMessageAt: serverTimestamp(),
+                                    botState: 'esperando_consentimiento'
+                                }, { merge: true });
+                            }
+                        } catch (err) {
+                            console.error('Error sending consent gate prompt:', err);
                         }
-                    };
+                        // STOP HERE — don't process anything else until they answer
+                        return new NextResponse('EVENT_RECEIVED', { status: 200 });
+                    }
+
+                    // Stub for backward compatibility (no longer needed but prevents errors)
+                    const sendConsentPromptIfNeeded = async () => {};
 
                     if (isRegistration) {
                         if (existingConsent === 'yes' || existingConsent === 'no') {
