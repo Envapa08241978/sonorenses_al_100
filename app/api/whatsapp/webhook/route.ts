@@ -330,13 +330,10 @@ export async function POST(request: Request) {
 
                     // 1. AUTO-REPLY TYPE A: Registration Message
                     const isTournamentReg = msgType === 'text' && messageDoc.body && messageDoc.body.includes('Torneo de Dominadas');
-                    // Check if they already have consent set in the chat or contact
-                    let existingConsent = '';
-                    if (chatDoc.exists() && chatDoc.data().consent) {
-                        existingConsent = chatDoc.data().consent;
-                    } else if (contactData && contactData.consent) {
-                        existingConsent = contactData.consent;
-                    }
+                    
+                    // SOURCE OF TRUTH: Use CONTACT document for consent (this is what the dashboard shows).
+                    // The chat document may have stale 'yes' from old tests — ignore it for the gate.
+                    const existingConsent = (contactData && contactData.consent) ? contactData.consent : '';
 
                     const isRegistration = msgType === 'text' && messageDoc.body && (
                         messageDoc.body.includes('Me acabo de registrar') ||
@@ -344,58 +341,98 @@ export async function POST(request: Request) {
                     );
 
                     // ========================================================
-                    // CONSENT GATE: If contact exists but hasn't given consent,
-                    // send the consent prompt FIRST and stop. Nothing else runs.
-                    // Button clicks (consent_yes/consent_no) and registration
-                    // messages are excluded so they can be processed normally.
+                    // CONSENT GATE — THE VERY FIRST THING THAT HAPPENS
                     // ========================================================
-                    if (contactDoc && existingConsent !== 'yes' && !isButtonSelection && !isRegistration) {
-                        const consentPrompt = `Para brindarte la mejor atención y mantenerte al tanto, por favor confirma lo siguiente:\n\n¿Nos das tu consentimiento para enviarte mensajes informativos y de difusión sobre nuestras actividades? ✅`;
-                        
-                        const consentPayload = {
-                            messaging_product: 'whatsapp',
-                            to: cleanTo,
-                            type: 'interactive',
-                            interactive: {
-                                type: 'button',
-                                body: { text: consentPrompt },
-                                action: {
-                                    buttons: [
-                                        { type: 'reply', reply: { id: 'consent_yes', title: 'Sí, acepto ✅' } },
-                                        { type: 'reply', reply: { id: 'consent_no', title: 'No, gracias' } }
-                                    ]
+                    // Scenario 1 & 2: Contact exists but consent !== 'yes' → send consent prompt and STOP
+                    // Scenario 3: Contact does NOT exist → tell them to register, then they'll get consent after
+                    // Exceptions: button clicks (so they CAN answer the prompt) and registration messages
+                    // ========================================================
+                    if (!isButtonSelection && !isRegistration) {
+                        if (contactDoc && existingConsent !== 'yes') {
+                            // SCENARIO 1 & 2: Registered contact, no consent yet
+                            const firstName = (contactData?.name || name || 'Hola').split(' ')[0];
+                            const consentPrompt = `¡Hola, ${firstName}! 👋 Para brindarte la mejor atención y mantenerte al tanto de nuestras actividades, por favor confirma lo siguiente:\n\n¿Nos das tu consentimiento para enviarte mensajes informativos y de difusión? ✅`;
+                            
+                            const consentPayload = {
+                                messaging_product: 'whatsapp',
+                                to: cleanTo,
+                                type: 'interactive',
+                                interactive: {
+                                    type: 'button',
+                                    body: { text: consentPrompt },
+                                    action: {
+                                        buttons: [
+                                            { type: 'reply', reply: { id: 'consent_yes', title: 'Sí, acepto ✅' } },
+                                            { type: 'reply', reply: { id: 'consent_no', title: 'No, gracias' } }
+                                        ]
+                                    }
                                 }
-                            }
-                        };
-                        try {
-                            const resp = await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
-                                method: 'POST',
-                                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                                body: JSON.stringify(consentPayload)
-                            });
-                            if (resp.ok) {
-                                await addDoc(messagesRef, {
-                                    body: consentPrompt + '\n\n[Botón: Sí, acepto ✅] [Botón: No, gracias]',
-                                    to: cleanTo,
-                                    type: 'text',
-                                    direction: 'outbound',
-                                    timestamp: serverTimestamp()
+                            };
+                            try {
+                                const resp = await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
+                                    method: 'POST',
+                                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(consentPayload)
                                 });
-                                await setDoc(chatRef, {
-                                    lastMessage: '🤖 Solicitud de consentimiento de difusión enviada',
-                                    lastMessageAt: serverTimestamp(),
-                                    botState: 'esperando_consentimiento'
-                                }, { merge: true });
+                                if (resp.ok) {
+                                    await addDoc(messagesRef, {
+                                        body: consentPrompt + '\n\n[Botón: Sí, acepto ✅] [Botón: No, gracias]',
+                                        to: cleanTo,
+                                        type: 'text',
+                                        direction: 'outbound',
+                                        timestamp: serverTimestamp()
+                                    });
+                                    await setDoc(chatRef, {
+                                        lastMessage: '🤖 Solicitud de consentimiento de difusión enviada',
+                                        lastMessageAt: serverTimestamp(),
+                                        botState: 'esperando_consentimiento'
+                                    }, { merge: true });
+                                }
+                            } catch (err) {
+                                console.error('Error sending consent gate prompt:', err);
                             }
-                        } catch (err) {
-                            console.error('Error sending consent gate prompt:', err);
+                            return new NextResponse('EVENT_RECEIVED', { status: 200 });
+                        
+                        } else if (!contactDoc) {
+                            // SCENARIO 3: NOT registered — invite them to register first
+                            const registerPrompt = `¡Hola! 👋 Te saluda el Asistente Virtual del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque.\n\nVeo que aún no estás registrado(a) en nuestra red ciudadana. Para poder atenderte y mantenerte informado(a), primero necesitas registrarte.\n\n📋 Regístrate aquí:\nhttps://www.sonorensesal100.com/registro\n\nUna vez registrado(a), escríbenos de nuevo y con gusto te atenderemos. 🏛️✨`;
+
+                            const registerPayload = {
+                                messaging_product: 'whatsapp',
+                                to: cleanTo,
+                                type: 'text',
+                                text: { body: registerPrompt }
+                            };
+                            try {
+                                const resp = await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
+                                    method: 'POST',
+                                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(registerPayload)
+                                });
+                                if (resp.ok) {
+                                    await addDoc(messagesRef, {
+                                        body: registerPrompt,
+                                        to: cleanTo,
+                                        type: 'text',
+                                        direction: 'outbound',
+                                        timestamp: serverTimestamp()
+                                    });
+                                    await setDoc(chatRef, {
+                                        lastMessage: '🤖 Invitación a registrarse enviada',
+                                        lastMessageAt: serverTimestamp(),
+                                        botState: 'idle'
+                                    }, { merge: true });
+                                }
+                            } catch (err) {
+                                console.error('Error sending register invite:', err);
+                            }
+                            return new NextResponse('EVENT_RECEIVED', { status: 200 });
                         }
-                        // STOP HERE — don't process anything else until they answer
-                        return new NextResponse('EVENT_RECEIVED', { status: 200 });
                     }
 
-                    // Stub for backward compatibility (no longer needed but prevents errors)
+                    // Stub for backward compatibility
                     const sendConsentPromptIfNeeded = async () => {};
+
 
                     if (isRegistration) {
                         if (existingConsent === 'yes' || existingConsent === 'no') {
