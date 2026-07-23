@@ -85,7 +85,7 @@ export default function EditContactModal({
                                 placeholder="Selecciona Seccional..."
                                 value={contact.seccional || ''}
                                 onChange={(val) => setContact({...contact, seccional: val})}
-                                options={uniqueSeccionales.map(s => `Seccional ${s}`)}
+                                options={uniqueSeccionales}
                                 allowCustom={true}
                             />
                         </div>

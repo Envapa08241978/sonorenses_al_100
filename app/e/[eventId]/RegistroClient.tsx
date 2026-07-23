@@ -1263,7 +1263,7 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                                                     placeholder="Selecciona Sección..."
                                                     value={rsvpSeccional}
                                                     onChange={(val) => setRsvpSeccional(val)}
-                                                    options={uniqueSeccionales.map(s => `Seccional ${s}`)}
+                                                    options={uniqueSeccionales}
                                                     allowCustom={true}
                                                 />
                                             </div>
