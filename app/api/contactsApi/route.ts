@@ -59,24 +59,21 @@ export async function GET(req: NextRequest) {
         // Order by timestamp desc for consistent pagination
         q = q.orderBy(sortField, sortDir);
 
-        const fetchLimit = search || 
-            (parsedSeccionales.length > 0 && parsedLevels.length > 0) || 
-            parsedColonias.length > 0 || 
-            parsedEvents.length > 0 ||
-            parsedMunicipios.length > 0 ||
-            parsedCoordinators.length > 0
-            ? pageSize * 10 
-            : pageSize + 1;
-
         const offset = (page - 1) * pageSize;
+
+        const needsClientPagination = Boolean(
+            search || 
+            parsedColonias.length > 0 || 
+            parsedEvents.length > 0 || 
+            parsedMunicipios.length > 0 || 
+            parsedCoordinators.length > 0 ||
+            (parsedSeccionales.length > 0 && parsedLevels.length > 0)
+        );
 
         let snapshot: FirebaseFirestore.QuerySnapshot;
         
-        if (search || parsedColonias.length > 0 || 
-            (parsedSeccionales.length > 0 && parsedLevels.length > 0) ||
-            parsedEvents.length > 0 || parsedMunicipios.length > 0 || parsedCoordinators.length > 0) {
-            const maxFetch = Math.min(25000, offset + fetchLimit);
-            snapshot = await q.limit(maxFetch).get();
+        if (needsClientPagination) {
+            snapshot = await q.get();
         } else {
             snapshot = await q.offset(offset).limit(pageSize + 1).get();
         }
@@ -138,10 +135,6 @@ export async function GET(req: NextRequest) {
         }
 
         // --- Paginate the post-filtered results ---
-        const needsClientPagination = search || parsedColonias.length > 0 || 
-            (parsedSeccionales.length > 0 && parsedLevels.length > 0) ||
-            parsedEvents.length > 0;
-
         let totalFiltered = contacts.length;
         let paginatedContacts: any[];
         let hasMore: boolean;

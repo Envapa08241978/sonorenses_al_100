@@ -35,12 +35,9 @@ export async function GET() {
             colRef.where('consent', '==', 'no').count().get(),
         ]);
 
-        // Get unique seccionales and colonias (lightweight query - just distinct values)
-        // For this we need to fetch a limited set of fields. 
-        // We'll fetch seccional and colonia fields only from first 10K docs.
+        // Get unique seccionales, colonias, municipios, and events (fetch only distinct fields from ALL docs)
         const distinctSnap = await colRef
             .select('seccional', 'colonia', 'municipio', 'eventName', 'eventNames')
-            .limit(1000)
             .get();
 
         const seccionalesSet = new Set<string>();
@@ -50,42 +47,14 @@ export async function GET() {
 
         distinctSnap.docs.forEach(doc => {
             const d = doc.data();
-            if (d.seccional) seccionalesSet.add(d.seccional);
-            if (d.colonia) coloniasSet.add(d.colonia);
-            if (d.municipio) municipiosSet.add(d.municipio);
-            if (d.eventName) eventNamesSet.add(d.eventName);
+            if (d.seccional && d.seccional.trim()) seccionalesSet.add(d.seccional.trim());
+            if (d.colonia && d.colonia.trim()) coloniasSet.add(d.colonia.trim());
+            if (d.municipio && d.municipio.trim()) municipiosSet.add(d.municipio.trim());
+            if (d.eventName && d.eventName.trim()) eventNamesSet.add(d.eventName.trim());
             if (d.eventNames && Array.isArray(d.eventNames)) {
-                d.eventNames.forEach((e: string) => { if (e) eventNamesSet.add(e); });
+                d.eventNames.forEach((e: string) => { if (e && e.trim()) eventNamesSet.add(e.trim()); });
             }
         });
-
-        // If there are more than 10K, continue fetching distinct values
-        if (distinctSnap.size === 10000) {
-            const lastDoc = distinctSnap.docs[distinctSnap.docs.length - 1];
-            let cursor = lastDoc;
-            let hasMore = true;
-            while (hasMore) {
-                const nextBatch = await colRef
-                    .select('seccional', 'colonia', 'municipio', 'eventName', 'eventNames')
-                    .startAfter(cursor)
-                    .limit(10000)
-                    .get();
-                
-                nextBatch.docs.forEach(doc => {
-                    const d = doc.data();
-                    if (d.seccional) seccionalesSet.add(d.seccional);
-                    if (d.colonia) coloniasSet.add(d.colonia);
-                    if (d.municipio) municipiosSet.add(d.municipio);
-                    if (d.eventName) eventNamesSet.add(d.eventName);
-                    if (d.eventNames && Array.isArray(d.eventNames)) {
-                        d.eventNames.forEach((e: string) => { if (e) eventNamesSet.add(e); });
-                    }
-                });
-
-                hasMore = nextBatch.size === 10000;
-                if (hasMore) cursor = nextBatch.docs[nextBatch.docs.length - 1];
-            }
-        }
 
         const total = totalSnap.data().count;
         
