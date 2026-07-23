@@ -8,6 +8,8 @@ import { QRCodeSVG } from 'qrcode.react'
 import { analyzeImageContent, validateFileBasics } from '@/lib/contentModeration'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import SearchableSelect from '@/app/components/SearchableSelect'
+import { useSonoraGeo } from '@/hooks/useSonoraGeo'
 
 /* ================================================================
    TYPES
@@ -118,11 +120,26 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
     const videoInputRef = useRef<HTMLInputElement>(null)
     const galleryInputRef = useRef<HTMLInputElement>(null)
 
+    // --- Geo & SEPOMEX ---
+    const { municipiosList, getColoniasForMunicipio, getCpsForMunicipio } = useSonoraGeo()
+    const [uniqueSeccionales, setUniqueSeccionales] = useState<string[]>([])
+
+    useEffect(() => {
+        fetch('/api/statsApi')
+            .then(res => res.json())
+            .then(data => {
+                if (data.uniqueSeccionales) setUniqueSeccionales(data.uniqueSeccionales)
+            })
+            .catch(() => {})
+    }, [])
+
     // --- RSVP ---
     const [showRSVP, setShowRSVP] = useState(false)
     const [rsvpName, setRsvpName] = useState('')
     const [rsvpPhone, setRsvpPhone] = useState('')
     const [rsvpCiudad, setRsvpCiudad] = useState('')
+    const [rsvpColonia, setRsvpColonia] = useState('')
+    const [rsvpCP, setRsvpCP] = useState('')
     const [rsvpCalle, setRsvpCalle] = useState('')
     const [rsvpNumExt, setRsvpNumExt] = useState('')
     const [rsvpSeccional, setRsvpSeccional] = useState('')
@@ -597,6 +614,9 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                     await updateDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', existingDoc.id), {
                         name: rsvpName.trim(), 
                         ciudad: rsvpCiudad.trim(),
+                        municipio: rsvpCiudad.trim(),
+                        colonia: rsvpColonia.trim(),
+                        cp: rsvpCP.trim(),
                         calle: rsvpCalle.trim(),
                         numExt: rsvpNumExt.trim(),
                         seccional: rsvpSeccional.trim(),
@@ -613,6 +633,9 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                         name: rsvpName.trim(),
                         phone: cleanPhone,
                         ciudad: rsvpCiudad.trim(),
+                        municipio: rsvpCiudad.trim(),
+                        colonia: rsvpColonia.trim(),
+                        cp: rsvpCP.trim(),
                         calle: rsvpCalle.trim(),
                         numExt: rsvpNumExt.trim(),
                         seccional: rsvpSeccional.trim(),
@@ -1170,21 +1193,63 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                                                     className="flex-1 px-3 py-2 rounded-xl text-sm font-bold border border-gray-200 bg-gray-50 outline-none focus:border-red-400 focus:bg-white transition-colors text-gray-800 tracking-wider" />
                                             </div>
                                         </div>
-    
+
                                         <div>
-                                            <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">Ciudad</label>
-                                            <input type="text" value={rsvpCiudad} onChange={(e) => setRsvpCiudad(e.target.value)}
-                                                placeholder="Ej. Hermosillo"
-                                                className="w-full px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 bg-gray-50 outline-none focus:border-red-400 focus:bg-white transition-colors text-gray-800" />
+                                            <SearchableSelect
+                                                label="Ciudad / Municipio *"
+                                                placeholder="Selecciona Ciudad / Municipio..."
+                                                value={rsvpCiudad}
+                                                onChange={(newMun) => {
+                                                    setRsvpCiudad(newMun);
+                                                    setRsvpColonia('');
+                                                    setRsvpCP('');
+                                                }}
+                                                options={municipiosList}
+                                                allowCustom={true}
+                                            />
                                         </div>
-    
+
+                                        <div className="grid grid-cols-3 gap-2">
+                                            <div className="col-span-2">
+                                                <SearchableSelect
+                                                    label="Colonia / Asentamiento"
+                                                    placeholder={rsvpCiudad ? "Selecciona Colonia..." : "Primero elige Ciudad"}
+                                                    value={rsvpColonia}
+                                                    onChange={(newCol) => {
+                                                        setRsvpColonia(newCol);
+                                                        const cols = getColoniasForMunicipio(rsvpCiudad);
+                                                        const match = cols.find(c => c.colonia === newCol);
+                                                        if (match?.cp) setRsvpCP(match.cp);
+                                                    }}
+                                                    options={getColoniasForMunicipio(rsvpCiudad).map(c => ({
+                                                        label: `${c.colonia} (${c.tipo}) - CP ${c.cp}`,
+                                                        value: c.colonia,
+                                                        subtext: `CP ${c.cp}`
+                                                    }))}
+                                                    disabled={!rsvpCiudad}
+                                                    allowCustom={true}
+                                                />
+                                            </div>
+                                            <div>
+                                                <SearchableSelect
+                                                    label="CP"
+                                                    placeholder="Código Postal"
+                                                    value={rsvpCP}
+                                                    onChange={(val) => setRsvpCP(val)}
+                                                    options={getCpsForMunicipio(rsvpCiudad)}
+                                                    disabled={!rsvpCiudad}
+                                                    allowCustom={true}
+                                                />
+                                            </div>
+                                        </div>
+
                                         <div>
                                             <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">Calle</label>
                                             <input type="text" value={rsvpCalle} onChange={(e) => setRsvpCalle(e.target.value)}
                                                 placeholder="Ej. Av. Reforma"
                                                 className="w-full px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 bg-gray-50 outline-none focus:border-red-400 focus:bg-white transition-colors text-gray-800" />
                                         </div>
-    
+
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
                                                 <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">Número Exterior</label>
@@ -1193,10 +1258,14 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                                                     className="w-full px-3 py-2 rounded-xl text-sm font-bold border border-gray-200 bg-gray-50 outline-none focus:border-red-400 text-center text-gray-800 focus:bg-white" />
                                             </div>
                                             <div>
-                                                <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">Sección Electoral</label>
-                                                <input type="text" value={rsvpSeccional} onChange={(e) => setRsvpSeccional(e.target.value)}
-                                                    placeholder="Ej. 1234"
-                                                    className="w-full px-3 py-2 rounded-xl text-sm font-bold border border-gray-200 bg-gray-50 outline-none focus:border-red-400 text-center text-gray-800 focus:bg-white" />
+                                                <SearchableSelect
+                                                    label="Sección Electoral"
+                                                    placeholder="Selecciona Sección..."
+                                                    value={rsvpSeccional}
+                                                    onChange={(val) => setRsvpSeccional(val)}
+                                                    options={uniqueSeccionales.map(s => `Seccional ${s}`)}
+                                                    allowCustom={true}
+                                                />
                                             </div>
                                         </div>
     

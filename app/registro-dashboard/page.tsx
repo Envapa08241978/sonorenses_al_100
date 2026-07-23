@@ -787,6 +787,7 @@ export default function RegistroDashboard() {
                     contact={editingContact} setContact={setEditingContact}
                     handleSaveEdit={handleSaveEdit} isSavingEdit={isSavingEdit}
                     onClose={() => setEditingContact(null)}
+                    uniqueSeccionales={uniqueSeccionales}
                 />
             )}
         </div>
