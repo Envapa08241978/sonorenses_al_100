@@ -84,7 +84,7 @@ export default function EditContactModal({
                                 label="Seccional Electoral"
                                 placeholder="Selecciona Seccional..."
                                 value={contact.seccional || ''}
-                                onChange={(val) => setContact({...contact, seccional: val})}
+                                onChange={(val) => setContact({...contact, seccional: val.replace(/^0+/, '')})}
                                 options={uniqueSeccionales}
                                 allowCustom={true}
                             />

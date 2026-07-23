@@ -125,12 +125,28 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
     const [uniqueSeccionales, setUniqueSeccionales] = useState<string[]>([])
 
     useEffect(() => {
-        fetch('/api/statsApi')
-            .then(res => res.json())
-            .then(data => {
-                if (data.uniqueSeccionales) setUniqueSeccionales(data.uniqueSeccionales)
-            })
-            .catch(() => {})
+        Promise.all([
+            fetch('/map_data.json').then(r => r.json()).catch(() => null),
+            fetch('/api/statsApi').then(r => r.json()).catch(() => null)
+        ]).then(([mapData, statsData]) => {
+            const secSet = new Set<number>();
+            if (mapData?.targets) {
+                mapData.targets.forEach((t: any) => {
+                    const num = parseInt(t['Sector Comunitario'], 10);
+                    if (!isNaN(num)) secSet.add(num);
+                });
+            }
+            if (statsData?.uniqueSeccionales) {
+                statsData.uniqueSeccionales.forEach((s: string) => {
+                    const num = parseInt(s, 10);
+                    if (!isNaN(num)) secSet.add(num);
+                });
+            }
+            const sortedSecs = Array.from(secSet).sort((a, b) => a - b).map(String);
+            if (sortedSecs.length > 0) {
+                setUniqueSeccionales(sortedSecs);
+            }
+        });
     }, [])
 
     // --- RSVP ---
@@ -1262,7 +1278,7 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                                                     label="Sección Electoral"
                                                     placeholder="Selecciona Sección..."
                                                     value={rsvpSeccional}
-                                                    onChange={(val) => setRsvpSeccional(val)}
+                                                    onChange={(val) => setRsvpSeccional(val.replace(/^0+/, ''))}
                                                     options={uniqueSeccionales}
                                                     allowCustom={true}
                                                 />
