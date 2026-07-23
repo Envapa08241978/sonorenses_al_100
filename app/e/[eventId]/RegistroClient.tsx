@@ -650,6 +650,9 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                     })
                 } else {
                     // ---- NEW CONTACT: Create from scratch ----
+                    const isPublicEventRegistration = isRealEvent && !parentId && !brigadistaContact;
+                    const finalParentName = isPublicEventRegistration ? 'Javier Lamarque Cano' : (parentName || brigadistaContact?.name || rsvpParentName || '');
+                    
                     const newDoc = await addDoc(collection(db, 'campaigns', 'main_campaign', 'contacts'), {
                         name: rsvpName.trim(),
                         phone: cleanPhone,
@@ -662,9 +665,9 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                         seccional: rsvpSeccional.trim(),
                         roles: rsvpRoles,
                         parentId: parentId || brigadistaContact?.id || '',
-                        parentName: parentName || brigadistaContact?.name || rsvpParentName || '',
-                        invitedBy: parentName || brigadistaContact?.name || rsvpParentName || '',
-                        level: parentId ? Math.max(1, parentLevel - 1) : (brigadistaContact ? Math.max(1, (brigadistaContact.level || 1) - 1) : 1),
+                        parentName: finalParentName,
+                        invitedBy: finalParentName,
+                        level: isPublicEventRegistration ? 3 : (parentId ? Math.max(1, parentLevel - 1) : (brigadistaContact ? Math.max(1, (brigadistaContact.level || 1) - 1) : 1)),
                         pyramidType: 'votation',
                         eventId: currentEventId,
                         eventIds: [currentEventId],
@@ -1188,12 +1191,16 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                             <>
                                 {/* Scrollable Form Content */}
                                 <div className="p-4 overflow-y-auto flex-1 no-scrollbar">
-                                    {parentName && (
+                                    {parentName ? (
                                         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-2xl text-center shadow-sm">
                                             <p className="text-[9px] font-black uppercase tracking-widest text-red-700">Te invita el Enlace/Brigadista:</p>
                                             <p className="text-sm font-bold text-red-900 mt-0.5">👤 {parentName}</p>
                                         </div>
-                                    )}
+                                    ) : (event.id && event.id !== 'registro-territorio' && !parentId && !brigadistaContact && (
+                                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-2xl text-center shadow-sm">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-red-700">✨ Invitado por Javier Lamarque Cano ✨</p>
+                                        </div>
+                                    ))}
                                     <p className="text-sm text-gray-500 font-medium mb-6">Ingresa tus datos reales para habilitar el cruce demográfico de la zona.</p>
     
 
@@ -1308,7 +1315,7 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                                             </div>
                                         </div>
     
-                                        {!parentId && (
+                                        {!parentId && (!event.id || event.id === 'registro-territorio') && (
                                             <div className="mt-4">
                                                 <label className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest block mb-0.5">Soy invitado por *</label>
                                                 <input type="text" value={rsvpParentName} onChange={(e) => setRsvpParentName(e.target.value)}
@@ -1321,7 +1328,7 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                                 
                                 {/* Sticky Footer */}
                                 <div className="p-4 flex-shrink-0 bg-gray-50/50 border-t border-gray-100 rounded-b-3xl">
-                                    <button onClick={handleRSVPSubmit} disabled={isSubmittingRSVP || !rsvpName.trim() || rsvpPhone.replace(/\D/g, '').length !== 10 || (!parentId && !rsvpParentName.trim())} data-btn
+                                    <button onClick={handleRSVPSubmit} disabled={isSubmittingRSVP || !rsvpName.trim() || rsvpPhone.replace(/\D/g, '').length !== 10 || (!parentId && (!event.id || event.id === 'registro-territorio') && !rsvpParentName.trim())} data-btn
                                         className="w-full py-3 rounded-xl text-sm font-black text-white shadow-lg disabled:opacity-50 disabled:shadow-none transition-all active:scale-95"
                                         style={{ background: accent }}>
                                         {isSubmittingRSVP ? 'VERIFICANDO...' : 'REGISTRARME ✅'}
