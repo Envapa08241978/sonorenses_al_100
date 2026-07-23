@@ -85,7 +85,11 @@ export async function GET() {
                 no: consentNoSnap.data().count,
                 pending: total - consentYesSnap.data().count - consentNoSnap.data().count,
             },
-            uniqueSeccionales: Array.from(seccionalesSet).sort(),
+            uniqueSeccionales: Array.from(seccionalesSet)
+                .map(s => parseInt(s, 10))
+                .filter(n => !isNaN(n) && n >= 1 && n <= 1629)
+                .sort((a, b) => a - b)
+                .map(String),
             uniqueColonias: Array.from(coloniasSet).sort(),
             uniqueMunicipios: Array.from(municipiosSet).sort(),
             uniqueEventNames: Array.from(eventNamesSet).sort(),
