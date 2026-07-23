@@ -63,6 +63,8 @@ export default function RegistroDashboard() {
     const [filterEvents, setFilterEvents] = useState<string[]>([]);
     const [filterColonias, setFilterColonias] = useState<string[]>([]);
     const [filterSeccionales, setFilterSeccionales] = useState<string[]>([]);
+    const [filterMunicipios, setFilterMunicipios] = useState<string[]>([]);
+    const [filterCoordinators, setFilterCoordinators] = useState<string[]>([]);
     const [filterLevels, setFilterLevels] = useState<number[]>([]);
     const [filterLevelExact, setFilterLevelExact] = useState(false);
     const [filterPyramidType, setFilterPyramidType] = useState<'all' | 'votation' | 'defense'>('all');
@@ -161,6 +163,8 @@ export default function RegistroDashboard() {
         seccionales: filterSeccionales,
         colonias: filterColonias,
         events: filterEvents,
+        municipios: filterMunicipios,
+        coordinators: filterCoordinators,
         onlyOrphans: filterOnlyOrphans,
         pyramidType: filterPyramidType,
         enabled: isAuthenticated,
@@ -172,7 +176,7 @@ export default function RegistroDashboard() {
     // Reset page when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, filterLevels, filterSeccionales, filterColonias, filterEvents, filterOnlyOrphans, filterPyramidType]);
+    }, [searchQuery, filterLevels, filterSeccionales, filterColonias, filterEvents, filterMunicipios, filterCoordinators, filterOnlyOrphans, filterPyramidType]);
 
     // --- LIGHTWEIGHT REAL-TIME: Events, brigadistas, chats (small collections) ---
     useEffect(() => {
@@ -674,8 +678,12 @@ export default function RegistroDashboard() {
                                     filterSeccionales={filterSeccionales} setFilterSeccionales={setFilterSeccionales}
                                     filterColonias={filterColonias} setFilterColonias={setFilterColonias}
                                     filterEvents={filterEvents} setFilterEvents={setFilterEvents}
+                                    filterMunicipios={filterMunicipios} setFilterMunicipios={setFilterMunicipios}
+                                    filterCoordinators={filterCoordinators} setFilterCoordinators={setFilterCoordinators}
                                     filterOnlyOrphans={filterOnlyOrphans} setFilterOnlyOrphans={setFilterOnlyOrphans}
                                     uniqueSeccionales={uniqueSeccionales} uniqueColonias={uniqueColonias} uniqueEventNames={uniqueEventNames}
+                                    uniqueMunicipios={stats?.uniqueMunicipios || []}
+                                    level4Coordinators={stats?.level4Coordinators || []}
                                     config={config} handleWhatsApp={handleWhatsApp} handleSendQR={handleSendQR}
                                     handlePromote={handlePromote} handleDemote={handleDemote} handleReassign={handleReassign}
                                     setEditingContact={setEditingContact} setSelectedQRContact={setSelectedQRContact}

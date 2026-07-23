@@ -94,6 +94,14 @@ export async function GET() {
                                level3Snap.data().count + level4Snap.data().count + level5Snap.data().count;
         const noLevelCount = total - explicitLevels;
 
+        // Fetch Level 4 Coordinators for filters
+        const level4DocsSnap = await colRef.where('level', '==', 4).select('name', 'seccional').get();
+        const level4Coordinators = level4DocsSnap.docs.map(d => ({
+            id: d.id,
+            name: d.data().name || 'Sin Nombre',
+            seccional: d.data().seccional || ''
+        })).sort((a, b) => a.name.localeCompare(b.name));
+
         const stats = {
             totalContacts: total,
             byLevel: {
@@ -112,6 +120,7 @@ export async function GET() {
             uniqueColonias: Array.from(coloniasSet).sort(),
             uniqueMunicipios: Array.from(municipiosSet).sort(),
             uniqueEventNames: Array.from(eventNamesSet).sort(),
+            level4Coordinators,
             cachedAt: new Date().toISOString(),
         };
 

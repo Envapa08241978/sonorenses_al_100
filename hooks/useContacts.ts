@@ -11,6 +11,8 @@ interface UseContactsParams {
     seccionales: string[];
     colonias: string[];
     events: string[];
+    municipios?: string[];
+    coordinators?: string[];
     onlyOrphans: boolean;
     pyramidType: 'all' | 'votation' | 'defense';
     enabled: boolean; // only fetch when authenticated
@@ -33,6 +35,7 @@ interface StatsData {
     uniqueColonias: string[];
     uniqueMunicipios: string[];
     uniqueEventNames: string[];
+    level4Coordinators?: { id: string; name: string; seccional?: string }[];
 }
 
 interface UseStatsResult {
@@ -56,7 +59,7 @@ function useDebounce<T>(value: T, delay: number): T {
 // =============================================================
 export function useContacts({
     page, pageSize, search, levels, seccionales, colonias,
-    events, onlyOrphans, pyramidType, enabled
+    events, municipios = [], coordinators = [], onlyOrphans, pyramidType, enabled
 }: UseContactsParams): UseContactsResult {
     const [contacts, setContacts] = useState<ContactItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -90,6 +93,8 @@ export function useContacts({
             if (seccionales.length > 0) params.set('seccionales', seccionales.join(','));
             if (colonias.length > 0) params.set('colonias', colonias.join(','));
             if (events.length > 0) params.set('events', events.join(','));
+            if (municipios.length > 0) params.set('municipios', municipios.join(','));
+            if (coordinators.length > 0) params.set('coordinators', coordinators.join(','));
             if (onlyOrphans) params.set('onlyOrphans', 'true');
             if (pyramidType !== 'all') params.set('pyramidType', pyramidType);
 
@@ -122,7 +127,7 @@ export function useContacts({
         } finally {
             setIsLoading(false);
         }
-    }, [page, pageSize, debouncedSearch, levels, seccionales, colonias, events, onlyOrphans, pyramidType, enabled]);
+    }, [page, pageSize, debouncedSearch, levels, seccionales, colonias, events, municipios, coordinators, onlyOrphans, pyramidType, enabled]);
 
     useEffect(() => {
         fetchContacts();

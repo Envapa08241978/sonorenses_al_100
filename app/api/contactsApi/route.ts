@@ -18,6 +18,8 @@ export async function GET(req: NextRequest) {
         const onlyOrphans = searchParams.get('onlyOrphans') === 'true';
         const pyramidType = searchParams.get('pyramidType') || 'all';
         const events = searchParams.get('events') || '';
+        const municipios = searchParams.get('municipios') || '';
+        const coordinators = searchParams.get('coordinators') || '';
         const sortField = searchParams.get('sortField') || 'timestamp';
         const sortDir = (searchParams.get('sortDir') || 'desc') as 'asc' | 'desc';
 
@@ -25,12 +27,12 @@ export async function GET(req: NextRequest) {
         const colRef = adminDb.collection(COLLECTION_PATH);
         let q: FirebaseFirestore.Query = colRef;
 
-        // Firestore supports only ONE inequality / array-contains, so we pick the 
-        // most selective filter for the server and do the rest in memory.
         const parsedLevels = levels ? levels.split(',').map(Number).filter(n => !isNaN(n)) : [];
         const parsedSeccionales = seccionales ? seccionales.split(',') : [];
         const parsedColonias = colonias ? colonias.split(',') : [];
         const parsedEvents = events ? events.split(',') : [];
+        const parsedMunicipios = municipios ? municipios.split(',') : [];
+        const parsedCoordinators = coordinators ? coordinators.split(',') : [];
 
         // Use 'in' for levels (max 30 values) if specified
         if (parsedLevels.length > 0 && parsedLevels.length <= 30) {
@@ -57,36 +59,25 @@ export async function GET(req: NextRequest) {
         // Order by timestamp desc for consistent pagination
         q = q.orderBy(sortField, sortDir);
 
-        // --- Execute: fetch all matching docs then apply client-side filters ---
-        // For text search and multi-field filters we must post-filter.
-        // We over-fetch to fill the page after filtering.
-        // For very large datasets, we use cursor-based pagination.
-
-        // Strategy: use cursor-based pagination with over-fetching
         const fetchLimit = search || 
             (parsedSeccionales.length > 0 && parsedLevels.length > 0) || 
             parsedColonias.length > 0 || 
-            parsedEvents.length > 0
-            ? pageSize * 10  // Over-fetch when we need to post-filter
-            : pageSize + 1;  // Slight over-fetch to detect hasMore
+            parsedEvents.length > 0 ||
+            parsedMunicipios.length > 0 ||
+            parsedCoordinators.length > 0
+            ? pageSize * 10 
+            : pageSize + 1;
 
-        // For cursor-based pagination, we skip (page-1)*adjustedLimit docs
-        // But Firestore doesn't support offset efficiently, so for pages > 1 
-        // we need to use startAfter with a cursor.
-        // Simple approach: use offset (works up to ~10K, fine for filtered results)
         const offset = (page - 1) * pageSize;
 
         let snapshot: FirebaseFirestore.QuerySnapshot;
         
         if (search || parsedColonias.length > 0 || 
             (parsedSeccionales.length > 0 && parsedLevels.length > 0) ||
-            parsedEvents.length > 0) {
-            // Complex filter: fetch more and post-filter
-            // Cap at 25000 to allow scanning the entire current DB for text search
+            parsedEvents.length > 0 || parsedMunicipios.length > 0 || parsedCoordinators.length > 0) {
             const maxFetch = Math.min(25000, offset + fetchLimit);
             snapshot = await q.limit(maxFetch).get();
         } else {
-            // Simple filter: use offset + limit
             snapshot = await q.offset(offset).limit(pageSize + 1).get();
         }
 
@@ -104,7 +95,6 @@ export async function GET(req: NextRequest) {
         }
 
         if (parsedSeccionales.length > 0 && parsedLevels.length > 0) {
-            // Seccional filter wasn't applied server-side because levels used 'in'
             contacts = contacts.filter(c => parsedSeccionales.includes(c.seccional || ''));
         }
 
@@ -112,10 +102,34 @@ export async function GET(req: NextRequest) {
             contacts = contacts.filter(c => parsedColonias.includes(c.colonia || ''));
         }
 
+        if (parsedMunicipios.length > 0) {
+            contacts = contacts.filter(c => parsedMunicipios.includes(c.municipio || ''));
+        }
+
         if (parsedEvents.length > 0) {
             contacts = contacts.filter(c => {
                 const contactEvents = [...(c.eventNames || []), c.eventName].filter(Boolean);
                 return parsedEvents.some((fe: string) => contactEvents.includes(fe));
+            });
+        }
+
+        if (parsedCoordinators.length > 0) {
+            // Build parent lookup map to match hierarchy tree for Coordinador Territorial Nivel 4
+            const contactsMap = new Map<string, any>();
+            contacts.forEach(c => contactsMap.set(c.id, c));
+
+            contacts = contacts.filter(c => {
+                if (parsedCoordinators.includes(c.id)) return true;
+                let curr = c;
+                let depth = 0;
+                while (curr.parentId && depth < 10) {
+                    if (parsedCoordinators.includes(curr.parentId)) return true;
+                    const parent = contactsMap.get(curr.parentId);
+                    if (!parent) break;
+                    curr = parent;
+                    depth++;
+                }
+                return false;
             });
         }
 

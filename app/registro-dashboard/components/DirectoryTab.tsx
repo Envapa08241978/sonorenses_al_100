@@ -19,11 +19,17 @@ interface DirectoryTabProps {
     setFilterColonias: (v: string[]) => void;
     filterEvents: string[];
     setFilterEvents: (v: string[]) => void;
+    filterMunicipios?: string[];
+    setFilterMunicipios?: (v: string[]) => void;
+    filterCoordinators?: string[];
+    setFilterCoordinators?: (v: string[]) => void;
     filterOnlyOrphans: boolean;
     setFilterOnlyOrphans: (v: boolean) => void;
     uniqueSeccionales: string[];
     uniqueColonias: string[];
     uniqueEventNames: string[];
+    uniqueMunicipios?: string[];
+    level4Coordinators?: { id: string; name: string; seccional?: string }[];
     config: any;
     handleWhatsApp: (c: ContactItem) => void;
     handleSendQR: (c: ContactItem) => void;
@@ -49,8 +55,11 @@ export default function DirectoryTab({
     contacts, sortedContacts, filteredContacts, searchQuery, setSearchQuery,
     filterLevels, setFilterLevels, filterSeccionales, setFilterSeccionales,
     filterColonias, setFilterColonias, filterEvents, setFilterEvents,
+    filterMunicipios = [], setFilterMunicipios = () => {},
+    filterCoordinators = [], setFilterCoordinators = () => {},
     filterOnlyOrphans, setFilterOnlyOrphans, uniqueSeccionales, uniqueColonias,
-    uniqueEventNames, config, handleWhatsApp, handleSendQR, handlePromote,
+    uniqueEventNames, uniqueMunicipios = [], level4Coordinators = [],
+    config, handleWhatsApp, handleSendQR, handlePromote,
     handleDemote, handleReassign, setEditingContact, setSelectedQRContact, deleteContact, handleImportContacts,
     isLoadingContacts, currentPage, setCurrentPage, hasMore, pageSize, totalContacts,
     refetchContacts, refetchStats
@@ -165,13 +174,15 @@ export default function DirectoryTab({
         <div className="flex flex-col h-full animate-in fade-in duration-500">
             <div className="p-8 bg-gray-50/50 border-b border-gray-100 flex flex-wrap gap-4 items-center justify-between">
                 <div className="flex flex-wrap gap-4 flex-1">
-                    <div className="flex-1 min-w-[300px]">
+                    <div className="flex-1 min-w-[240px]">
                         <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Filtrar por nombre o celular..." className="w-full px-8 py-4 rounded-3xl bg-white border border-gray-200 outline-none focus:border-red-400 font-bold text-gray-700 shadow-inner" />
                     </div>
-                    <MultiSelect placeholder="Filtro de Nivel" options={Object.entries(LEVEL_ROLES).map(([level, role]) => ({label: `Nivel ${level} - ${role}`, value: Number(level)}))} selected={filterLevels} onChange={setFilterLevels} />
+                    <MultiSelect placeholder="Filtro de Ciudad" options={uniqueMunicipios.map(m => ({label: m, value: m}))} selected={filterMunicipios} onChange={setFilterMunicipios} />
                     <MultiSelect placeholder="Filtro de Seccion" options={uniqueSeccionales.map(s => ({label: `Seccional ${s}`, value: s}))} selected={filterSeccionales} onChange={setFilterSeccionales} />
                     <MultiSelect placeholder="Filtro de Colonia" options={uniqueColonias.map(c => ({label: c, value: c}))} selected={filterColonias} onChange={setFilterColonias} />
                     <MultiSelect placeholder="Filtro de Evento" options={uniqueEventNames.map(e => ({label: e, value: e}))} selected={filterEvents} onChange={setFilterEvents} />
+                    <MultiSelect placeholder="Filtro de Coord. Territorial (Nivel 4)" options={level4Coordinators.map(c => ({label: `👔 ${c.name}${c.seccional ? ` (Sec. ${c.seccional})` : ''}`, value: c.id}))} selected={filterCoordinators} onChange={setFilterCoordinators} />
+                    <MultiSelect placeholder="Filtro de Nivel" options={Object.entries(LEVEL_ROLES).map(([level, role]) => ({label: `Nivel ${level} - ${role}`, value: Number(level)}))} selected={filterLevels} onChange={setFilterLevels} />
                     <button onClick={() => setFilterOnlyOrphans(!filterOnlyOrphans)} className={`px-6 py-4 rounded-2xl text-[10px] font-black tracking-widest uppercase transition-all shadow-sm ${filterOnlyOrphans ? 'bg-orange-600 text-white' : 'bg-white text-gray-400 border border-gray-100'}`}>👤 Sin Lider</button>
                 </div>
                 <div className="flex gap-3">
