@@ -743,6 +743,19 @@ export async function POST(request: Request) {
                                 console.error('Error sending consent button selection response:', err);
                             }
                         }
+                        
+                        // AUTO-SEND: Personal recruitment link + QR when user just gave consent
+                        if (buttonId === 'consent_yes' && contactDoc && !isDominadas) {
+                            const freshSnap = await getDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', contactDoc.id));
+                            if (freshSnap.exists() && !freshSnap.data().linkSent) {
+                                await sendPersonalRecruitmentLink({
+                                    token, phoneId, cleanTo,
+                                    contactDocId: contactDoc.id,
+                                    contactName: freshSnap.data().name || name,
+                                    messagesRef, chatRef
+                                });
+                            }
+                        }
 
                     // 3. CONVERSATIONAL BOT STATE MACHINE (For any general text message)
                     } else {
