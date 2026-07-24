@@ -807,7 +807,74 @@ export async function POST(request: Request) {
                              (messageBodyLower.includes('corregir') || messageBodyLower.includes('cambiar') || messageBodyLower.includes('modificar')))
                         );
 
-                        
+                        // DETECT: Text reply for consent (e.g. if user typed "sí", "si", "sí acepto", "si acepto", "acepto" instead of clicking the interactive button)
+                        const isTextConsentYes = (
+                            botState === 'esperando_consentimiento' || isNewRegistrationFlow || (contactData && contactData.consent !== 'yes')
+                        ) && (
+                            messageBodyLower === 'si' ||
+                            messageBodyLower === 'sí' ||
+                            messageBodyLower === 'si acepto' ||
+                            messageBodyLower === 'sí acepto' ||
+                            messageBodyLower === 'acepto' ||
+                            messageBodyLower === 'si, acepto' ||
+                            messageBodyLower === 'sí, acepto' ||
+                            messageBodyLower.includes('si acepto') ||
+                            messageBodyLower.includes('sí acepto') ||
+                            messageBodyLower.includes('si, acepto') ||
+                            messageBodyLower.includes('sí, acepto')
+                        );
+
+                        if (isTextConsentYes) {
+                            if (contactDoc) {
+                                await updateDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', contactDoc.id), {
+                                    consent: 'yes',
+                                    consentTimestamp: serverTimestamp()
+                                });
+                            }
+                            await setDoc(chatRef, {
+                                consent: 'yes',
+                                consentTimestamp: serverTimestamp(),
+                                botState: 'idle'
+                            }, { merge: true });
+
+                            const consentReply = `¡Muchas gracias por tu confianza! ❤️ Tu consentimiento ha sido registrado. A partir de ahora te mantendremos informado(a) sobre las actividades del Aspirante a la Coordinación Estatal en Defensa de la Transformación y Soberanía Nacional en Sonora, Javier Lamarque y del movimiento. ¡Sigamos transformando juntos! 🏛️🤝`;
+
+                            const textPayload = {
+                                messaging_product: 'whatsapp',
+                                to: cleanTo,
+                                type: 'text',
+                                text: { body: consentReply }
+                            };
+
+                            try {
+                                const response = await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
+                                    method: 'POST',
+                                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(textPayload)
+                                });
+                                if (response.ok) {
+                                    await addDoc(messagesRef, {
+                                        body: consentReply,
+                                        to: cleanTo,
+                                        type: 'text',
+                                        direction: 'outbound',
+                                        timestamp: serverTimestamp()
+                                    });
+                                }
+                            } catch (err) { console.error('Error sending text consent reply:', err); }
+
+                            if (contactDoc) {
+                                await sendPersonalRecruitmentLink({
+                                    token, phoneId, cleanTo,
+                                    contactDocId: contactDoc.id,
+                                    contactName: contactData?.name || name,
+                                    messagesRef, chatRef
+                                });
+                            }
+
+                            return new NextResponse('EVENT_RECEIVED', { status: 200 });
+                        }
+
                         // DETECT: Request for personal link / QR re-send
                         const isRequestingLink = isConversationalState && (
                             messageBodyLower.includes('mi liga') ||
