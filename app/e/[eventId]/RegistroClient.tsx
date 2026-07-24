@@ -287,13 +287,8 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                         return
                     }
 
-                    // Fallback: fetch most recent event from Firebase events collection
-                    const eventsQuery = query(collection(db, 'campaigns', 'main_campaign', 'events'), orderBy('date', 'desc'), limit(1))
-                    const eventsSnap = await getDocs(eventsQuery)
-                    if (!eventsSnap.empty) {
-                        const firstEv = eventsSnap.docs[0]
-                        setEvent({ id: firstEv.id, ...firstEv.data() })
-                    }
+                    // If no active event is specified, reset to DEFAULT_EVENT
+                    setEvent(DEFAULT_EVENT)
                 }
             } catch (err) {
                 console.log('Error loading config/event:', err)

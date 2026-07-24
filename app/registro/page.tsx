@@ -17,13 +17,6 @@ async function getActiveEvent(): Promise<{ id: string; name?: string; image?: st
                 }
             }
         }
-
-        // Fallback: get most recent event from events collection
-        const latestSnap = await adminDb.collection('campaigns').doc('main_campaign').collection('events').orderBy('date', 'desc').limit(1).get()
-        if (!latestSnap.empty) {
-            const docData = latestSnap.docs[0]
-            return { id: docData.id, ...docData.data() }
-        }
     } catch (e) {
         console.error("Error fetching active event for /registro:", e)
     }
