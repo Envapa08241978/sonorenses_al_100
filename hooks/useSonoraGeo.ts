@@ -24,52 +24,107 @@ export interface SonoraCatalog {
 }
 
 let cachedCatalog: SonoraCatalog | null = null;
+let cachedSectionsMap: Record<string, string[]> | null = null;
+
+const CITY_MUNICIPIO_ALIASES: Record<string, string> = {
+    'ciudad obregón': 'Cajeme',
+    'heroica nogales': 'Nogales',
+    'heroica guaymas': 'Guaymas',
+    'heroica caborca': 'Caborca',
+    'heroica ciudad de cananea': 'Cananea',
+    'magdalena de kino': 'Magdalena',
+    'sonoita': 'General Plutarco Elías Calles',
+};
 
 export function useSonoraGeo() {
     const [catalog, setCatalog] = useState<SonoraCatalog | null>(cachedCatalog);
+    const [sectionsMap, setSectionsMap] = useState<Record<string, string[]> | null>(cachedSectionsMap);
     const [isLoading, setIsLoading] = useState(!cachedCatalog);
 
     useEffect(() => {
-        if (cachedCatalog) {
+        if (cachedCatalog && cachedSectionsMap) {
             setCatalog(cachedCatalog);
+            setSectionsMap(cachedSectionsMap);
             setIsLoading(false);
             return;
         }
 
-        const fetchCatalog = async () => {
+        const fetchGeoData = async () => {
             try {
-                const res = await fetch('/data/sonora_catalog.json');
-                if (res.ok) {
-                    const data: SonoraCatalog = await res.json();
+                const [catRes, secRes] = await Promise.all([
+                    fetch('/data/sonora_catalog.json'),
+                    fetch('/data/sonora_sections.json').catch(() => null)
+                ]);
+
+                if (catRes.ok) {
+                    const data: SonoraCatalog = await catRes.json();
                     cachedCatalog = data;
                     setCatalog(data);
                 }
+
+                if (secRes && secRes.ok) {
+                    const secData: Record<string, string[]> = await secRes.json();
+                    cachedSectionsMap = secData;
+                    setSectionsMap(secData);
+                }
             } catch (err) {
-                console.error("Error loading Sonora catalog:", err);
+                console.error("Error loading Sonora geo data:", err);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchCatalog();
+        fetchGeoData();
     }, []);
 
     const municipiosList = catalog ? Object.keys(catalog.municipios).sort() : [];
 
+    const resolveMunicipioKey = (municipio: string): string => {
+        if (!municipio) return '';
+        const clean = municipio.trim().toLowerCase();
+        if (CITY_MUNICIPIO_ALIASES[clean]) {
+            return CITY_MUNICIPIO_ALIASES[clean];
+        }
+        if (catalog) {
+            const matched = Object.keys(catalog.municipios).find(
+                k => k.toLowerCase() === clean
+            );
+            if (matched) return matched;
+        }
+        if (sectionsMap) {
+            const matchedSec = Object.keys(sectionsMap).find(
+                k => k.toLowerCase() === clean
+            );
+            if (matchedSec) return matchedSec;
+        }
+        return municipio.trim();
+    };
+
     const getColoniasForMunicipio = (municipio: string): ColoniaItem[] => {
         if (!catalog || !municipio) return [];
-        const mKey = Object.keys(catalog.municipios).find(
-            k => k.toLowerCase() === municipio.trim().toLowerCase()
+        const mKey = resolveMunicipioKey(municipio);
+        const match = Object.keys(catalog.municipios).find(
+            k => k.toLowerCase() === mKey.toLowerCase()
         );
-        return mKey ? catalog.municipios[mKey].colonias : [];
+        return match ? catalog.municipios[match].colonias : [];
     };
 
     const getCpsForMunicipio = (municipio: string): string[] => {
         if (!catalog || !municipio) return [];
-        const mKey = Object.keys(catalog.municipios).find(
-            k => k.toLowerCase() === municipio.trim().toLowerCase()
+        const mKey = resolveMunicipioKey(municipio);
+        const match = Object.keys(catalog.municipios).find(
+            k => k.toLowerCase() === mKey.toLowerCase()
         );
-        return mKey ? catalog.municipios[mKey].codigos_postales : [];
+        return match ? catalog.municipios[match].codigos_postales : [];
+    };
+
+    const getSeccionesForMunicipio = (municipio: string): string[] => {
+        if (!sectionsMap || !municipio) return [];
+        const mKey = resolveMunicipioKey(municipio);
+        const match = Object.keys(sectionsMap).find(
+            k => k.toLowerCase() === mKey.toLowerCase()
+        );
+        return match ? sectionsMap[match] : [];
     };
 
     const findCpForColonia = (municipio: string, colonia: string): string => {
@@ -80,10 +135,12 @@ export function useSonoraGeo() {
 
     return {
         catalog,
+        sectionsMap,
         isLoading,
         municipiosList,
         getColoniasForMunicipio,
         getCpsForMunicipio,
+        getSeccionesForMunicipio,
         findCpForColonia,
     };
 }

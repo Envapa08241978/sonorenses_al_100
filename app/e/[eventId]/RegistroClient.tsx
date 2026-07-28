@@ -121,7 +121,7 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
     const galleryInputRef = useRef<HTMLInputElement>(null)
 
     // --- Geo & SEPOMEX ---
-    const { municipiosList, getColoniasForMunicipio, getCpsForMunicipio } = useSonoraGeo()
+    const { municipiosList, getColoniasForMunicipio, getCpsForMunicipio, getSeccionesForMunicipio } = useSonoraGeo()
     const [uniqueSeccionales, setUniqueSeccionales] = useState<string[]>([])
 
     useEffect(() => {
@@ -1283,10 +1283,10 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                                             <div>
                                                 <SearchableSelect
                                                     label="Sección Electoral"
-                                                    placeholder="Selecciona Sección..."
+                                                    placeholder={rsvpCiudad ? `Sección (${(getSeccionesForMunicipio(rsvpCiudad).length > 0 ? getSeccionesForMunicipio(rsvpCiudad) : uniqueSeccionales).length} en ${rsvpCiudad})...` : "Selecciona Sección..."}
                                                     value={rsvpSeccional}
                                                     onChange={(val) => setRsvpSeccional(val.replace(/^0+/, ''))}
-                                                    options={uniqueSeccionales}
+                                                    options={rsvpCiudad && getSeccionesForMunicipio(rsvpCiudad).length > 0 ? getSeccionesForMunicipio(rsvpCiudad) : uniqueSeccionales}
                                                     allowCustom={true}
                                                 />
                                             </div>

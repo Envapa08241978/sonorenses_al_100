@@ -1,6 +1,8 @@
-# Contexto del Proyecto: Sonorenses al 100 - Bot de WhatsApp
+# Contexto del Proyecto: Sonorenses al 100 - Bot de WhatsApp y Plataforma
 
-Este archivo documenta las lógicas principales y flujos de trabajo implementados recientemente en el webhook de WhatsApp (`app/api/whatsapp/webhook/route.ts`), para que futuros desarrollos o agentes entiendan la arquitectura actual y no rompan la funcionalidad existente.
+Este archivo documenta las lógicas principales y flujos de trabajo implementados recientemente en el webhook de WhatsApp (`app/api/whatsapp/webhook/route.ts`), la plataforma web (`/registro`) y el panel de control (`registro-dashboard`), para que futuros desarrollos o agentes entiendan la arquitectura actual y no rompan la funcionalidad existente.
+
+---
 
 ## 1. Envío de Liga Personal y Código QR a Ciudadanos
 
@@ -12,6 +14,8 @@ Se implementó una automatización para que los ciudadanos registrados puedan so
   * **Seguridad:** El sistema verifica que el número de teléfono que escribe ya exista en la colección de `contacts`. Si el número no existe, el bot responde indicándole que primero debe registrarse en la página web.
   * Si el contacto existe, se ejecuta la función helper `sendPersonalRecruitmentLink` que envía la imagen generada del QR y el texto con la URL personal (`?ref=ID_DEL_CONTACTO`).
 * **Objetivo:** Evitar que el bot se confunda y trate estas solicitudes como "Peticiones" (gestiones) y dar respuesta inmediata al usuario.
+
+---
 
 ## 2. Plan B: Validación Alternativa de Consentimiento (Sin Código QR)
 
@@ -26,55 +30,83 @@ Normalmente, el flujo de validación arranca cuando un ciudadano abre una liga q
   * Ignora el saludo casual y envía inmediatamente la **Tarjeta de Bienvenida** con los botones interactivos: *"Sí, acepto ✅"* y *"No, gracias"*.
 * **Objetivo:** Permitir que las personas menos familiarizadas con la tecnología puedan completar su registro simplemente mandando un mensaje manual al número del bot (662 224 4979), tras haber sido dados de alta por un brigadista.
 
-
+---
 
 ## 3. Actualización de Jerarquía de Roles y Exportación en Excel (Fase 2 - Julio 2026)
 
 Se realizaron adecuaciones en el panel de control (`registro-dashboard`) relativas a los niveles organizativos del movimiento y la descarga de datos del directorio de contactos.
 
-*   **Jerarquía de Roles (Niveles del 1 al 5):**
-    *   Se reestructuraron las etiquetas y colores en [types.ts](file:///c:/Users/ENRIQ/OneDrive/Documents/Paginas%20web/Sonorenses_al_100/app/registro-dashboard/components/types.ts) reduciendo la escala activa de niveles al rango del 1 al 5.
-    *   **Nivel 1:** Ciudadano Concientizado *(reemplaza al rol anterior "Voto")*
-    *   **Nivel 2:** Ciudadano Movilizador *(reemplaza al rol anterior "Movilizador")*
-    *   **Nivel 3:** Brigadista *(se mantiene)*
-    *   **Nivel 4:** Coordinador Territorial *(se mantiene)*
-    *   **Nivel 5:** Coordinador General *(reemplaza al rol anterior "Coordinador Distrital")*
-    *   *Nota:* El nivel 6 (anteriormente "Coordinador General") y los niveles 7 y 8 se omitieron de la interfaz y de los filtros por el momento para mantener la estructura limpia y adaptada a la fase actual de campaña. El componente de red en [StatsPanel.tsx](file:///c:/Users/ENRIQ/OneDrive/Documents/Paginas%20web/Sonorenses_al_100/app/registro-dashboard/components/StatsPanel.tsx) se rediseñó de 6 a 5 columnas.
-*   **Rediseño de la Descarga en Excel:**
-    *   Se modificó la lógica en la función `exportToExcel` de [DirectoryTab.tsx](file:///c:/Users/ENRIQ/OneDrive/Documents/Paginas%20web/Sonorenses_al_100/app/registro-dashboard/components/DirectoryTab.tsx).
-    *   **Campos Completos:** Se añadieron columnas para todos los datos del ciudadano que no se estaban exportando (`ID`, `Num Ext`, `Num Int`, `Colonia`, `Código Postal`, `Municipio`, `Distrito`, `Invitado Por`, `Consentimiento` y `Origen`).
-    *   **Remociones:** Se eliminaron las columnas `Lider` y `Eventos Asistidos`.
-    *   **Trazabilidad de Cadena Jerárquica:** Se programó una búsqueda recursiva ascendente a través del `parentId` para trazar la línea de mando completa de cada contacto del Nivel 5 al 1. El Excel resultante crea una columna dedicada para cada nivel (ej. `Nivel 5: Coordinador General`, `Nivel 4: Coordinador Territorial`, etc.) y escribe allí el nombre del superior respectivo. Esto permite agrupar y filtrar la estructura de referidos de forma directa en la hoja de cálculo.
+* **Jerarquía de Roles (Niveles del 1 al 5):**
+  * Se reestructuraron las etiquetas y colores en `types.ts` reduciendo la escala activa de niveles al rango del 1 al 5.
+  * **Nivel 1:** Ciudadano Concientizado *(reemplaza al rol anterior "Voto")*
+  * **Nivel 2:** Ciudadano Movilizador *(reemplaza al rol anterior "Movilizador")*
+  * **Nivel 3:** Brigadista *(se mantiene)*
+  * **Nivel 4:** Coordinador Territorial *(se mantiene)*
+  * **Nivel 5:** Coordinador General *(reemplaza al rol anterior "Coordinador Distrital")*
+  * *Nota:* El nivel 6 y superiores se omitieron por el momento. El componente de red en `StatsPanel.tsx` se rediseñó a 5 columnas.
+* **Rediseño de la Descarga en Excel:**
+  * Se modificó la lógica en la función `exportToExcel` de `DirectoryTab.tsx`.
+  * **Campos Completos:** Columnas para `ID`, `Num Ext`, `Num Int`, `Colonia`, `Código Postal`, `Municipio`, `Distrito`, `Invitado Por`, `Consentimiento` y `Origen`.
+  * **Trazabilidad de Cadena Jerárquica:** Búsqueda recursiva ascendente a través del `parentId` para trazar la línea de mando completa del Nivel 5 al 1 en columnas dedicadas.
+
+---
 
 ## 4. Limpieza y Depuración del Proyecto (Julio 2026)
 
-* **Eliminación de Torneo de Dominadas:** Se removieron los archivos, referencias y componentes pertenecientes al proyecto secundario *"Torneo Estatal Dominadas en mi Barrio"* que venían heredados de una clonación inicial de código. El proyecto quedó limpio y exclusivo para las operaciones de **Sonorenses al 100**.
+* **Eliminación de Torneo de Dominadas:** Se removieron los archivos, referencias y componentes pertenecientes al proyecto secundario *"Torneo Estatal Dominadas en mi Barrio"*. El proyecto quedó limpio y exclusivo para las operaciones de **Sonorenses al 100**.
+
+---
 
 ## 5. Difusión Masiva y Configuración de Imágenes de Cabecera (Meta API)
 
 * **Manejo de Imágenes de Encabezado:** 
   * Se configuró el envío de plantillas de Meta con imagen en la cabecera (`headerImageUrl`).
-  * Se localizaron y vincularon las URLs oficiales alojadas en Firebase Storage (ej. flyer *"Así Gobierna la 4T en Sonora"*).
-  * Se documentó el flujo con herramientas externas de hospedaje directo de imágenes (como **Postimages** / `postimages.org`), recomendando utilizar siempre la variante de **"Enlace directo"** (URL directa terminada en `.jpg` o `.png` como `https://i.postimg.cc/.../imagen.jpg`) requerida por la API de Meta Graph.
+  * Se vincularon URLs oficiales alojadas en Firebase Storage.
+  * Se recomendó el uso de URLs de enlace directo terminadas en `.jpg` o `.png` requeridas por Meta Graph API.
+
+---
 
 ## 6. Filtro de Consentimiento para Envíos Masivos (WhatsApp Confirmado)
 
-Para evitar reportes de spam y bloqueo de número por parte de Meta, se reforzó el módulo de Difusión ([BroadcastTab.tsx](file:///c:/Users/ENRIQ/OneDrive/Documents/Paginas%20web/Sonorenses_al_100/app/registro-dashboard/components/BroadcastTab.tsx)):
+* **Filtro `onlyConfirmed`:** Verificación que valida `c.consent === 'yes'` antes de incluir a un contacto en envíos masivos.
+* **Casilla Activa por Defecto:** En `BroadcastTab.tsx` viene activada por defecto para proteger la cuenta de WhatsApp Business ante reportes de spam.
 
-* **Filtro `onlyConfirmed`:** Se implementó una verificación que valida que el campo `c.consent === 'yes'` antes de incluir a un contacto en el público segmentado de envío masivo.
-* **Casilla Interactivas en Panel:** Se añadió la casilla de verificación *"✅ Solo enviar a contactos con WhatsApp Confirmado (Consentimiento Aceptado)"*, la cual viene **activada por defecto** para proteger la cuenta de WhatsApp Business.
-* **Integración con GitHub/Vercel:** Todos los cambios fueron desplegados a producción en Vercel mediante el repositorio oficial de GitHub.
+---
 
 ## 7. Reporte de Métricas y Registro de Difusiones
 
 * **Rendimiento de Plantilla `asamblea_copacabana`:**
-  * **Meta Analytics:** 650 mensajes entregados con una tasa de apertura/lectura del **73% (476 leídos)**.
-  * **Base de Datos Firebase:** 1,345 envíos registrados acumulados de difusiones sobre un padrón total de 1,440 contactos.
+  * **Meta Analytics:** 650 mensajes entregados con una tasa de apertura del **73% (476 leídos)**.
+  * **Base de Datos Firebase:** 1,345 envíos registrados acumulados sobre un padrón total de 1,440 contactos.
 
 ---
-**Nota para futuros asistentes:** 
-*   Si se requieren realizar cambios al webhook (`route.ts`), es de suma importancia **NO modificar ni eliminar** las validaciones de intercepción rápida (`isRequestingLink` e `isRegistration`), ya que controlan el correcto flujo de onboarding y auto-servicio de los Enlaces Ciudadanos.
-*   Al modificar el directorio o el flujo de carga, ten en cuenta que la base de datos almacena los niveles como enteros del 1 al 5. Los nombres legibles de cada rol están mapeados en `LEVEL_ROLES` (`types.ts`).
-*   En el módulo de **Difusión**, siempre asegúrate de pasar únicamente URLs de imágenes directas (`https://...jpg` o `.png`) en la cabecera y mantener activo por defecto el filtro de consentimiento (`onlyConfirmed`) para no poner en riesgo la cuenta oficial ante Meta.
 
+## 8. Control de Activación y Desactivación de Eventos en Portal Público (`/registro`)
 
+Se corrigió un comportamiento en la página pública de registro (`app/registro/page.tsx`) y en el componente cliente (`app/e/[eventId]/RegistroClient.tsx`):
+
+* **Problema Encontrado:** Al desactivar un evento en el panel (botón *"⚡ Activar en Portal Público"*), el evento desactivado seguía apareciendo en `sonorensesal100.com/registro`.
+* **Causa:** Existía una consulta de *fallback* automática que, al detectar `activeEventId == null`, hacía un `orderBy('date', 'desc').limit(1)` en la colección `events`, forzando la carga del evento más reciente.
+* **Solución Aplicada:**
+  * Se eliminaron los queries de fallback en `app/registro/page.tsx` y `RegistroClient.tsx`.
+  * **Comportamiento Actual:**
+    - Si hay un `activeEventId` configurado en `campaigns/main_campaign/config/profile`, el portal `/registro` despliega la tarjeta y datos de ese evento.
+    - Si el evento se desactiva (`activeEventId === null`), el portal regresa al formulario de **Registro General Permanente** (*Atención Comunitaria Permanente*), respetando la decisión del administrador.
+
+---
+
+## 9. Instructivo y Material de Capacitación para Voceros en Territorio
+
+Se estandarizó el flujo de onboarding de 4 pasos para brigadistas y voceros de la Transformación:
+
+1. **Paso 1 y 2 (Alta en Territorio):** Escaneo de código QR e ingreso de datos reales en la plataforma web.
+2. **Paso 3 (Verificación en WhatsApp):** Clic en *"Verificar desde Mi teléfono"*, envío de mensaje inicial, selección de *"Sí, acepto ✅"* y envío del comando *"MÁNDAME MI QR"*.
+3. **Paso 4 (Red de Simpatizantes):** Apertura de la liga personal (`?ref=...`) y escaneo del QR en pantalla por parte del nuevo simpatizante para finalizar su verificación.
+* **Guión Técnico por Escenas:** Se creó el documento con tiempos, visuales, overlays y locución en audio para producir videos de capacitación profesional en plataformas como HeyGen, Canva Pro, CapCut e InVideo AI.
+
+---
+
+**Notas Importantes para Futuros Agentes / Desarrolladores:**
+1. **Webhook (`route.ts`):** **NO eliminar ni modificar** las validaciones `isRequestingLink` e `isRegistration`.
+2. **Eventos Activos:** Mantener la propiedad `activeEventId` en la colección `config/profile` como la única fuente de verdad para el evento público en `/registro`. No reinstaurar fallbacks automáticos por fecha.
+3. **Difusiones Masivas:** Mantener `onlyConfirmed` activo por defecto y utilizar únicamente enlaces directos a imágenes (`.jpg`/`.png`).

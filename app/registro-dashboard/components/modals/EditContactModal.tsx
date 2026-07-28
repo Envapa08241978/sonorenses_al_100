@@ -22,11 +22,13 @@ export default function EditContactModal({
     onClose,
     uniqueSeccionales = []
 }: EditContactModalProps) {
-    const { municipiosList, getColoniasForMunicipio, getCpsForMunicipio } = useSonoraGeo();
+    const { municipiosList, getColoniasForMunicipio, getCpsForMunicipio, getSeccionesForMunicipio } = useSonoraGeo();
 
     const selectedMunicipio = contact.municipio || '';
     const coloniasForMun = getColoniasForMunicipio(selectedMunicipio);
     const cpsForMun = getCpsForMunicipio(selectedMunicipio);
+    const seccionesForMun = getSeccionesForMunicipio(selectedMunicipio);
+    const seccionalOptions = (seccionesForMun.length > 0) ? seccionesForMun : uniqueSeccionales;
 
     const coloniaOptions = coloniasForMun.map(c => ({
         label: `${c.colonia} (${c.tipo}) - CP ${c.cp}`,
@@ -82,10 +84,10 @@ export default function EditContactModal({
                         <div>
                             <SearchableSelect
                                 label="Seccional Electoral"
-                                placeholder="Selecciona Seccional..."
+                                placeholder={selectedMunicipio ? `Sección (${seccionalOptions.length} en ${selectedMunicipio})...` : "Selecciona Seccional..."}
                                 value={contact.seccional || ''}
                                 onChange={(val) => setContact({...contact, seccional: val.replace(/^0+/, '')})}
-                                options={uniqueSeccionales}
+                                options={seccionalOptions}
                                 allowCustom={true}
                             />
                         </div>
