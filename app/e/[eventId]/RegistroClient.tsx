@@ -802,26 +802,60 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
     }
 
     /* ---- INE Scanner (OCR) ---- */
+    const compressImageForOCR = (file: File): Promise<Blob> => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+            img.onload = () => {
+                const MAX_SIZE = 1200;
+                let width = img.width;
+                let height = img.height;
+                if (width > MAX_SIZE || height > MAX_SIZE) {
+                    if (width > height) {
+                        height = Math.round((height * MAX_SIZE) / width);
+                        width = MAX_SIZE;
+                    } else {
+                        width = Math.round((width * MAX_SIZE) / height);
+                        height = MAX_SIZE;
+                    }
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) { resolve(file); return; }
+                ctx.drawImage(img, 0, 0, width, height);
+                canvas.toBlob(
+                    (blob) => resolve(blob || file),
+                    'image/jpeg',
+                    0.85
+                );
+            };
+            img.onerror = () => resolve(file);
+        });
+    };
+
     const handleScanINE = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
         setIsScanningINE(true);
         try {
+            const compressedBlob = await compressImageForOCR(file);
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('file', compressedBlob, 'ine_scan.jpg');
+
             const res = await fetch('/api/ocr', {
                 method: 'POST',
                 body: formData
             });
 
+            const data = await res.json();
             if (!res.ok) {
-                const error = await res.json();
-                setUploadError(error.error || 'Error al procesar la credencial');
+                setUploadError(data.error || 'Error al procesar la credencial');
                 return;
             }
 
-            const data = await res.json();
             if (data.name) setRsvpName(data.name);
             if (data.calle) setRsvpCalle(data.calle);
             if (data.numExt) setRsvpNumExt(data.numExt);
@@ -830,10 +864,11 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
             if (data.cp) setRsvpCP(data.cp);
             if (data.seccional) setRsvpSeccional(data.seccional.toString().replace(/^0+/, ''));
 
-        } catch (err) {
-            setUploadError('Error de conexión al escanear INE');
+        } catch (err: any) {
+            setUploadError(err?.message || 'Error de conexión al escanear INE');
         } finally {
             setIsScanningINE(false);
+            if (e.target) e.target.value = '';
         }
     };
 
