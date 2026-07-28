@@ -119,6 +119,7 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
     const fileInputRef = useRef<HTMLInputElement>(null)
     const videoInputRef = useRef<HTMLInputElement>(null)
     const galleryInputRef = useRef<HTMLInputElement>(null)
+    const ineInputRef = useRef<HTMLInputElement>(null)
 
     // --- Geo & SEPOMEX ---
     const { municipiosList, getColoniasForMunicipio, getCpsForMunicipio, getSeccionesForMunicipio } = useSonoraGeo()
@@ -825,7 +826,9 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
             if (data.calle) setRsvpCalle(data.calle);
             if (data.numExt) setRsvpNumExt(data.numExt);
             if (data.ciudad) setRsvpCiudad(data.ciudad);
-            if (data.seccional) setRsvpSeccional(data.seccional);
+            if (data.colonia) setRsvpColonia(data.colonia);
+            if (data.cp) setRsvpCP(data.cp);
+            if (data.seccional) setRsvpSeccional(data.seccional.toString().replace(/^0+/, ''));
 
         } catch (err) {
             setUploadError('Error de conexión al escanear INE');
@@ -1184,8 +1187,47 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                             </div>
                         ) : (
                             <>
+                                {/* Hidden file input for INE scanner */}
+                                <input
+                                    type="file"
+                                    ref={ineInputRef}
+                                    accept="image/*"
+                                    capture="environment"
+                                    className="hidden"
+                                    onChange={handleScanINE}
+                                />
+
                                 {/* Scrollable Form Content */}
                                 <div className="p-4 overflow-y-auto flex-1 no-scrollbar">
+                                    {/* INE Scanner Banner Button */}
+                                    <div className="mb-4 bg-gradient-to-r from-red-800 to-amber-900 p-3.5 rounded-2xl text-white shadow-md">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div className="flex-1">
+                                                <p className="text-[10px] font-black uppercase tracking-wider text-amber-200">✨ Autocompletar con IA</p>
+                                                <p className="text-xs text-white/90 font-bold leading-tight mt-0.5">Escanear Credencial del INE</p>
+                                                <p className="text-[10px] text-white/70 font-medium leading-tight">Evita errores al capturar tus datos.</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                disabled={isScanningINE}
+                                                onClick={() => ineInputRef.current?.click()}
+                                                className="flex-shrink-0 bg-white text-red-900 hover:bg-amber-100 px-3.5 py-2.5 rounded-xl text-xs font-black shadow transition-transform active:scale-95 flex items-center gap-1.5 disabled:opacity-50"
+                                            >
+                                                {isScanningINE ? (
+                                                    <>
+                                                        <div className="w-4 h-4 border-2 border-red-900 border-t-transparent rounded-full animate-spin" />
+                                                        <span>Escaneando...</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <span>📷</span>
+                                                        <span>Escanear INE</span>
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     {parentName ? (
                                         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-2xl text-center shadow-sm">
                                             <p className="text-[9px] font-black uppercase tracking-widest text-red-700">Te invita el Enlace/Brigadista:</p>
@@ -1196,7 +1238,7 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                                             <p className="text-[10px] font-black uppercase tracking-widest text-red-700">✨ Invitado por Javier Lamarque Cano ✨</p>
                                         </div>
                                     ))}
-                                    <p className="text-sm text-gray-500 font-medium mb-6">Ingresa tus datos reales para habilitar el cruce demográfico de la zona.</p>
+                                    <p className="text-sm text-gray-500 font-medium mb-6">Ingresa tus datos reales o escanea tu INE para autocompletar.</p>
     
 
                                     <div className="space-y-2.5">
