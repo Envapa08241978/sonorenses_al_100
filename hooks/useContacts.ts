@@ -31,6 +31,7 @@ interface StatsData {
     totalContacts: number;
     byLevel: Record<number, number>;
     byConsent: { yes: number; no: number; pending: number };
+    bySeccional?: Record<string, number>;
     uniqueSeccionales: string[];
     uniqueColonias: string[];
     uniqueMunicipios: string[];

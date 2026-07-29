@@ -44,10 +44,17 @@ export async function GET() {
         const coloniasSet = new Set<string>();
         const municipiosSet = new Set<string>();
         const eventNamesSet = new Set<string>();
+        const bySeccionalMap: Record<string, number> = {};
 
         distinctSnap.docs.forEach(doc => {
             const d = doc.data();
-            if (d.seccional && d.seccional.trim()) seccionalesSet.add(d.seccional.trim());
+            if (d.seccional) {
+                const secStr = String(d.seccional).trim().replace(/^0+/, '');
+                if (secStr) {
+                    seccionalesSet.add(secStr);
+                    bySeccionalMap[secStr] = (bySeccionalMap[secStr] || 0) + 1;
+                }
+            }
             if (d.colonia && d.colonia.trim()) coloniasSet.add(d.colonia.trim());
             if (d.municipio && d.municipio.trim()) municipiosSet.add(d.municipio.trim());
             if (d.eventName && d.eventName.trim()) eventNamesSet.add(d.eventName.trim());
@@ -85,6 +92,7 @@ export async function GET() {
                 no: consentNoSnap.data().count,
                 pending: total - consentYesSnap.data().count - consentNoSnap.data().count,
             },
+            bySeccional: bySeccionalMap,
             uniqueSeccionales: Array.from(seccionalesSet)
                 .map(s => parseInt(s, 10))
                 .filter(n => !isNaN(n) && n >= 1 && n <= 1629)

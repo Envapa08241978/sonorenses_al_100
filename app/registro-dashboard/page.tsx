@@ -710,7 +710,7 @@ export default function RegistroDashboard() {
                                 />
                             )}
                             {activeTab === 'map' && (
-                                <MapTab contacts={contacts} accent={accent} isMapLoaded={isMapLoaded} statsBySeccional={stats?.byLevel} />
+                                <MapTab contacts={contacts} accent={accent} isMapLoaded={isMapLoaded} statsBySeccional={stats?.bySeccional} />
                             )}
                             {activeTab === 'events' && (
                                 <EventsTab
