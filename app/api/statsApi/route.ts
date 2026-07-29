@@ -95,7 +95,7 @@ export async function GET() {
             bySeccional: bySeccionalMap,
             uniqueSeccionales: Array.from(seccionalesSet)
                 .map(s => parseInt(s, 10))
-                .filter(n => !isNaN(n) && n >= 1 && n <= 1629)
+                .filter(n => !isNaN(n) && n >= 1 && n <= 1700)
                 .sort((a, b) => a - b)
                 .map(String),
             uniqueColonias: Array.from(coloniasSet).sort(),
