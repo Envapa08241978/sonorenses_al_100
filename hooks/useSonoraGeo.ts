@@ -56,16 +56,20 @@ export function useSonoraGeo() {
                     fetch('/data/sonora_sections.json').catch(() => null)
                 ]);
 
-                if (catRes.ok) {
-                    const data: SonoraCatalog = await catRes.json();
-                    cachedCatalog = data;
-                    setCatalog(data);
+                if (catRes && catRes.ok) {
+                    const data = await catRes.json();
+                    if (data && data.municipios && typeof data.municipios === 'object') {
+                        cachedCatalog = data as SonoraCatalog;
+                        setCatalog(data as SonoraCatalog);
+                    }
                 }
 
                 if (secRes && secRes.ok) {
                     const secData: Record<string, string[]> = await secRes.json();
-                    cachedSectionsMap = secData;
-                    setSectionsMap(secData);
+                    if (secData && typeof secData === 'object') {
+                        cachedSectionsMap = secData;
+                        setSectionsMap(secData);
+                    }
                 }
             } catch (err) {
                 console.error("Error loading Sonora geo data:", err);
@@ -77,7 +81,7 @@ export function useSonoraGeo() {
         fetchGeoData();
     }, []);
 
-    const municipiosList = catalog ? Object.keys(catalog.municipios).sort() : [];
+    const municipiosList = (catalog && catalog.municipios) ? Object.keys(catalog.municipios).sort() : [];
 
     const resolveMunicipioKey = (municipio: string): string => {
         if (!municipio) return '';
@@ -85,7 +89,7 @@ export function useSonoraGeo() {
         if (CITY_MUNICIPIO_ALIASES[clean]) {
             return CITY_MUNICIPIO_ALIASES[clean];
         }
-        if (catalog) {
+        if (catalog && catalog.municipios) {
             const matched = Object.keys(catalog.municipios).find(
                 k => k.toLowerCase() === clean
             );
@@ -101,7 +105,7 @@ export function useSonoraGeo() {
     };
 
     const getColoniasForMunicipio = (municipio: string): ColoniaItem[] => {
-        if (!catalog || !municipio) return [];
+        if (!catalog || !catalog.municipios || !municipio) return [];
         const mKey = resolveMunicipioKey(municipio);
         const match = Object.keys(catalog.municipios).find(
             k => k.toLowerCase() === mKey.toLowerCase()
@@ -110,7 +114,7 @@ export function useSonoraGeo() {
     };
 
     const getCpsForMunicipio = (municipio: string): string[] => {
-        if (!catalog || !municipio) return [];
+        if (!catalog || !catalog.municipios || !municipio) return [];
         const mKey = resolveMunicipioKey(municipio);
         const match = Object.keys(catalog.municipios).find(
             k => k.toLowerCase() === mKey.toLowerCase()
