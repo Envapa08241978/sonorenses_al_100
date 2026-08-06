@@ -69,6 +69,7 @@ export default function RegistroDashboard() {
     const [filterLevelExact, setFilterLevelExact] = useState(false);
     const [filterPyramidType, setFilterPyramidType] = useState<'all' | 'votation' | 'defense'>('all');
     const [filterOnlyOrphans, setFilterOnlyOrphans] = useState(false);
+    const [filterCartaPostal, setFilterCartaPostal] = useState(false);
 
     // --- Server-Side Pagination ---
     const [currentPage, setCurrentPage] = useState(1);
