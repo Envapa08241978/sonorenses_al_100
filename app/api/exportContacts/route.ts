@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
         const events = searchParams.get('events') || '';
         const pyramidType = searchParams.get('pyramidType') || 'all';
         const onlyOrphans = searchParams.get('onlyOrphans') === 'true';
+        const onlyCartaPostal = searchParams.get('onlyCartaPostal') === 'true';
 
         const parsedLevels = levels ? levels.split(',').map(Number).filter(n => !isNaN(n)) : [];
         const parsedSeccionales = seccionales ? seccionales.split(',') : [];
@@ -66,6 +67,10 @@ export async function GET(req: NextRequest) {
 
         // Post-filter to get rows to export
         let filteredContacts = [...rawContacts];
+
+        if (onlyCartaPostal) {
+            filteredContacts = filteredContacts.filter((c: any) => c.origen === 'Carta Postal' || c.parentId === 'carta_postal');
+        }
 
         if (parsedLevels.length > 0) {
             filteredContacts = filteredContacts.filter((c: any) => parsedLevels.includes(Number(c.level || 1)));

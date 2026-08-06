@@ -14,6 +14,7 @@ interface UseContactsParams {
     municipios?: string[];
     coordinators?: string[];
     onlyOrphans: boolean;
+    onlyCartaPostal?: boolean;
     pyramidType: 'all' | 'votation' | 'defense';
     enabled: boolean; // only fetch when authenticated
 }
@@ -61,7 +62,7 @@ function useDebounce<T>(value: T, delay: number): T {
 // =============================================================
 export function useContacts({
     page, pageSize, search, levels, seccionales, colonias,
-    events, municipios = [], coordinators = [], onlyOrphans, pyramidType, enabled
+    events, municipios = [], coordinators = [], onlyOrphans, onlyCartaPostal, pyramidType, enabled
 }: UseContactsParams): UseContactsResult {
     const [contacts, setContacts] = useState<ContactItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -98,6 +99,7 @@ export function useContacts({
             if (municipios.length > 0) params.set('municipios', municipios.join(','));
             if (coordinators.length > 0) params.set('coordinators', coordinators.join(','));
             if (onlyOrphans) params.set('onlyOrphans', 'true');
+            if (onlyCartaPostal) params.set('onlyCartaPostal', 'true');
             if (pyramidType !== 'all') params.set('pyramidType', pyramidType);
 
             const res = await fetch(`/api/contactsApi?${params.toString()}`, {

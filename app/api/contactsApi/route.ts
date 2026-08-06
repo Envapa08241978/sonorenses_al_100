@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
         const colonias = searchParams.get('colonias') || '';
         const consent = searchParams.get('consent') || '';
         const onlyOrphans = searchParams.get('onlyOrphans') === 'true';
+        const onlyCartaPostal = searchParams.get('onlyCartaPostal') === 'true';
         const pyramidType = searchParams.get('pyramidType') || 'all';
         const events = searchParams.get('events') || '';
         const municipios = searchParams.get('municipios') || '';
@@ -63,6 +64,7 @@ export async function GET(req: NextRequest) {
 
         const needsClientPagination = Boolean(
             search || 
+            onlyCartaPostal ||
             parsedColonias.length > 0 || 
             parsedEvents.length > 0 || 
             parsedMunicipios.length > 0 || 
@@ -84,6 +86,10 @@ export async function GET(req: NextRequest) {
         })) as any[];
 
         // --- Post-filter in memory for fields Firestore can't combine ---
+        if (onlyCartaPostal) {
+            contacts = contacts.filter(c => c.origen === 'Carta Postal' || c.parentId === 'carta_postal');
+        }
+
         if (search) {
             contacts = contacts.filter(c =>
                 c.name?.toLowerCase().includes(search) ||

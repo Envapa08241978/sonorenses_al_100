@@ -166,6 +166,7 @@ export default function RegistroDashboard() {
         municipios: filterMunicipios,
         coordinators: filterCoordinators,
         onlyOrphans: filterOnlyOrphans,
+        onlyCartaPostal: filterCartaPostal,
         pyramidType: filterPyramidType,
         enabled: isAuthenticated,
     });
@@ -176,7 +177,7 @@ export default function RegistroDashboard() {
     // Reset page when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, filterLevels, filterSeccionales, filterColonias, filterEvents, filterMunicipios, filterCoordinators, filterOnlyOrphans, filterPyramidType]);
+    }, [searchQuery, filterLevels, filterSeccionales, filterColonias, filterEvents, filterMunicipios, filterCoordinators, filterOnlyOrphans, filterCartaPostal, filterPyramidType]);
 
     // --- LIGHTWEIGHT REAL-TIME: Events, brigadistas, chats (small collections) ---
     useEffect(() => {
@@ -654,7 +655,8 @@ export default function RegistroDashboard() {
                             setFilterLevelExact={setFilterLevelExact} setActiveTab={setActiveTab}
                             onSelectCartaPostal={() => {
                                 setActiveTab('contacts');
-                                setSearchQuery('carta');
+                                setFilterCartaPostal(true);
+                                setSearchQuery('');
                             }}
                         />
 
@@ -686,6 +688,7 @@ export default function RegistroDashboard() {
                                     filterMunicipios={filterMunicipios} setFilterMunicipios={setFilterMunicipios}
                                     filterCoordinators={filterCoordinators} setFilterCoordinators={setFilterCoordinators}
                                     filterOnlyOrphans={filterOnlyOrphans} setFilterOnlyOrphans={setFilterOnlyOrphans}
+                                    filterCartaPostal={filterCartaPostal} setFilterCartaPostal={setFilterCartaPostal}
                                     uniqueSeccionales={uniqueSeccionales} uniqueColonias={uniqueColonias} uniqueEventNames={uniqueEventNames}
                                     uniqueMunicipios={stats?.uniqueMunicipios || []}
                                     level4Coordinators={stats?.level4Coordinators || []}

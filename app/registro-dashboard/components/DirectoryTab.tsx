@@ -25,6 +25,8 @@ interface DirectoryTabProps {
     setFilterCoordinators?: (v: string[]) => void;
     filterOnlyOrphans: boolean;
     setFilterOnlyOrphans: (v: boolean) => void;
+    filterCartaPostal?: boolean;
+    setFilterCartaPostal?: (v: boolean) => void;
     uniqueSeccionales: string[];
     uniqueColonias: string[];
     uniqueEventNames: string[];
@@ -57,7 +59,8 @@ export default function DirectoryTab({
     filterColonias, setFilterColonias, filterEvents, setFilterEvents,
     filterMunicipios = [], setFilterMunicipios = () => {},
     filterCoordinators = [], setFilterCoordinators = () => {},
-    filterOnlyOrphans, setFilterOnlyOrphans, uniqueSeccionales, uniqueColonias,
+    filterOnlyOrphans, setFilterOnlyOrphans,
+    filterCartaPostal = false, setFilterCartaPostal = () => {}, uniqueSeccionales, uniqueColonias,
     uniqueEventNames, uniqueMunicipios = [], level4Coordinators = [],
     config, handleWhatsApp, handleSendQR, handlePromote,
     handleDemote, handleReassign, setEditingContact, setSelectedQRContact, deleteContact, handleImportContacts,
@@ -136,21 +139,24 @@ export default function DirectoryTab({
     };
 
     const downloadTemplate = () => {
-        const ws = XLSX.utils.json_to_sheet([{
-            Nombre: '',
-            Celular: '',
-            Nivel: '',
-            Seccion: '',
-            Colonia: '',
-            Calle: '',
-            NumExt: '',
-            Municipio: '',
-            'Celular Lider': '',
-            'Invitado Por': ''
-        }]);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Plantilla Importacion");
-        XLSX.writeFile(wb, "Plantilla_Contactos.xlsx");
+        const templateData = [
+            {
+                'Nombre Completo': 'Ejemplo Juan Pérez',
+                'Telefono': '6621234567',
+                'Nivel': '1',
+                'Seccion': '123',
+                'Colonia': 'Centro',
+                'Calle': 'Hidalgo',
+                'NumExt': '100',
+                'Municipio': 'Hermosillo',
+                'Invitado Por': 'Nombre del Líder',
+                'Celular Lider': '6627654321'
+            }
+        ];
+        const worksheet = XLSX.utils.json_to_sheet(templateData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Plantilla");
+        XLSX.writeFile(workbook, "plantilla_importacion_contactos.xlsx");
     };
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -186,15 +192,15 @@ export default function DirectoryTab({
                     <MultiSelect placeholder="Filtro de Coord. Territorial (Nivel 4)" options={level4Coordinators.map(c => ({label: `👔 ${c.name}${c.seccional ? ` (Sec. ${c.seccional})` : ''}`, value: c.id}))} selected={filterCoordinators} onChange={setFilterCoordinators} />
                     <MultiSelect placeholder="Filtro de Nivel" options={Object.entries(LEVEL_ROLES).map(([level, role]) => ({label: `Nivel ${level} - ${role}`, value: Number(level)}))} selected={filterLevels} onChange={setFilterLevels} />
                     <button
-                        onClick={() => setSearchQuery(searchQuery.toLowerCase().includes('carta') ? '' : 'carta')}
+                        onClick={() => setFilterCartaPostal(!filterCartaPostal)}
                         className={`px-5 py-4 rounded-2xl text-[10px] font-black tracking-widest uppercase transition-all shadow-sm flex items-center gap-1.5 ${
-                            searchQuery.toLowerCase().includes('carta') 
+                            filterCartaPostal 
                                 ? 'bg-amber-600 text-white shadow-amber-200 scale-105 ring-2 ring-amber-300' 
                                 : 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100'
                         }`}
                     >
                         <span>📬 Carta Postal</span>
-                        {searchQuery.toLowerCase().includes('carta') && <span>✕</span>}
+                        {filterCartaPostal && <span>✓</span>}
                     </button>
                     <button onClick={() => setFilterOnlyOrphans(!filterOnlyOrphans)} className={`px-6 py-4 rounded-2xl text-[10px] font-black tracking-widest uppercase transition-all shadow-sm ${filterOnlyOrphans ? 'bg-orange-600 text-white' : 'bg-white text-gray-400 border border-gray-100'}`}>👤 Sin Lider</button>
                 </div>
