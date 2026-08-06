@@ -104,9 +104,28 @@ Se estandarizó el flujo de onboarding de 4 pasos para brigadistas y voceros de 
 3. **Paso 4 (Red de Simpatizantes):** Apertura de la liga personal (`?ref=...`) y escaneo del QR en pantalla por parte del nuevo simpatizante para finalizar su verificación.
 * **Guión Técnico por Escenas:** Se creó el documento con tiempos, visuales, overlays y locución en audio para producir videos de capacitación profesional en plataformas como HeyGen, Canva Pro, CapCut e InVideo AI.
 
+## 10. Campaña Carta Postal de Javier Lamarque (Agosto 2026)
+
+Se implementó el flujo completo de rastreo, atribución y medición en tiempo real para las cartas postales impresas enviadas por correo postal.
+
+* **Enlace y QR de Imprenta:**
+  * **URL Parametrizada:** `https://www.sonorensesal100.com/registro?ref=carta_postal`
+  * **Asset generado:** `public/qr_carta_postal.png` (código QR en HD listo para imprenta/diseño).
+* **Captura de Registro (`RegistroClient.tsx`):**
+  * Detecta automáticamente `ref === 'carta_postal'` o `origen === 'carta_postal'`.
+  * Asigna los atributos de fondo:
+    - `origen`: `'Carta Postal'`
+    - `parentId`: `'carta_postal'`
+    - `parentName` / `invitedBy`: `'Carta Postal (Javier Lamarque)'`
+    - `level`: `1` (Ciudadano Concientizado)
+* **Medición en Panel de Control (`registro-dashboard`):**
+  * **Tarjeta Interactiva:** Nueva tarjeta dorada 📬 **Carta Postal** en la parte superior del dashboard que muestra el total acumulado en tiempo real y al darle clic despliega el directorio filtrado.
+  * **Filtro Estricto API (`onlyCartaPostal`):** Botón `📬 Carta Postal` en la barra de filtros y parámetro API en `contactsApi`, `useContacts` y `exportContacts` para filtrar exactamente por `origen === 'Carta Postal'` (evitando falsos positivos de coincidencias de nombres como "Cartagena").
+
 ---
 
 **Notas Importantes para Futuros Agentes / Desarrolladores:**
 1. **Webhook (`route.ts`):** **NO eliminar ni modificar** las validaciones `isRequestingLink` e `isRegistration`.
 2. **Eventos Activos:** Mantener la propiedad `activeEventId` en la colección `config/profile` como la única fuente de verdad para el evento público en `/registro`. No reinstaurar fallbacks automáticos por fecha.
 3. **Difusiones Masivas:** Mantener `onlyConfirmed` activo por defecto y utilizar únicamente enlaces directos a imágenes (`.jpg`/`.png`).
+4. **Carta Postal (`ref=carta_postal`):** Mantener el parámetro `onlyCartaPostal` en la API y el arreglo de dependencias de `useContacts` para asegurar la correcta actualización en tiempo real de la campaña postal.
