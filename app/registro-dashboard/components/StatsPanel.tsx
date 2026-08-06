@@ -5,6 +5,7 @@ import { ContactItem, EventItem, LEVEL_ROLES } from './types';
 
 interface StatsPanelProps {
     totalContacts: number;
+    cartaPostalCount?: number;
     byLevel: Record<number, number>;
     events: EventItem[];
     accent: string;
@@ -14,14 +15,19 @@ interface StatsPanelProps {
     setActiveTab: (tab: any) => void;
 }
 
-export default function StatsPanel({ totalContacts, byLevel, events, accent, filterLevels, setFilterLevels, setFilterLevelExact, setActiveTab }: StatsPanelProps) {
+export default function StatsPanel({ totalContacts, cartaPostalCount = 0, byLevel, events, accent, filterLevels, setFilterLevels, setFilterLevelExact, setActiveTab }: StatsPanelProps) {
     return (
         <div className="space-y-4 md:space-y-6 mb-6 md:mb-10">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
                 <div className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm relative overflow-hidden group hover:shadow-lg transition-all duration-300">
                     <div className="absolute -right-4 -top-4 w-16 h-16 md:w-20 md:h-20 bg-red-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500" />
                     <p className="text-3xl md:text-4xl font-black text-theme relative z-10">{totalContacts.toLocaleString()}</p>
                     <p className="text-[9px] md:text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1 md:mt-2 relative z-10">Directorio Total</p>
+                </div>
+                <div className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-amber-100 bg-gradient-to-br from-amber-50/50 to-white shadow-sm relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+                    <div className="absolute -right-4 -top-4 w-16 h-16 md:w-20 md:h-20 bg-amber-100 rounded-full opacity-40 group-hover:scale-150 transition-transform duration-500" />
+                    <p className="text-3xl md:text-4xl font-black text-amber-700 relative z-10">{cartaPostalCount.toLocaleString()}</p>
+                    <p className="text-[9px] md:text-[10px] text-amber-800 font-black uppercase tracking-widest mt-1 md:mt-2 relative z-10">📬 Carta Postal</p>
                 </div>
                 <div className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm group hover:shadow-lg transition-all cursor-pointer" onClick={() => setActiveTab('map')}>
                     <div className="flex items-center gap-2 md:gap-3">
@@ -36,7 +42,7 @@ export default function StatsPanel({ totalContacts, byLevel, events, accent, fil
                     <p className="text-3xl md:text-4xl font-black text-theme">{events.length}</p>
                     <p className="text-[9px] md:text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1 md:mt-2">Eventos Activos</p>
                 </div>
-                <div className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm flex items-center justify-center gap-2 md:gap-4 group" onClick={() => setActiveTab('config')}>
+                <div className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm flex items-center justify-center gap-2 md:gap-4 group cursor-pointer" onClick={() => setActiveTab('config')}>
                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gray-50 flex items-center justify-center text-xl md:text-2xl group-hover:bg-theme group-hover:text-white transition-all">⚙️</div>
                     <p className="text-[8px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-tight">Configuración</p>
                 </div>

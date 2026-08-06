@@ -77,6 +77,8 @@ export default function DirectoryTab({
             if (filterLevels.length > 0) params.set('levels', filterLevels.join(','));
             if (filterSeccionales.length > 0) params.set('seccionales', filterSeccionales.join(','));
             if (filterColonias.length > 0) params.set('colonias', filterColonias.join(','));
+            if (filterMunicipios && filterMunicipios.length > 0) params.set('municipios', filterMunicipios.join(','));
+            if (filterCoordinators && filterCoordinators.length > 0) params.set('coordinators', filterCoordinators.join(','));
             if (searchQuery) params.set('search', searchQuery);
             if (filterEvents.length > 0) params.set('events', filterEvents.join(','));
             if (filterOnlyOrphans) params.set('onlyOrphans', 'true');

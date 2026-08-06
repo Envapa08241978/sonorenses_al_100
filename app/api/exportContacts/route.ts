@@ -22,6 +22,8 @@ export async function GET(req: NextRequest) {
         const levels = searchParams.get('levels') || '';
         const seccionales = searchParams.get('seccionales') || '';
         const colonias = searchParams.get('colonias') || '';
+        const municipios = searchParams.get('municipios') || '';
+        const coordinators = searchParams.get('coordinators') || '';
         const consent = searchParams.get('consent') || '';
         const search = searchParams.get('search')?.toLowerCase() || '';
         const events = searchParams.get('events') || '';
@@ -31,22 +33,18 @@ export async function GET(req: NextRequest) {
         const parsedLevels = levels ? levels.split(',').map(Number).filter(n => !isNaN(n)) : [];
         const parsedSeccionales = seccionales ? seccionales.split(',') : [];
         const parsedColonias = colonias ? colonias.split(',') : [];
+        const parsedMunicipios = municipios ? municipios.split(',') : [];
+        const parsedCoordinators = coordinators ? coordinators.split(',') : [];
         const parsedEvents = events ? events.split(',') : [];
 
-        // Fetch ALL contacts (for export we need the full dataset)
-        // Use batched reads with cursor pagination to handle 450K+
+        // Fetch ALL contacts to build complete hierarchy map (do not limit Firestore query by level)
         const colRef = adminDb.collection(COLLECTION_PATH);
-        let allContacts: any[] = [];
+        let rawContacts: any[] = [];
         let lastDoc: FirebaseFirestore.QueryDocumentSnapshot | null = null;
         const BATCH_SIZE = 10000;
 
         while (true) {
             let q: FirebaseFirestore.Query = colRef.orderBy('timestamp', 'desc');
-            
-            // Apply server-side filter (most selective one)
-            if (parsedLevels.length > 0 && parsedLevels.length <= 30) {
-                q = colRef.where('level', 'in', parsedLevels).orderBy('timestamp', 'desc');
-            }
 
             if (lastDoc) {
                 q = q.startAfter(lastDoc);
@@ -57,45 +55,68 @@ export async function GET(req: NextRequest) {
             if (batch.empty) break;
 
             const docs = batch.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            allContacts.push(...docs);
+            rawContacts.push(...docs);
             lastDoc = batch.docs[batch.docs.length - 1];
 
             if (batch.size < BATCH_SIZE) break;
         }
 
-        // Post-filter
+        // Build FULL contacts map BEFORE applying filters so hierarchy lookup works for any parent across the tree
+        const fullContactsMap = new Map(rawContacts.map((c: any) => [c.id, c]));
+
+        // Post-filter to get rows to export
+        let filteredContacts = [...rawContacts];
+
+        if (parsedLevels.length > 0) {
+            filteredContacts = filteredContacts.filter((c: any) => parsedLevels.includes(Number(c.level || 1)));
+        }
         if (search) {
-            allContacts = allContacts.filter((c: any) =>
+            filteredContacts = filteredContacts.filter((c: any) =>
                 c.name?.toLowerCase().includes(search) || c.phone?.includes(search)
             );
         }
         if (parsedSeccionales.length > 0) {
-            allContacts = allContacts.filter((c: any) => parsedSeccionales.includes(c.seccional || ''));
+            filteredContacts = filteredContacts.filter((c: any) => parsedSeccionales.includes(c.seccional || ''));
         }
         if (parsedColonias.length > 0) {
-            allContacts = allContacts.filter((c: any) => parsedColonias.includes(c.colonia || ''));
+            filteredContacts = filteredContacts.filter((c: any) => parsedColonias.includes(c.colonia || ''));
+        }
+        if (parsedMunicipios.length > 0) {
+            filteredContacts = filteredContacts.filter((c: any) => parsedMunicipios.includes(c.municipio || ''));
+        }
+        if (parsedCoordinators.length > 0) {
+            filteredContacts = filteredContacts.filter((c: any) => {
+                if (parsedCoordinators.includes(c.id)) return true;
+                let curr = c;
+                let depth = 0;
+                while (curr.parentId && depth < 20) {
+                    if (parsedCoordinators.includes(curr.parentId)) return true;
+                    const parent = fullContactsMap.get(curr.parentId);
+                    if (!parent) break;
+                    curr = parent;
+                    depth++;
+                }
+                return false;
+            });
         }
         if (consent) {
-            allContacts = allContacts.filter((c: any) => c.consent === consent);
+            filteredContacts = filteredContacts.filter((c: any) => c.consent === consent);
         }
         if (onlyOrphans) {
-            allContacts = allContacts.filter((c: any) => !c.parentId);
+            filteredContacts = filteredContacts.filter((c: any) => !c.parentId);
         }
         if (pyramidType !== 'all') {
-            allContacts = allContacts.filter((c: any) => c.pyramidType === pyramidType);
+            filteredContacts = filteredContacts.filter((c: any) => c.pyramidType === pyramidType);
         }
         if (parsedEvents.length > 0) {
-            allContacts = allContacts.filter((c: any) => {
+            filteredContacts = filteredContacts.filter((c: any) => {
                 const contactEvents = [...(c.eventNames || []), c.eventName].filter(Boolean);
                 return parsedEvents.some((fe: string) => contactEvents.includes(fe));
             });
         }
 
-        // Build contacts map for hierarchy lookup
-        const contactsMap = new Map(allContacts.map((c: any) => [c.id, c]));
-
         // Build rows for export
-        const rows = allContacts.map((c: any) => {
+        const rows = filteredContacts.map((c: any) => {
             let fecha = '---';
             if (c.timestamp) {
                 const seconds = c.timestamp._seconds || c.timestamp.seconds;
@@ -109,19 +130,33 @@ export async function GET(req: NextRequest) {
 
             // Build hierarchy chain (levels 1-5)
             const levelsPath: Record<number, string> = { 1: '---', 2: '---', 3: '---', 4: '---', 5: '---' };
-            if (c.level && c.level >= 1 && c.level <= 5) {
-                levelsPath[c.level] = c.name;
+            const contactLevel = Number(c.level || 1);
+            if (contactLevel >= 1 && contactLevel <= 5) {
+                levelsPath[contactLevel] = c.name;
             }
+
             let current = c;
             let depth = 0;
             while (current.parentId && depth < 20) {
-                const parent = contactsMap.get(current.parentId);
-                if (!parent) break;
-                if (parent.level && parent.level >= 1 && parent.level <= 5) {
-                    levelsPath[parent.level] = parent.name;
+                const parent = fullContactsMap.get(current.parentId);
+                if (!parent) {
+                    if (current.parentName && levelsPath[5] === '---') {
+                        if (current.parentName.toLowerCase().includes('marcos') && current.parentName.toLowerCase().includes('flores')) {
+                            levelsPath[5] = current.parentName;
+                        }
+                    }
+                    break;
+                }
+                const parentLevel = Number(parent.level || 1);
+                if (parentLevel >= 1 && parentLevel <= 5) {
+                    levelsPath[parentLevel] = parent.name;
                 }
                 current = parent;
                 depth++;
+            }
+
+            if (levelsPath[5] === '---' && c.parentName && c.parentName.toLowerCase().includes('marcos') && c.parentName.toLowerCase().includes('flores')) {
+                levelsPath[5] = c.parentName;
             }
 
             return {
@@ -136,11 +171,11 @@ export async function GET(req: NextRequest) {
                 'Municipio': c.municipio || '',
                 'Seccional': c.seccional || '',
                 'Distrito': c.distrito || '',
-                'Invitado Por': c.invitedBy || '',
+                'Invitado Por': c.parentName || c.invitedBy || '',
                 'Consentimiento': c.consent || 'no_definido',
                 'Origen': c.source || '',
                 'Fecha Registro': fecha,
-                'Rol': LEVEL_ROLES[c.level || 1] || `Nivel ${c.level || 1}`,
+                'Rol': LEVEL_ROLES[contactLevel] || `Nivel ${contactLevel}`,
                 [`Nivel 5: ${LEVEL_ROLES[5]}`]: levelsPath[5],
                 [`Nivel 4: ${LEVEL_ROLES[4]}`]: levelsPath[4],
                 [`Nivel 3: ${LEVEL_ROLES[3]}`]: levelsPath[3],

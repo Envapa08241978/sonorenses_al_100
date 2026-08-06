@@ -37,7 +37,7 @@ export async function GET() {
 
         // Get unique seccionales, colonias, municipios, and events (fetch only distinct fields from ALL docs)
         const distinctSnap = await colRef
-            .select('seccional', 'colonia', 'municipio', 'eventName', 'eventNames')
+            .select('seccional', 'colonia', 'municipio', 'eventName', 'eventNames', 'origen', 'parentId')
             .get();
 
         const seccionalesSet = new Set<string>();
@@ -45,9 +45,13 @@ export async function GET() {
         const municipiosSet = new Set<string>();
         const eventNamesSet = new Set<string>();
         const bySeccionalMap: Record<string, number> = {};
+        let cartaPostalCount = 0;
 
         distinctSnap.docs.forEach(doc => {
             const d = doc.data();
+            if (d.origen === 'Carta Postal' || d.parentId === 'carta_postal') {
+                cartaPostalCount++;
+            }
             if (d.seccional) {
                 const secStr = String(d.seccional).trim().replace(/^0+/, '');
                 if (secStr) {
@@ -80,6 +84,7 @@ export async function GET() {
 
         const stats = {
             totalContacts: total,
+            cartaPostalCount,
             byLevel: {
                 1: level1Snap.data().count + noLevelCount,  // Default level
                 2: level2Snap.data().count,

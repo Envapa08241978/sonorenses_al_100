@@ -29,6 +29,7 @@ interface UseContactsResult {
 
 interface StatsData {
     totalContacts: number;
+    cartaPostalCount?: number;
     byLevel: Record<number, number>;
     byConsent: { yes: number; no: number; pending: number };
     bySeccional?: Record<string, number>;

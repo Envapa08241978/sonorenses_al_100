@@ -87,7 +87,11 @@ export async function GET(req: NextRequest) {
         if (search) {
             contacts = contacts.filter(c =>
                 c.name?.toLowerCase().includes(search) ||
-                c.phone?.includes(search)
+                c.phone?.includes(search) ||
+                c.origen?.toLowerCase().includes(search) ||
+                c.parentName?.toLowerCase().includes(search) ||
+                c.colonia?.toLowerCase().includes(search) ||
+                c.municipio?.toLowerCase().includes(search)
             );
         }
 

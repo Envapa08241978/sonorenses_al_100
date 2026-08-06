@@ -647,6 +647,7 @@ export default function RegistroDashboard() {
                     <main className="w-full max-w-[1600px] mx-auto px-6 py-10">
                         <StatsPanel
                             totalContacts={stats?.totalContacts || 0}
+                            cartaPostalCount={stats?.cartaPostalCount || 0}
                             byLevel={stats?.byLevel || {}}
                             events={events} accent={accent}
                             filterLevels={filterLevels} setFilterLevels={setFilterLevels}

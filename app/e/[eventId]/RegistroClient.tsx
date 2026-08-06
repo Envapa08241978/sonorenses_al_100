@@ -76,6 +76,11 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
 
     useEffect(() => {
         if (!parentId) return
+        if (parentId.toLowerCase() === 'carta_postal') {
+            setParentName('Carta Postal (Javier Lamarque)')
+            setParentLevel(1)
+            return
+        }
         const lookupParent = async () => {
             try {
                 const snap = await getDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', parentId))
@@ -646,8 +651,11 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                     })
                 } else {
                     // ---- NEW CONTACT: Create from scratch ----
+                    const isCartaPostal = parentId.toLowerCase() === 'carta_postal' || searchParams.get('origen')?.toLowerCase() === 'carta_postal';
                     const isPublicEventRegistration = isRealEvent && !parentId && !brigadistaContact;
-                    const finalParentName = isPublicEventRegistration ? 'Javier Lamarque Cano' : (parentName || brigadistaContact?.name || rsvpParentName || '');
+                    const finalParentName = isCartaPostal 
+                        ? 'Carta Postal (Javier Lamarque)' 
+                        : (isPublicEventRegistration ? 'Javier Lamarque Cano' : (parentName || brigadistaContact?.name || rsvpParentName || ''));
                     
                     const newDoc = await addDoc(collection(db, 'campaigns', 'main_campaign', 'contacts'), {
                         name: rsvpName.trim(),
@@ -663,7 +671,8 @@ function CitizenEventPageInner(props: { eventId?: string; hideGalleryAndRespalda
                         parentId: parentId || brigadistaContact?.id || '',
                         parentName: finalParentName,
                         invitedBy: finalParentName,
-                        level: isPublicEventRegistration ? 3 : (parentId ? Math.max(1, parentLevel - 1) : (brigadistaContact ? Math.max(1, (brigadistaContact.level || 1) - 1) : 1)),
+                        origen: isCartaPostal ? 'Carta Postal' : (parentId ? 'Reclutado (QR/Link)' : 'Registro Web'),
+                        level: isCartaPostal ? 1 : (isPublicEventRegistration ? 3 : (parentId ? Math.max(1, parentLevel - 1) : (brigadistaContact ? Math.max(1, (brigadistaContact.level || 1) - 1) : 1))),
                         pyramidType: 'votation',
                         eventId: currentEventId,
                         eventIds: [currentEventId],
