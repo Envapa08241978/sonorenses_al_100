@@ -185,6 +185,17 @@ export default function DirectoryTab({
                     <MultiSelect placeholder="Filtro de Evento" options={uniqueEventNames.map(e => ({label: e, value: e}))} selected={filterEvents} onChange={setFilterEvents} />
                     <MultiSelect placeholder="Filtro de Coord. Territorial (Nivel 4)" options={level4Coordinators.map(c => ({label: `👔 ${c.name}${c.seccional ? ` (Sec. ${c.seccional})` : ''}`, value: c.id}))} selected={filterCoordinators} onChange={setFilterCoordinators} />
                     <MultiSelect placeholder="Filtro de Nivel" options={Object.entries(LEVEL_ROLES).map(([level, role]) => ({label: `Nivel ${level} - ${role}`, value: Number(level)}))} selected={filterLevels} onChange={setFilterLevels} />
+                    <button
+                        onClick={() => setSearchQuery(searchQuery.toLowerCase().includes('carta') ? '' : 'carta')}
+                        className={`px-5 py-4 rounded-2xl text-[10px] font-black tracking-widest uppercase transition-all shadow-sm flex items-center gap-1.5 ${
+                            searchQuery.toLowerCase().includes('carta') 
+                                ? 'bg-amber-600 text-white shadow-amber-200 scale-105 ring-2 ring-amber-300' 
+                                : 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100'
+                        }`}
+                    >
+                        <span>📬 Carta Postal</span>
+                        {searchQuery.toLowerCase().includes('carta') && <span>✕</span>}
+                    </button>
                     <button onClick={() => setFilterOnlyOrphans(!filterOnlyOrphans)} className={`px-6 py-4 rounded-2xl text-[10px] font-black tracking-widest uppercase transition-all shadow-sm ${filterOnlyOrphans ? 'bg-orange-600 text-white' : 'bg-white text-gray-400 border border-gray-100'}`}>👤 Sin Lider</button>
                 </div>
                 <div className="flex gap-3">

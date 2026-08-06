@@ -13,9 +13,10 @@ interface StatsPanelProps {
     setFilterLevels: (v: number[]) => void;
     setFilterLevelExact: (v: boolean) => void;
     setActiveTab: (tab: any) => void;
+    onSelectCartaPostal?: () => void;
 }
 
-export default function StatsPanel({ totalContacts, cartaPostalCount = 0, byLevel, events, accent, filterLevels, setFilterLevels, setFilterLevelExact, setActiveTab }: StatsPanelProps) {
+export default function StatsPanel({ totalContacts, cartaPostalCount = 0, byLevel, events, accent, filterLevels, setFilterLevels, setFilterLevelExact, setActiveTab, onSelectCartaPostal }: StatsPanelProps) {
     return (
         <div className="space-y-4 md:space-y-6 mb-6 md:mb-10">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
@@ -24,10 +25,23 @@ export default function StatsPanel({ totalContacts, cartaPostalCount = 0, byLeve
                     <p className="text-3xl md:text-4xl font-black text-theme relative z-10">{totalContacts.toLocaleString()}</p>
                     <p className="text-[9px] md:text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1 md:mt-2 relative z-10">Directorio Total</p>
                 </div>
-                <div className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-amber-100 bg-gradient-to-br from-amber-50/50 to-white shadow-sm relative overflow-hidden group hover:shadow-lg transition-all duration-300">
-                    <div className="absolute -right-4 -top-4 w-16 h-16 md:w-20 md:h-20 bg-amber-100 rounded-full opacity-40 group-hover:scale-150 transition-transform duration-500" />
-                    <p className="text-3xl md:text-4xl font-black text-amber-700 relative z-10">{cartaPostalCount.toLocaleString()}</p>
-                    <p className="text-[9px] md:text-[10px] text-amber-800 font-black uppercase tracking-widest mt-1 md:mt-2 relative z-10">📬 Carta Postal</p>
+                <div 
+                    onClick={() => {
+                        if (onSelectCartaPostal) onSelectCartaPostal();
+                        else {
+                            setActiveTab('contacts');
+                        }
+                    }}
+                    className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-amber-200 bg-gradient-to-br from-amber-50 to-white shadow-sm relative overflow-hidden group hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer"
+                >
+                    <div className="absolute -right-4 -top-4 w-16 h-16 md:w-20 md:h-20 bg-amber-200/60 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500" />
+                    <div className="flex items-center justify-between relative z-10">
+                        <p className="text-3xl md:text-4xl font-black text-amber-800">{cartaPostalCount.toLocaleString()}</p>
+                        <span className="text-xs font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-full group-hover:bg-amber-600 group-hover:text-white transition-colors">Ver ➔</span>
+                    </div>
+                    <p className="text-[9px] md:text-[10px] text-amber-900 font-black uppercase tracking-widest mt-1 md:mt-2 relative z-10 flex items-center gap-1">
+                        <span>📬 Carta Postal</span>
+                    </p>
                 </div>
                 <div className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm group hover:shadow-lg transition-all cursor-pointer" onClick={() => setActiveTab('map')}>
                     <div className="flex items-center gap-2 md:gap-3">

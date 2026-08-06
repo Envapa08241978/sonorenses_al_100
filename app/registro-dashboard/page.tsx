@@ -652,6 +652,10 @@ export default function RegistroDashboard() {
                             events={events} accent={accent}
                             filterLevels={filterLevels} setFilterLevels={setFilterLevels}
                             setFilterLevelExact={setFilterLevelExact} setActiveTab={setActiveTab}
+                            onSelectCartaPostal={() => {
+                                setActiveTab('contacts');
+                                setSearchQuery('carta');
+                            }}
                         />
 
                         {/* Navigation Tabs */}
