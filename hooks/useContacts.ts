@@ -131,7 +131,7 @@ export function useContacts({
         } finally {
             setIsLoading(false);
         }
-    }, [page, pageSize, debouncedSearch, levels, seccionales, colonias, events, municipios, coordinators, onlyOrphans, pyramidType, enabled]);
+    }, [page, pageSize, debouncedSearch, levels, seccionales, colonias, events, municipios, coordinators, onlyOrphans, onlyCartaPostal, pyramidType, enabled]);
 
     useEffect(() => {
         fetchContacts();
