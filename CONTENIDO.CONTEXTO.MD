@@ -104,23 +104,7 @@ Se estandarizó el flujo de onboarding de 4 pasos para brigadistas y voceros de 
 3. **Paso 4 (Red de Simpatizantes):** Apertura de la liga personal (`?ref=...`) y escaneo del QR en pantalla por parte del nuevo simpatizante para finalizar su verificación.
 * **Guión Técnico por Escenas:** Se creó el documento con tiempos, visuales, overlays y locución en audio para producir videos de capacitación profesional en plataformas como HeyGen, Canva Pro, CapCut e InVideo AI.
 
-## 10. Campaña Carta Postal de Javier Lamarque (Agosto 2026)
-
-Se implementó el flujo completo de rastreo, atribución y medición en tiempo real para las cartas postales impresas enviadas por correo postal.
-
-* **Enlace y QR de Imprenta:**
-  * **URL Parametrizada:** `https://www.sonorensesal100.com/registro?ref=carta_postal`
-  * **Asset generado:** `public/qr_carta_postal.png` (código QR en HD listo para imprenta/diseño).
-* **Captura de Registro (`RegistroClient.tsx`):**
-  * Detecta automáticamente `ref === 'carta_postal'` o `origen === 'carta_postal'`.
-  * Asigna los atributos de fondo:
-    - `origen`: `'Carta Postal'`
-    - `parentId`: `'carta_postal'`
-    - `parentName` / `invitedBy`: `'Carta Postal (Javier Lamarque)'`
-    - `level`: `1` (Ciudadano Concientizado)
-* **Medición en Panel de Control (`registro-dashboard`):**
-  * **Tarjeta Interactiva:** Nueva tarjeta dorada 📬 **Carta Postal** en la parte superior del dashboard que muestra el total acumulado en tiempo real y al darle clic despliega el directorio filtrado.
-  * **Filtro Estricto API (`onlyCartaPostal`):** Botón `📬 Carta Postal` en la barra de filtros y parámetro API en `contactsApi`, `useContacts` y `exportContacts` para filtrar exactamente por `origen === 'Carta Postal'` (evitando falsos positivos de coincidencias de nombres como "Cartagena").
+---
 
 ## 11. Envíos Masivos Segmentados por Días y Diagnóstico Meta API (Agosto 2026)
 
@@ -133,7 +117,7 @@ Se actualizaron los componentes de difusión masiva (`BroadcastTab.tsx` y `page.
   * Se mejoró `handleTestBroadcast` en `page.tsx` para retornar el ID oficial de mensaje Meta (`wamid...`) y la versión limpia del número destino (`waId`), permitiendo trazabilidad directa.
 * **Estándar de Plantillas Interactivas en Meta:**
   * **Nombre de Plantilla:** `invitacion_mensaje_lamarque`
-  * **Código de Idioma:** Requiere estrictamente `es_MX` (Español México). Si se envía `es`, Meta rechaza la petición con error 404 (#132001).
+  * **Código de Idioma:** Requiere strictly `es_MX` (Español México). Si se envía `es`, Meta rechaza la petición con error 404 (#132001).
   * **Botones CTA (Call to Action):** Se habilitaron botones estáticos `Visit website` (`Entra a la transmisión en vivo` y `Registra tu asistencia`) para mejorar la conversión.
 * **Alojamiento CDN de Imágenes de Encabezado:**
   * Se desplegó el asset oficial en la raíz del servidor: `https://www.sonorensesal100.com/mensaje_especial_lamarque.jpeg`
