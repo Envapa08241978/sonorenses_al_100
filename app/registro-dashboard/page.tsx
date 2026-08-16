@@ -479,12 +479,24 @@ export default function RegistroDashboard() {
         setIsBroadcasting(true);
         const varsReplaced = broadcastVariables.map(v => v.replace(/\{nombre\}/gi, 'Usuario de Prueba'));
         try {
-            const res = await fetch('/api/whatsapp/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: broadcastTestPhone, templateName: broadcastTemplate.trim(), templateParams: varsReplaced, headerImageUrl: broadcastHeaderImage.trim() }) });
-            if (res.ok) {
-                alert('Mensaje de prueba enviado ✅');
+            const res = await fetch('/api/whatsapp/send', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ 
+                    to: broadcastTestPhone, 
+                    templateName: broadcastTemplate.trim(), 
+                    templateParams: varsReplaced, 
+                    headerImageUrl: broadcastHeaderImage.trim() 
+                }) 
+            });
+            const data = await res.json().catch(() => null);
+            if (res.ok && data?.success) {
+                const wamid = data?.data?.messages?.[0]?.id || '';
+                const waId = data?.data?.contacts?.[0]?.wa_id || '';
+                alert(`Mensaje de prueba enviado a Meta ✅\nDestinatario: ${waId || broadcastTestPhone}\nID de Envío Meta: ${wamid}`);
             } else {
-                const errData = await res.json();
-                alert(`Error de Meta API: ${JSON.stringify(errData.error || errData)}`);
+                const metaErr = data?.error?.error?.message || data?.error?.message || JSON.stringify(data?.error || data);
+                alert(`⚠️ Error de Meta API: ${metaErr}`);
             }
         } catch (error) { console.error(error); alert('Error de conexión al servidor.'); }
         setIsBroadcasting(false);
