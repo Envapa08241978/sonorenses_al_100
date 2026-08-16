@@ -46,6 +46,7 @@ export default function BroadcastTab({
 
     const [excludeAlreadySent, setExcludeAlreadySent] = useState(false);
     const [onlyConfirmed, setOnlyConfirmed] = useState(true);
+    const [maxBatchLimit, setMaxBatchLimit] = useState<string>('');
 
     // --- Fetch ALL contacts on mount ---
     const fetchAllContacts = async () => {
@@ -374,70 +375,107 @@ export default function BroadcastTab({
                             <span>✅</span> Solo enviar a contactos con WhatsApp Confirmado (Consentimiento Aceptado)
                         </label>
                     </div>
+
+                    <div className="flex items-center justify-between gap-4 pt-3 border-t border-slate-200/60">
+                        <div>
+                            <label htmlFor="maxLimit" className="text-xs font-black text-slate-700 block">
+                                📅 Límite Máximo por Lote / Día (Opcional)
+                            </label>
+                            <p className="text-[10px] text-slate-400 font-medium">
+                                Para envíos segmentados por días (ej. 2500 hoy, el resto mañana).
+                            </p>
+                        </div>
+                        <input 
+                            id="maxLimit"
+                            type="number" 
+                            value={maxBatchLimit} 
+                            onChange={e => setMaxBatchLimit(e.target.value)} 
+                            placeholder="Sin límite" 
+                            className="w-36 px-4 py-2 rounded-xl bg-white border-2 border-slate-200 focus:border-blue-500 outline-none font-bold text-xs text-slate-700"
+                        />
+                    </div>
                 </div>
 
                 {/* Segmented Counter & Actions */}
                 <div className="bg-white border-2 border-slate-50 rounded-[32px] shadow-xl p-8">
-                    <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-50">
-                        <h4 className="font-black text-slate-400 text-[10px] uppercase tracking-widest">
-                            PÚBLICO SEGMENTADO
-                        </h4>
-                        <span className="px-5 py-2 bg-emerald-100 text-emerald-700 font-black text-xs rounded-full uppercase shadow-sm">
-                            {isLoadingAll ? '⏳ Cargando base...' : `${total} Contactos`}
-                        </span>
-                    </div>
-                    
-                    {isBroadcasting ? (
-                        <div className="space-y-4">
-                            <div className="flex justify-between text-xs font-bold text-slate-500">
-                                <span>Enviando mensajes masivos...</span>
-                                <span>{broadcastProgress} / {total}</span>
-                            </div>
-                            <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden">
-                                <div 
-                                    className="bg-blue-500 h-full transition-all duration-300" 
-                                    style={{ width: `${(broadcastProgress / (total || 1)) * 100}%` }}
-                                ></div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="space-y-6">
-                            {/* Test Box */}
-                            <div className="p-6 bg-blue-50/70 rounded-2xl border border-blue-100">
-                                <h4 className="font-black text-blue-800 text-[10px] uppercase tracking-widest mb-3">
-                                    🛠️ Prueba de Plantilla
-                                </h4>
-                                <div className="flex gap-2">
-                                    <input 
-                                        type="tel" 
-                                        placeholder="Tu número (Ej. 6629346577)" 
-                                        value={broadcastTestPhone}
-                                        onChange={e => setBroadcastTestPhone(e.target.value)}
-                                        className="flex-1 px-4 py-3 rounded-xl bg-white border border-blue-200 focus:border-blue-500 outline-none font-bold text-sm"
-                                    />
-                                    <button 
-                                        onClick={handleTestBroadcast}
-                                        disabled={!broadcastTemplate || !broadcastTestPhone}
-                                        className="px-6 py-3 bg-blue-600 text-white rounded-xl font-black text-xs hover:bg-blue-700 disabled:opacity-50 uppercase tracking-wider transition-all"
-                                    >
-                                        Enviar Prueba
-                                    </button>
-                                </div>
-                                <p className="text-[10px] text-blue-600/70 mt-2 font-bold uppercase tracking-tight">
-                                    Envíate la plantilla a ti mismo antes de realizar el envío masivo.
-                                </p>
-                            </div>
+                    {(() => {
+                        const parsedLimit = Number(maxBatchLimit);
+                        const hasLimit = !isNaN(parsedLimit) && parsedLimit > 0;
+                        const targets = hasLimit ? filteredForBroadcast.slice(0, parsedLimit) : filteredForBroadcast;
+                        const targetCount = targets.length;
 
-                            {/* Main Broadcast Button */}
-                            <button 
-                                onClick={() => handleMetaBroadcast(filteredForBroadcast)}
-                                disabled={total === 0 || !broadcastTemplate || isLoadingAll}
-                                className="w-full py-5 bg-slate-900 text-white rounded-[24px] font-black text-sm hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-slate-200 transition-all uppercase tracking-widest flex items-center justify-center gap-3"
-                            >
-                                <span>🚀</span> Iniciar Difusión Masiva por Meta API ({total} destinatarios)
-                            </button>
-                        </div>
-                    )}
+                        return (
+                            <>
+                                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-50">
+                                    <h4 className="font-black text-slate-400 text-[10px] uppercase tracking-widest">
+                                        PÚBLICO SEGMENTADO
+                                    </h4>
+                                    <div className="flex items-center gap-2">
+                                        {hasLimit && (
+                                            <span className="px-3 py-1 bg-amber-100 text-amber-800 font-black text-[10px] rounded-full uppercase">
+                                                Lote: {targetCount} de {total}
+                                            </span>
+                                        )}
+                                        <span className="px-5 py-2 bg-emerald-100 text-emerald-700 font-black text-xs rounded-full uppercase shadow-sm">
+                                            {isLoadingAll ? '⏳ Cargando base...' : `${total} Elegibles`}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                {isBroadcasting ? (
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between text-xs font-bold text-slate-500">
+                                            <span>Enviando mensajes masivos...</span>
+                                            <span>{broadcastProgress} / {targetCount}</span>
+                                        </div>
+                                        <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden">
+                                            <div 
+                                                className="bg-blue-500 h-full transition-all duration-300" 
+                                                style={{ width: `${(broadcastProgress / (targetCount || 1)) * 100}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-6">
+                                        {/* Test Box */}
+                                        <div className="p-6 bg-blue-50/70 rounded-2xl border border-blue-100">
+                                            <h4 className="font-black text-blue-800 text-[10px] uppercase tracking-widest mb-3">
+                                                🛠️ Prueba de Plantilla
+                                            </h4>
+                                            <div className="flex gap-2">
+                                                <input 
+                                                    type="tel" 
+                                                    placeholder="Tu número (Ej. 6629346577)" 
+                                                    value={broadcastTestPhone}
+                                                    onChange={e => setBroadcastTestPhone(e.target.value)}
+                                                    className="flex-1 px-4 py-3 rounded-xl bg-white border border-blue-200 focus:border-blue-500 outline-none font-bold text-sm"
+                                                />
+                                                <button 
+                                                    onClick={handleTestBroadcast}
+                                                    disabled={!broadcastTemplate || !broadcastTestPhone}
+                                                    className="px-6 py-3 bg-blue-600 text-white rounded-xl font-black text-xs hover:bg-blue-700 disabled:opacity-50 uppercase tracking-wider transition-all"
+                                                >
+                                                    Enviar Prueba
+                                                </button>
+                                            </div>
+                                            <p className="text-[10px] text-blue-600/70 mt-2 font-bold uppercase tracking-tight">
+                                                Envíate la plantilla a ti mismo antes de realizar el envío masivo.
+                                            </p>
+                                        </div>
+
+                                        {/* Main Broadcast Button */}
+                                        <button 
+                                            onClick={() => handleMetaBroadcast(targets)}
+                                            disabled={targetCount === 0 || !broadcastTemplate || isLoadingAll}
+                                            className="w-full py-5 bg-slate-900 text-white rounded-[24px] font-black text-sm hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-slate-200 transition-all uppercase tracking-widest flex items-center justify-center gap-3"
+                                        >
+                                            <span>🚀</span> Iniciar Difusión Masiva por Meta API ({targetCount} destinatarios)
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        );
+                    })()}
                 </div>
             </div>
         </div>
