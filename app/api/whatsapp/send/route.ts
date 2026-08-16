@@ -21,12 +21,16 @@ export async function POST(request: Request) {
         }
 
         let cleanTo = to.replace(/\D/g, '');
+        // Normalizar números mexicanos al formato 521 + 10 dígitos
         if (cleanTo.length === 10) {
-            cleanTo = '52' + cleanTo;
+            cleanTo = '521' + cleanTo;
         } else if (cleanTo.length === 11 && cleanTo.startsWith('1')) {
             cleanTo = '52' + cleanTo;
+        } else if (cleanTo.length === 12 && cleanTo.startsWith('52')) {
+            // Formato 52 + 10 dígitos → insertar el 1 intermedio: 521 + 10
+            cleanTo = '521' + cleanTo.substring(2);
         } else if (cleanTo.length === 13 && cleanTo.startsWith('521')) {
-            // Keep the 521 as is
+            // Ya está en formato correcto 521 + 10
         }
 
         // Build the payload
@@ -115,10 +119,10 @@ export async function POST(request: Request) {
         const data = await response.json();
 
         if (response.ok) {
-            const chatRef = doc(db, 'campaigns', 'main_campaign', 'chats', to);
+            const chatRef = doc(db, 'campaigns', 'main_campaign', 'chats', cleanTo);
             
             await setDoc(chatRef, {
-                phone: to,
+                phone: cleanTo,
                 lastMessage: lastMessagePreview,
                 lastMessageAt: serverTimestamp(),
             }, { merge: true });
@@ -126,7 +130,7 @@ export async function POST(request: Request) {
             const messagesRef = collection(chatRef, 'messages');
             const messageDoc: any = {
                 body: message || '',
-                to: to,
+                to: cleanTo,
                 type: msgDocType,
                 direction: 'outbound',
                 timestamp: serverTimestamp()
