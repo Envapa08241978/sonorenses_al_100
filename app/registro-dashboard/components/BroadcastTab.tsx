@@ -170,8 +170,16 @@ export default function BroadcastTab({
 
             // Exclusión de plantilla previa
             let matchExcl = true;
-            if (excludeAlreadySent && broadcastTemplate) {
-                matchExcl = c.lastBroadcastTemplate !== broadcastTemplate.trim();
+            if (excludeAlreadySent) {
+                const currentTpl = (broadcastTemplate || '').trim().toLowerCase();
+                const prevTpl = (c.lastBroadcastTemplate || '').trim().toLowerCase();
+                
+                // Excluir si ya recibió la plantilla actual, o 'invitacion_mensaje_lamarque', o cualquier envío previo grabado
+                if (prevTpl || c.lastBroadcastAt) {
+                    if (!currentTpl || prevTpl === currentTpl || prevTpl === 'invitacion_mensaje_lamarque' || prevTpl === 'invitacion_mensaje' || c.lastBroadcastAt) {
+                        matchExcl = false;
+                    }
+                }
             }
 
             // Consentimiento WhatsApp
@@ -359,7 +367,7 @@ export default function BroadcastTab({
                             className="w-5 h-5 accent-blue-600 rounded cursor-pointer"
                         />
                         <label htmlFor="excludeSent" className="text-xs font-black text-slate-600 cursor-pointer select-none">
-                            Excluir contactos que ya recibieron la plantilla "{broadcastTemplate || 'ninguna'}"
+                            Excluir contactos que ya recibieron mensaje en esta u otras plantillas ("invitacion_mensaje_lamarque", etc.)
                         </label>
                     </div>
 
