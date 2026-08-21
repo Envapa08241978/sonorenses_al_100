@@ -138,6 +138,72 @@ async function sendPersonalRecruitmentLink(params: {
     }
 }
 
+/* ================================================================
+   HELPER: Send featured Facebook Reel recommendation if not already sent
+   ================================================================ */
+async function sendFeaturedReelIfNeeded(params: {
+    token: string;
+    phoneId: string;
+    cleanTo: string;
+    chatRef: any;
+    messagesRef: any;
+    contactDocId?: string;
+}) {
+    const { token, phoneId, cleanTo, chatRef, messagesRef, contactDocId } = params;
+    const REEL_FLAG = 'reelSent_1CwPn1wNCL';
+
+    try {
+        const chatSnap = await getDoc(chatRef);
+        const chatData = chatSnap.exists() ? (chatSnap.data() as any) : null;
+        if (chatData && chatData[REEL_FLAG]) {
+            return; // Already sent to this user
+        }
+
+        const reelMessage = `Amigas y amigos, ayudemos a mover este reel de Javier sobre su historia dentro del movimiento y su camino junto a Andrés Manuel López Obrador.\n\nPor favor entren, vean el video completo, den like, comenten algo positivo, compartan en Facebook y reenvíen por WhatsApp.\n\nJavier siempre estuvo ahí. La transformación no se improvisa: se consolida con historia, experiencia, unidad y resultados.\n\nMovámoslo con fuerza y respeto. 🙌\n\nhttps://www.facebook.com/share/r/1CwPn1wNCL/`;
+
+        const payload = {
+            messaging_product: 'whatsapp',
+            to: cleanTo,
+            type: 'text',
+            text: { body: reelMessage }
+        };
+
+        const response = await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            await addDoc(messagesRef, {
+                body: reelMessage,
+                to: cleanTo,
+                type: 'text',
+                direction: 'outbound',
+                timestamp: serverTimestamp()
+            });
+
+            await setDoc(chatRef, {
+                [REEL_FLAG]: true,
+                lastMessageAt: serverTimestamp()
+            }, { merge: true });
+
+            if (contactDocId) {
+                await updateDoc(doc(db, 'campaigns', 'main_campaign', 'contacts', contactDocId), {
+                    [REEL_FLAG]: true
+                });
+            }
+
+            console.log(`✅ Featured Reel sent to ${cleanTo}`);
+        }
+    } catch (err) {
+        console.error('Error sending featured reel:', err);
+    }
+}
+
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get('hub.mode');
@@ -755,6 +821,11 @@ export async function POST(request: Request) {
                                     messagesRef, chatRef
                                 });
                             }
+                            await sendFeaturedReelIfNeeded({
+                                token, phoneId, cleanTo,
+                                chatRef, messagesRef,
+                                contactDocId: contactDoc.id
+                            });
                         }
 
                     // 3. CONVERSATIONAL BOT STATE MACHINE (For any general text message)
@@ -870,6 +941,11 @@ export async function POST(request: Request) {
                                     contactName: contactData?.name || name,
                                     messagesRef, chatRef
                                 });
+                                await sendFeaturedReelIfNeeded({
+                                    token, phoneId, cleanTo,
+                                    chatRef, messagesRef,
+                                    contactDocId: contactDoc.id
+                                });
                             }
 
                             return new NextResponse('EVENT_RECEIVED', { status: 200 });
@@ -956,6 +1032,13 @@ export async function POST(request: Request) {
                                 } catch (err) {
                                     console.error('Error sending no-contact link reply:', err);
                                 }
+                            }
+                            if (contactDoc && existingConsent === 'yes') {
+                                await sendFeaturedReelIfNeeded({
+                                    token, phoneId, cleanTo,
+                                    chatRef, messagesRef,
+                                    contactDocId: contactDoc.id
+                                });
                             }
                             await sendConsentPromptIfNeeded();
                             return new NextResponse('EVENT_RECEIVED', { status: 200 });
@@ -2347,6 +2430,15 @@ Mensaje del ciudadano: "${messageDoc.body}"`;
                             }
                         }
                         await sendConsentPromptIfNeeded();
+
+                        // AUTO-SEND: Send featured Reel if contact has consent
+                        if (existingConsent === 'yes') {
+                            await sendFeaturedReelIfNeeded({
+                                token, phoneId, cleanTo,
+                                chatRef, messagesRef,
+                                contactDocId: contactDoc?.id
+                            });
+                        }
                     }
                   }
               }
