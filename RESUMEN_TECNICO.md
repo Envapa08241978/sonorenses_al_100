@@ -34,6 +34,7 @@ El código que controla al bot vive en `app/api/whatsapp/webhook/route.ts`.
 3. **Visión Artificial:** Si recibe una imagen, se la envía a Gemini para que transcriba la dirección, clave de elector, nombre y demás datos, y los guarde automáticamente en Firebase (colección `contacts`).
 4. **Registro a Eventos:** Inscribe ciudadanos al "Torneo de Dominadas en mi Barrio" y les genera un folio.
 5. **Re-conexión:** Detecta si un usuario cambia de teléfono vinculando su registro anterior de 10 dígitos.
+6. **Difusión Automática de Reel Destacado:** Promueve de forma automática y de envío único por usuario el Reel de Facebook sobre la historia de Javier Lamarque (`https://www.facebook.com/share/r/1CwPn1wNCL/`) tras atender a contactos con consentimiento (`consent === 'yes'`), guardando la bandera `reelSent_1CwPn1wNCL` en Firestore.
 
 ## 4. Próximos Pasos Recomendados (Backlog)
 - **Token Permanente de Meta:** El token que sacaste hoy es "Temporal" y caduca en 24 horas. Para que el bot nunca deje de mandar mensajes, tendrás que generar un Token Permanente (desde Facebook Business Settings > System Users) y actualizar ese valor en Vercel.

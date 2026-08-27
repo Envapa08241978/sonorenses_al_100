@@ -127,6 +127,18 @@ Se actualizaron los componentes de difusión masiva (`BroadcastTab.tsx` y `page.
 
 ---
 
+## 12. Difusión Automatizada de Reel de Facebook en Webhook (Agosto 2026)
+
+Se implementó la función helper `sendFeaturedReelIfNeeded` en el webhook de WhatsApp (`app/api/whatsapp/webhook/route.ts`).
+
+* **Objetivo:** Promover automáticamente el Reel de Facebook sobre la trayectoria de Javier Lamarque con AMLO (`https://www.facebook.com/share/r/1CwPn1wNCL/`) entre los ciudadanos que interactúan con el número de WhatsApp.
+* **Mecanismo de Ejecución y Seguridad:**
+  * **Filtro de Consentimiento:** Solo se envía a contactos que ya cuentan con consentimiento aceptado (`consent === 'yes'`) o que acaban de confirmarlo en la sesión actual.
+  * **Garantía de Envío Único:** Al entregar el mensaje, registra la bandera `reelSent_1CwPn1wNCL: true` tanto en el documento del chat como en el documento del contacto en Firestore. Si la bandera existe, omite envíos futuros.
+  * **Integración No Intrusiva:** Se ejecuta al finalizar el procesamiento principal del mensaje (tras entregar el QR, confirmar registro o responder con la IA Gemini), sin alterar los flujos de `isRequestingLink` o `isRegistration`.
+
+---
+
 **Notas Importantes para Futuros Agentes / Desarrolladores:**
 1. **Webhook (`route.ts`):** **NO eliminar ni modificar** las validaciones `isRequestingLink` e `isRegistration`.
 2. **Eventos Activos:** Mantener la propiedad `activeEventId` en la colección `config/profile` como la única fuente de verdad para el evento público en `/registro`. No reinstaurar fallbacks automáticos por fecha.
@@ -134,4 +146,6 @@ Se actualizaron los componentes de difusión masiva (`BroadcastTab.tsx` y `page.
 4. **Carta Postal (`ref=carta_postal`):** Mantener el parámetro `onlyCartaPostal` en la API y el arreglo de dependencias de `useContacts` para asegurar la correcta actualización en tiempo real de la campaña postal.
 5. **Idioma de Plantillas Meta:** Asegurarse de especificar `es_MX` en las llamadas a la API de WhatsApp para plantillas creadas en Español México.
 6. **Estado de Pagos Meta:** En caso de que los mensajes salgan como "aceptados" pero no suenen en los celulares, verificar que el saldo de la WABA no tenga la leyenda *Payment past due*.
+7. **Campañas de Reel / Difusión Dinámica:** Al agregar nuevos videos o Reels en `route.ts`, utilizar siempre el patrón de bandera única (`reelSent_ID`) en Firestore para evitar spam y mantener la entrega limpia de 1 sola vez por usuario.
+
 
